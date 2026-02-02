@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Junior Stats Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --bg: #f0f2f5; --card: #ffffff; --text: #333; --accent: #1a73e8; --border: #ddd; --btn-hover: #1557b0;
+        }
+        [data-theme="dark"] {
+            --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --accent: #8ab4f8; --border: #444; --btn-hover: #bbdefb;
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; transition: 0.3s; margin: 0; }
+        .container { max-width: 800px; background: var(--card); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin: 20px auto; }
+        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 10px; flex-wrap: wrap; }
+        h2 { margin: 0; color: var(--accent); font-size: 1.8rem; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .full-width { grid-column: span 2; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
+        select, input { width: 100%; padding: 12px; background: var(--card); color: var(--text); border: 2px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
+        select:focus, input:focus { border-color: var(--accent); outline: none; }
+        .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        button { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-primary { background: var(--accent); color: white; width: 100%; font-size: 1.1rem; }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .btn-sec { background: #6c757d; color: white; }
+        .btn-snap { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        
+        table { width: 100%; margin-top: 30px; border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 15px; text-align: center; border-bottom: 1px solid var(--border); }
+        th { background: rgba(0,0,0,0.05); font-weight: bold; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+        .team-tag { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: var(--accent); color: white; }
+        .hidden { display: none; }
+
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .btn-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="captureArea">
+    <div class="header-controls">
+        <h2>⚽ Match Tracker</h2>
+        <div style="display: flex; gap: 8px;">
+            <button class="btn-sec" onclick="toggleTheme()" title="Toggle Dark Mode">🌓</button>
+            <button class="btn-sec" onclick="exportData()">💾 Export</button>
+            <button class="btn-sec" onclick="document.getElementById('importFile').click()">📂 Import</button>
+            <input type="file" id="importFile" class="hidden" onchange="importData(event)">
+        </div>
+    </div>
+
+    <div class="form-grid">
+        <div class="full-width">
+            <label>Playing For:</label>
+            <select id="myTeam" onchange="updatePlayersAndOpponents()">
+                <option value="Llanelli Town">Llanelli Town U10</option>
+                <option value="Dunvant 3X">Dunvant 3X</option>
+            </select>
+        </div>
+
+        <div>
+            <label>Opponent:</label>
+            <select id="opponent"></select>
+        </div>
+
+        <div>
+            <label>Goal Scorer:</label>
+            <select id="scorer"></select>
+        </div>
+
+        <div>
+            <label>Llanelli/Dunvant Score:</label>
+            <input type="number" id="homeScore" min="0" max="20" value="0">
+        </div>
+
+        <div>
+            <label>Opponent Score:</label>
+            <input type="number" id="awayScore" min="0" max="20" value="0">
+        </div>
+    </div>
+
+    <button class="btn-primary" onclick="addResult()">➕ Save Match Result</button>
+    
+    <div class="action-buttons">
+        <div class="btn-row">
+            <button class="btn-snap" onclick="takeSnapshot()">📸 Snapshot</button>
+            <button class="btn-sec" onclick="window.print()">🖨️ Print</button>
+            <button class="btn-danger" onclick="clearData()">🗑️ Reset</button>
+        </div>
+    </div>
+
+    <table id="resultsTable">
+        <thead>
+            <tr>
+                <th>Team</th>
+                <th>Opponent</th>
+                <th>Result</th>
+                <th>Scorer</th>
+            </tr>
+        </thead>
+        <tbody>
+            </tbody>
+    </table>
+</div>
+
+<script>
+    // EDIT TEAM NAMES AND PLAYERS HERE
+    const teamData = {
+        "Llanelli Town": {
+            opponents: ["Garden Village", "Carmarthen Town", "Trostre", "Llangennech", "Pontarddulais"],
+            players: ["Your Son", "Player A", "Player B", "Player C"]
+        },
+        "Dunvant 3X": {
+            opponents: ["Mumbles Rangers", "Bishopston", "South Gower", "Gorseinon", "Murton"],
+            players: ["Your Son", "Mate 1", "Mate 2", "Mate 3"]
+        }
+    };
+
+    function toggleTheme() {
+        const body = document.body;
+        const current = body.getAttribute('data-theme');
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+
+    function updatePlayersAndOpponents() {
+        const team = document.getElementById('myTeam').value;
+        const oppSelect = document.getElementById('opponent');
+        const playerSelect = document.getElementById('scorer');
+        
+        oppSelect.innerHTML = "";
+        playerSelect.innerHTML = "<option value='No Goal'>No Goal/None</option>";
+        
+        teamData[team].opponents.forEach(opp => {
+            let opt = document.createElement('option'); opt.value = opt.innerHTML = opp;
+            oppSelect.appendChild(opt);
+        });
+        
+        teamData[team].players.forEach(p => {
+            let opt = document.createElement('option'); opt.value = opt.innerHTML = p;
+            playerSelect.appendChild(opt);
+        });
+    }
+
+    function addResult() {
+        const entry = {
+            id: Date.now(),
+            myTeam: document.getElementById('myTeam').value,
+            opponent: document.getElementById('opponent').value,
+            home: document.getElementById('homeScore').value,
+            away: document.getElementById('awayScore').value,
+            scorer: document.getElementById('scorer').value
+        };
+        
+        let history = JSON.parse(localStorage.getItem('matchHistory')) || [];
+        history.push(entry);
+        localStorage.setItem('matchHistory', JSON.stringify(history));
+        displayResults();
+    }
+
+    function displayResults() {
+        const history = JSON.parse(localStorage.getItem('matchHistory')) || [];
+        const tbody = document.querySelector("#resultsTable tbody");
+        tbody.innerHTML = "";
+        
+        // Show newest first
+        [...history].reverse().forEach(item => {
+            let row = tbody.insertRow();
+            row.insertCell(0).innerHTML = `<span class="team-tag">${item.myTeam}</span>`;
+            row.insertCell(1).innerHTML = item.opponent;
+            row.insertCell(2).innerHTML = `<strong>${item.home} - ${item.away}</strong>`;
+            row.insertCell(3).innerHTML = item.scorer;
+        });
+    }
+
+    function takeSnapshot() {
+        const area = document.getElementById('captureArea');
+        html2canvas(area, { backgroundColor: null }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `stats-${new Date().toLocaleDateString()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+
+    function exportData() {
+        const data = localStorage.getItem('matchHistory') || "[]";
+        const blob = new Blob([data], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'football-stats-backup.json';
+        a.click();
+    }
+
+    function importData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                JSON.parse(e.target.result); // Validate JSON
+                localStorage.setItem('matchHistory', e.target.result);
+                displayResults();
+                alert("Data imported successfully!");
+            } catch (err) {
+                alert("Error: Invalid file format.");
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function clearData() {
+        if(confirm("Are you sure? This will delete all your match history!")) {
+            localStorage.removeItem('matchHistory');
+            displayResults();
+        }
+    }
+
+    // Load saved theme
+    if(localStorage.getItem('theme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+
+    // Init
+    updatePlayersAndOpponents();
+    displayResults();
+</script>
+
+</body>
+</html>
