@@ -3,77 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Junior Stats Tracker</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <title>Stats Tracker & Totals</title>
     <style>
-        :root {
-            --bg: #f0f2f5; --card: #ffffff; --text: #333; --accent: #1a73e8; --border: #ddd; --btn-hover: #1557b0;
-        }
-        [data-theme="dark"] {
-            --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --accent: #8ab4f8; --border: #444; --btn-hover: #bbdefb;
-        }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; transition: 0.3s; margin: 0; }
-        .container { max-width: 800px; background: var(--card); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin: 20px auto; }
-        .header-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; gap: 10px; flex-wrap: wrap; }
-        h2 { margin: 0; color: var(--accent); font-size: 1.8rem; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-        .full-width { grid-column: span 2; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
-        select, input { width: 100%; padding: 12px; background: var(--card); color: var(--text); border: 2px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-        select:focus, input:focus { border-color: var(--accent); outline: none; }
-        .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-        button { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-primary { background: var(--accent); color: white; width: 100%; font-size: 1.1rem; }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-        .btn-sec { background: #6c757d; color: white; }
-        .btn-snap { background: #28a745; color: white; }
-        .btn-danger { background: #dc3545; color: white; }
+        :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --accent: #1a73e8; --border: #ddd; }
+        [data-theme="dark"] { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --accent: #8ab4f8; --border: #444; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 15px; transition: 0.3s; margin: 0; }
+        .container { max-width: 800px; background: var(--card); padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto; }
         
-        table { width: 100%; margin-top: 30px; border-collapse: separate; border-spacing: 0; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 15px; text-align: center; border-bottom: 1px solid var(--border); }
-        th { background: rgba(0,0,0,0.05); font-weight: bold; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
-        .team-tag { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: var(--accent); color: white; }
-        .hidden { display: none; }
+        /* Stats Dashboard */
+        .stats-dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; text-align: center; }
+        .stat-card { background: var(--accent); color: white; padding: 10px; border-radius: 10px; }
+        .stat-num { font-size: 1.5rem; font-weight: bold; display: block; }
+        .stat-label { font-size: 0.7rem; text-transform: uppercase; }
 
-        @media (max-width: 600px) {
-            .form-grid { grid-template-columns: 1fr; }
-            .full-width { grid-column: span 1; }
-            .btn-row { grid-template-columns: 1fr; }
-        }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        select, input { width: 100%; padding: 10px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; }
+        button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-main { background: var(--accent); color: white; width: 100%; margin-bottom: 10px; }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-sec { background: #6c757d; color: white; font-size: 0.8rem; }
+        
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; font-size: 0.9rem; }
+        .team-tag { background: #eee; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
+        [data-theme="dark"] .team-tag { background: #444; color: #fff; }
     </style>
 </head>
 <body>
 
-<div class="container" id="captureArea">
-    <div class="header-controls">
-        <h2>⚽ Match Tracker</h2>
-        <div style="display: flex; gap: 8px;">
-            <button class="btn-sec" onclick="toggleTheme()" title="Toggle Dark Mode">🌓</button>
-            <button class="btn-sec" onclick="exportData()">💾 Export</button>
-            <button class="btn-sec" onclick="document.getElementById('importFile').click()">📂 Import</button>
-            <input type="file" id="importFile" class="hidden" onchange="importData(event)">
+<div class="container" id="mainContent">
+    <div class="header">
+        <h2 id="pageTitle">⚽ Season Tracker</h2>
+        <button class="btn-sec" onclick="toggleTheme()">🌓</button>
+    </div>
+
+    <div class="stats-dashboard">
+        <div class="stat-card">
+            <span class="stat-num" id="totalMatches">0</span>
+            <span class="stat-label">Matches</span>
+        </div>
+        <div class="stat-card" style="background: #28a745;">
+            <span class="stat-num" id="totalWins">0</span>
+            <span class="stat-label">Wins</span>
+        </div>
+        <div class="stat-card" style="background: #f39c12;">
+            <span class="stat-num" id="totalGoals">0</span>
+            <span class="stat-label">Son's Goals</span>
         </div>
     </div>
 
     <div class="form-grid">
-        <div class="full-width">
+        <div style="grid-column: span 2;">
             <label>Playing For:</label>
-            <select id="myTeam" onchange="updatePlayersAndOpponents()">
-                <option value="Llanelli Town">Llanelli Town U10</option>
-                <option value="Dunvant 3X">Dunvant 3X</option>
-            </select>
+            <select id="myTeam" onchange="updateUI()"></select>
         </div>
-
         <div>
             <label>Opponent:</label>
             <select id="opponent"></select>
         </div>
-
         <div>
             <label>Goal Scorer:</label>
             <select id="scorer"></select>
         </div>
+        <div><label>Our Score:</label><input type="number" id="hScore" value="0"></div>
+        <div><label>Their Score:</label><input type="number" id="aScore" value="0"></div>
+    </div>
+
+    <button class="btn-main" onclick="addMatch()">➕ Save Result</button>
+    
+    <div class="btn-row">
+        <button class="btn-sec" style="background:#28a745" onclick="downloadFullHTML()">📄 Export HTML File</button>
+        <button class="btn-sec" style="background:#dc3545" onclick="clearData()">🗑️ Reset All</button>
+    </div>
+
+    <table id="resultsTable">
+        <thead><tr><th>Team</th><th>Opponent</th><th>Score</th><th>Scorer</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    const config = {
+        "Llanelli Town": { opps: ["Garden Village", "Carmarthen", "Trostre"], players: ["Your Son", "Mate 1", "Mate 2"] },
+        "Dunvant 3X": { opps: ["Mumbles Rangers", "Bishopston", "South Gower"], players: ["Your Son", "Mate A", "Mate B"] }
+    };
+
+    function toggleTheme() {
+        const b = document.body;
+        b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+    }
+
+    function updateUI() {
+        const team = document.getElementById('myTeam').value || Object.keys(config)[0];
+        const oppS = document.getElementById('opponent');
+        const pS = document.getElementById('scorer');
+        
+        if(!document.getElementById('myTeam').innerHTML) {
+            Object.keys(config).forEach(t => { let o = new Option(t,t); document.getElementById('myTeam').add(o); });
+        }
+
+        oppS.innerHTML = ""; pS.innerHTML = "<option>None</option>";
+        config[team].opps.forEach(o => oppS.add(new Option(o,o)));
+        config[team].players.forEach(p => pS.add(new Option(p,p)));
+    }
+
+    function addMatch() {
+        const m = {
+            t: document.getElementById('myTeam').value,
+            o: document.getElementById('opponent').value,
+            h: parseInt(document.getElementById('hScore').value),
+            a: parseInt(document.getElementById('aScore').value),
+            s: document.getElementById('scorer').value
+        };
+        let h = JSON.parse(localStorage.getItem('matches') || "[]");
+        h.push(m);
+        localStorage.setItem('matches', JSON.stringify(h));
+        render();
+    }
+
+    function render() {
+        const h = JSON.parse(localStorage.getItem('matches') || "[]");
+        const tbody = document.querySelector("#resultsTable tbody");
+        tbody.innerHTML = "";
+        
+        let wins = 0, goals = 0;
+        h.reverse().forEach(x => {
+            let r = tbody.insertRow();
+            r.innerHTML = `<td><span class="team-tag">${x.t}</span></td><td>${x.o}</td><td>${x.h}-${x.a}</td><td>${x.s}</td>`;
+            if(x.h > x.a) wins++;
+            if(x.s === "Your Son") goals++;
+        });
+
+        document.getElementById('totalMatches').innerText = h.length;
+        document.getElementById('totalWins').innerText = wins;
+        document.getElementById('totalGoals').innerText = goals;
+    }
+
+    function downloadFullHTML() {
+        // This takes the current page and makes a copy
+        const pageContent = document.documentElement.outerHTML;
+        const blob = new Blob([pageContent], { type: 'text/html' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Football_Stats_${new Date().toLocaleDateString()}.html`;
+        a.click();
+    }
+
+    function clearData() { if(confirm("Clear history?")) { localStorage.clear(); render(); } }
+
+    updateUI(); render();
+</script>
+</body>
+</html>
 
         <div>
             <label>Llanelli/Dunvant Score:</label>
