@@ -66,8 +66,6 @@
         /* TABLES */
         table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 0.85rem; }
         th, td { padding: 10px 5px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
-
-        /* Mobile Optimization for Stats Table */
         #leagueTable th, #leagueTable td { padding: 8px 2px; font-size: 0.8rem; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -101,6 +99,13 @@
         </div>
 
         <div class="form-group">
+            <label>🏆 Competition / Type:</label>
+            <select id="tournSelect" style="font-weight:bold; border:2px solid var(--border);">
+                <option value="">League / Friendly (Standard)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
             <label>Opponent:</label>
             <select id="oppList"></select>
         </div>
@@ -109,14 +114,8 @@
             <select id="managerSelect"></select>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-            <div>
-                <label>Our Score:</label>
-                <input type="number" id="hS" value="0" min="0" oninput="updateScorerInputs()">
-            </div>
-            <div>
-                <label>Opp Score:</label>
-                <input type="number" id="aS" value="0" min="0">
-            </div>
+            <div><label>Our Score:</label><input type="number" id="hS" value="0" min="0" oninput="updateScorerInputs()"></div>
+            <div><label>Opp Score:</label><input type="number" id="aS" value="0" min="0"></div>
         </div>
         
         <div id="scorerContainer" class="form-group"></div>
@@ -137,19 +136,8 @@
             </div>
             <p id="j-record" style="margin-top:10px; font-size:0.85rem;">0W - 0D - 0L</p>
         </div>
-        
         <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">📊 Stats by Team</h3>
-        <table id="leagueTable">
-            <thead>
-                <tr>
-                    <th style="text-align:left">Team</th>
-                    <th>P</th><th>W</th><th>D</th><th>L</th>
-                    <th>GF</th><th>GA</th><th>GD</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-        
+        <table id="leagueTable"><thead><tr><th style="text-align:left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th></tr></thead><tbody></tbody></table>
         <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">⚽ Top Scorers</h3>
         <table id="scorerTable"><thead><tr><th>Player</th><th>Team</th><th>Goals</th></tr></thead><tbody></tbody></table>
     </div>
@@ -157,6 +145,16 @@
     <div id="admin" class="tab-content">
         <p style="text-align:center; opacity:0.7; font-size:0.9rem;">Currently Managing: <b id="adminTeamLabel"></b></p>
         
+        <div style="background: rgba(255, 215, 0, 0.1); padding:10px; border-radius:8px; border:1px solid #FFD700; margin-bottom:20px;">
+            <label style="color:#B8860B;"><strong>🏆 Tournament Manager</strong></label>
+            <div style="display:flex; gap:10px; align-items:center; margin-top:5px; margin-bottom:10px;">
+                <input type="text" id="newTournName" placeholder="e.g. Summer Cup 2025">
+                <button class="btn-tool" style="background:#B8860B" onclick="addTournament()">Create</button>
+            </div>
+            <ul id="activeTournList" style="padding:0; list-style:none;"></ul>
+            <small style="opacity:0.6">Active tournaments appear on Match Day. Archive them when finished.</small>
+        </div>
+
         <div style="background: rgba(0,0,0,0.03); padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px;">
             <label><strong>🆕 Career Moves</strong></label>
             <div style="display:flex; gap:10px; align-items:center; margin-top:5px; margin-bottom:15px;">
@@ -165,28 +163,15 @@
                 <button class="btn-tool" style="background:#28a745" onclick="joinTeam()">Join Team</button>
             </div>
             <button class="btn-tool" style="background:#dc3545; width:100%;" onclick="leaveCurrentTeam()">👋 Leave Current Team</button>
-            
             <div id="pastTeamsSection" style="margin-top:15px; display:none;">
                 <label style="border-top:1px solid var(--border); padding-top:10px;">📜 Past Teams</label>
                 <ul id="pastTeamsList" style="padding:0; list-style:none;"></ul>
             </div>
         </div>
 
-        <div class="form-group">
-            <label>Add Player:</label>
-            <div style="display:flex; gap:5px;"><input type="text" id="newPlayerName"><button class="btn-tool" onclick="addItem('players','newPlayerName')">Add</button></div>
-            <ul id="playerList" style="padding:0; list-style:none;"></ul>
-        </div>
-        <div class="form-group">
-            <label>Add Coach:</label>
-            <div style="display:flex; gap:5px;"><input type="text" id="newCoachName"><button class="btn-tool" onclick="addItem('coaches','newCoachName')">Add</button></div>
-            <ul id="coachList" style="padding:0; list-style:none;"></ul>
-        </div>
-        <div class="form-group">
-            <label>Add Opponent:</label>
-            <div style="display:flex; gap:5px;"><input type="text" id="newOppName"><button class="btn-tool" onclick="addItem('opps','newOppName')">Add</button></div>
-            <ul id="oppListAdmin" style="padding:0; list-style:none;"></ul>
-        </div>
+        <div class="form-group"><label>Add Player:</label><div style="display:flex; gap:5px;"><input type="text" id="newPlayerName"><button class="btn-tool" onclick="addItem('players','newPlayerName')">Add</button></div><ul id="playerList" style="padding:0; list-style:none;"></ul></div>
+        <div class="form-group"><label>Add Coach:</label><div style="display:flex; gap:5px;"><input type="text" id="newCoachName"><button class="btn-tool" onclick="addItem('coaches','newCoachName')">Add</button></div><ul id="coachList" style="padding:0; list-style:none;"></ul></div>
+        <div class="form-group"><label>Add Opponent:</label><div style="display:flex; gap:5px;"><input type="text" id="newOppName"><button class="btn-tool" onclick="addItem('opps','newOppName')">Add</button></div><ul id="oppListAdmin" style="padding:0; list-style:none;"></ul></div>
         
         <div style="margin-top:30px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <button class="btn-tool" style="background:#28a745" onclick="exportData()">💾 Export Data</button>
@@ -202,103 +187,84 @@
     <div class="modal-content">
         <span class="close-guide" onclick="closeGuide()">&times;</span>
         <h2 style="color:var(--team-primary);">📖 User Guide</h2>
-        <p><strong>1. Scoring:</strong> Enter "Our Score" first. The app will create a dropdown for each goal so you can say who scored it!</p>
-        <p><strong>2. Coaches:</strong> The Coach/Manager for each game is now saved and shown in the match history list.</p>
-        <p><strong>3. Teams:</strong> Use the colored buttons to switch teams. Use Admin to Join or Leave teams.</p>
-        <p><strong>4. Backup:</strong> Regular backups are recommended using the 'Save as Offline Webpage' button.</p>
+        <p><strong>1. Tournaments (NEW):</strong> Go to Admin to Create a Tournament. Select it on Match Day to group games together. Archive it when done.</p>
+        <p><strong>2. Scoring:</strong> Enter "Our Score" to add specific scorers for each goal.</p>
+        <p><strong>3. Teams:</strong> Use Admin to Join/Leave teams. History is kept safe.</p>
+        <p><strong>4. Backup:</strong> Regular backups are recommended.</p>
         <button class="btn-add" onclick="closeGuide()">Understood!</button>
     </div>
 </div>
 
 <script>
     const defaultData = {
-        "Llanelli Town": { active: true, color: "#d32f2f", opps: ["Garden Village", "Carmarthen"], players: ["Joey"], coaches: ["Coach A"] },
-        "Dunvant": { active: true, color: "#fdd835", opps: ["Mumbles", "South Gower"], players: ["Joey"], coaches: ["Manager 1"] }
+        "Llanelli Town": { active: true, color: "#d32f2f", opps: ["Garden Village", "Carmarthen"], players: ["Joey"], coaches: ["Coach A"], tournaments: [] },
+        "Dunvant": { active: true, color: "#fdd835", opps: ["Mumbles", "South Gower"], players: ["Joey"], coaches: ["Manager 1"], tournaments: [] }
     };
 
-    let appData = JSON.parse(localStorage.getItem('footy_data_v10')) || defaultData;
-    let history = JSON.parse(localStorage.getItem('footy_history_v10') || "[]");
-    
+    let appData = JSON.parse(localStorage.getItem('footy_data_v11')) || defaultData;
+    let history = JSON.parse(localStorage.getItem('footy_history_v11')) || "[]";
     let activeTeam = Object.keys(appData).find(t => appData[t].active) || Object.keys(appData)[0];
 
-    // --- DYNAMIC SCORER DROPDOWNS ---
+    // --- TOURNAMENT LOGIC ---
+    function addTournament() {
+        const name = document.getElementById('newTournName').value.trim();
+        if(!name) return alert("Enter tournament name");
+        
+        if(!appData[activeTeam].tournaments) appData[activeTeam].tournaments = [];
+        appData[activeTeam].tournaments.push({ name: name, active: true });
+        saveData();
+        document.getElementById('newTournName').value = "";
+        renderAdminLists(); loadMatchOptions();
+    }
+
+    function archiveTournament(idx) {
+        if(confirm("Finish and archive this tournament? It will hide from the Match Day list.")) {
+            appData[activeTeam].tournaments[idx].active = false;
+            saveData(); renderAdminLists(); loadMatchOptions();
+        }
+    }
+
+    // --- SCORER UI ---
     function updateScorerInputs() {
         const score = parseInt(document.getElementById('hS').value) || 0;
         const container = document.getElementById('scorerContainer');
         container.innerHTML = ""; 
-
         if(score > 0) {
-            const title = document.createElement('label');
-            title.innerText = "Goal Scorers:";
-            title.style.marginBottom = "5px";
-            container.appendChild(title);
-
+            const title = document.createElement('label'); title.innerText = "Goal Scorers:"; title.style.marginBottom = "5px"; container.appendChild(title);
             for(let i=1; i<=score; i++) {
-                const div = document.createElement('div');
-                div.className = "scorer-input-group";
-                
-                const label = document.createElement('span');
-                label.className = "scorer-label";
-                label.innerText = `Goal ${i}:`;
-                
-                const select = document.createElement('select');
-                select.className = "dynamic-scorer-select";
-                
-                if(appData[activeTeam]) {
-                    appData[activeTeam].players.forEach(p => select.add(new Option(p,p)));
-                }
-                
-                div.appendChild(label);
-                div.appendChild(select);
-                container.appendChild(div);
+                const div = document.createElement('div'); div.className = "scorer-input-group";
+                const label = document.createElement('span'); label.className = "scorer-label"; label.innerText = `Goal ${i}:`;
+                const select = document.createElement('select'); select.className = "dynamic-scorer-select";
+                if(appData[activeTeam]) { appData[activeTeam].players.forEach(p => select.add(new Option(p,p))); }
+                div.appendChild(label); div.appendChild(select); container.appendChild(div);
             }
         }
     }
 
     function renderTeamButtons() {
-        const container = document.getElementById('teamSwitcherContainer');
-        container.innerHTML = "";
-        let hasActive = false;
-
+        const container = document.getElementById('teamSwitcherContainer'); container.innerHTML = ""; let hasActive = false;
         Object.keys(appData).forEach(teamName => {
             const teamData = appData[teamName];
             if (typeof teamData.active === 'undefined') teamData.active = true;
-
             if (teamData.active) {
                 hasActive = true;
-                const btn = document.createElement('button');
-                btn.className = 'team-select-btn';
-                let txtColor = '#fff';
-                if(teamData.color === '#fdd835') txtColor = '#1b5e20'; 
-                
-                btn.style.backgroundColor = teamData.color;
-                btn.style.color = txtColor;
-                btn.innerHTML = teamName;
-                
-                if(teamName === activeTeam) {
-                    btn.classList.add('active');
-                    updateTheme(teamData.color, txtColor);
-                }
-                btn.onclick = () => setActiveTeam(teamName);
-                container.appendChild(btn);
+                const btn = document.createElement('button'); btn.className = 'team-select-btn';
+                let txtColor = '#fff'; if(teamData.color === '#fdd835') txtColor = '#1b5e20'; 
+                btn.style.backgroundColor = teamData.color; btn.style.color = txtColor; btn.innerHTML = teamName;
+                if(teamName === activeTeam) { btn.classList.add('active'); updateTheme(teamData.color, txtColor); }
+                btn.onclick = () => setActiveTeam(teamName); container.appendChild(btn);
             }
         });
-
         if(!hasActive) container.innerHTML = "<small>No active teams. Add one in Admin!</small>";
         renderPastTeams();
     }
 
     function renderPastTeams() {
-        const list = document.getElementById('pastTeamsSection');
-        const ul = document.getElementById('pastTeamsList');
-        ul.innerHTML = "";
-        let count = 0;
-
+        const list = document.getElementById('pastTeamsSection'); const ul = document.getElementById('pastTeamsList'); ul.innerHTML = ""; let count = 0;
         Object.keys(appData).forEach(teamName => {
             if (!appData[teamName].active) {
                 count++;
-                const li = document.createElement('li');
-                li.style = "display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border)";
+                const li = document.createElement('li'); li.style = "display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border)";
                 li.innerHTML = `<span>${teamName}</span> <button class="btn-tool" style="font-size:0.7rem;" onclick="rejoinTeam('${teamName}')">Re-Join</button>`;
                 ul.appendChild(li);
             }
@@ -306,93 +272,67 @@
         list.style.display = count > 0 ? "block" : "none";
     }
 
-    function setActiveTeam(teamName) {
-        activeTeam = teamName;
-        renderTeamButtons(); 
-        loadMatchOptions();
-        renderAdminLists();
-    }
-
-    function updateTheme(primary, btnText) {
-        const root = document.documentElement;
-        root.style.setProperty('--team-primary', primary);
-        root.style.setProperty('--btn-text', btnText);
-    }
+    function setActiveTeam(teamName) { activeTeam = teamName; renderTeamButtons(); loadMatchOptions(); renderAdminLists(); }
+    function updateTheme(primary, btnText) { const root = document.documentElement; root.style.setProperty('--team-primary', primary); root.style.setProperty('--btn-text', btnText); }
 
     function joinTeam() {
-        const name = document.getElementById('newTeamName').value.trim();
-        const color = document.getElementById('newTeamColor').value;
-        if(!name) return alert("Enter a team name");
-        if(appData[name] && appData[name].active) return alert("You are already in this team!");
-        
-        if (appData[name]) {
-            appData[name].active = true;
-            appData[name].color = color;
-        } else {
-            appData[name] = { active: true, color: color, opps: [], players: ["Joey"], coaches: [] };
-        }
-        
-        saveData();
-        document.getElementById('newTeamName').value = "";
-        setActiveTeam(name);
-        alert(`Joined ${name}!`);
+        const name = document.getElementById('newTeamName').value.trim(); const color = document.getElementById('newTeamColor').value;
+        if(!name) return alert("Enter team name"); if(appData[name] && appData[name].active) return alert("Already joined!");
+        if (appData[name]) { appData[name].active = true; appData[name].color = color; } 
+        else { appData[name] = { active: true, color: color, opps: [], players: ["Joey"], coaches: [], tournaments: [] }; }
+        saveData(); document.getElementById('newTeamName').value = ""; setActiveTeam(name); alert(`Joined ${name}!`);
     }
 
     function leaveCurrentTeam() {
-        if(!confirm(`Leave ${activeTeam}? It will be moved to 'Past Teams'. History is saved.`)) return;
-        appData[activeTeam].active = false;
-        saveData();
+        if(!confirm(`Leave ${activeTeam}? Moved to Past Teams.`)) return;
+        appData[activeTeam].active = false; saveData();
         const nextTeam = Object.keys(appData).find(t => appData[t].active);
-        if (nextTeam) setActiveTeam(nextTeam);
-        else renderTeamButtons();
+        if (nextTeam) setActiveTeam(nextTeam); else renderTeamButtons();
     }
 
-    function rejoinTeam(teamName) {
-        appData[teamName].active = true;
-        saveData();
-        setActiveTeam(teamName);
-    }
+    function rejoinTeam(teamName) { appData[teamName].active = true; saveData(); setActiveTeam(teamName); }
 
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-        document.getElementById(tabId).classList.add('active');
-        document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        document.getElementById(tabId).classList.add('active'); document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
         if(tabId === 'stats') calculateStats();
     }
 
     function loadMatchOptions() {
-        const oppS = document.getElementById('oppList'), mgrS = document.getElementById('managerSelect');
+        const oppS = document.getElementById('oppList'), mgrS = document.getElementById('managerSelect'), tournS = document.getElementById('tournSelect');
         oppS.innerHTML = ""; mgrS.innerHTML = "<option>None</option>";
+        // Reset Tournaments options but keep the default one
+        tournS.innerHTML = '<option value="">League / Friendly (Standard)</option>';
+        
         if(appData[activeTeam]) {
             appData[activeTeam].opps.forEach(o => oppS.add(new Option(o,o)));
             appData[activeTeam].coaches.forEach(c => mgrS.add(new Option(c,c)));
+            // Load Active Tournaments
+            if(appData[activeTeam].tournaments) {
+                appData[activeTeam].tournaments.forEach(t => {
+                    if(t.active) tournS.add(new Option("🏆 " + t.name, t.name));
+                });
+            }
         }
         updateScorerInputs();
     }
 
     function saveMatch() {
-        const scorerInputs = document.querySelectorAll('.dynamic-scorer-select');
-        let scorers = [];
+        const scorerInputs = document.querySelectorAll('.dynamic-scorer-select'); let scorers = [];
         scorerInputs.forEach(input => scorers.push(input.value));
-        
         const entry = { 
             t: activeTeam, 
             o: document.getElementById('oppList').value, 
+            tourn: document.getElementById('tournSelect').value, // Capture Tournament
             h: parseInt(document.getElementById('hS').value) || 0, 
             a: parseInt(document.getElementById('aS').value) || 0, 
             s: scorers, 
             coach: document.getElementById('managerSelect').value 
         };
-        
-        history.push(entry); localStorage.setItem('footy_history_v10', JSON.stringify(history));
+        history.push(entry); localStorage.setItem('footy_history_v11', JSON.stringify(history));
         renderHistory(); 
-        
-        document.getElementById('hS').value = 0;
-        document.getElementById('aS').value = 0;
-        updateScorerInputs(); 
-        
-        alert("Match Saved!");
+        document.getElementById('hS').value = 0; document.getElementById('aS').value = 0; updateScorerInputs(); alert("Match Saved!");
     }
 
     function renderHistory() {
@@ -400,99 +340,63 @@
         let w = 0, g = 0;
         [...history].reverse().forEach(x => {
             let row = tbody.insertRow();
-            let tm = appData[x.t];
-            let c = tm ? tm.color : '#666'; 
-            let tc = '#fff'; if(c === '#fdd835') tc = '#1b5e20';
+            let tm = appData[x.t]; let c = tm ? tm.color : '#666'; let tc = '#fff'; if(c === '#fdd835') tc = '#1b5e20';
+            
+            // Format Tournament Label
+            let tournLabel = x.tourn ? `<br><span style="color:#B8860B; font-weight:bold; font-size:0.7rem">🏆 ${x.tourn}</span>` : "";
 
-            row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span><br>vs ${x.o}<br><small style="opacity:0.65; font-size:0.7rem;">Mgr: ${x.coach || '-'}</small>`;
+            row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span>${tournLabel}<br>vs ${x.o}<br><small style="opacity:0.65; font-size:0.7rem;">Mgr: ${x.coach || '-'}</small>`;
             row.insertCell(1).innerHTML = `<b>${x.h}-${x.a}</b>`; 
             
             let scorerText = "-";
-            if(Array.isArray(x.s) && x.s.length > 0) {
-                scorerText = x.s.join(', ');
-            } else if (typeof x.s === 'string') {
-                scorerText = x.s;
-            }
+            if(Array.isArray(x.s) && x.s.length > 0) scorerText = x.s.join(', ');
+            else if (typeof x.s === 'string') scorerText = x.s;
             row.insertCell(2).innerHTML = `<small>${scorerText}</small>`;
             
             if (x.t === activeTeam) {
                  if(x.h > x.a) w++; 
-                 if(Array.isArray(x.s)) {
-                     x.s.forEach(player => { if(player === "Joey") g++; });
-                 } else if (x.s === "Joey") {
-                     g++;
-                 }
+                 if(Array.isArray(x.s)) { x.s.forEach(p => { if(p === "Joey") g++; }); } else if (x.s === "Joey") g++;
             }
         });
-        
         const teamHistory = history.filter(h => h.t === activeTeam);
         document.getElementById('st-m').innerText = teamHistory.length;
         document.getElementById('st-w').innerText = teamHistory.filter(h => h.h > h.a).length;
-        
         let activeGoals = 0;
-        teamHistory.forEach(h => {
-             if(Array.isArray(h.s)) {
-                 h.s.forEach(p => { if(p === "Joey") activeGoals++; });
-             } else if(h.s === "Joey") {
-                 activeGoals++;
-             }
-        });
+        teamHistory.forEach(h => { if(Array.isArray(h.s)) { h.s.forEach(p => { if(p === "Joey") activeGoals++; }); } else if(h.s === "Joey") activeGoals++; });
         document.getElementById('st-g').innerText = activeGoals;
     }
 
     function calculateStats() {
         let jP = 0, jW = 0, jD = 0, jL = 0, jG = 0, teams = {}, scorers = {};
-        
         history.forEach(m => {
-            jP++; 
-            if(m.h > m.a) jW++; else if(m.h === m.a) jD++; else jL++; 
-            
-            // Calculate GF/GA/GD
+            jP++; if(m.h > m.a) jW++; else if(m.h === m.a) jD++; else jL++; 
             if(!teams[m.t]) teams[m.t] = { p:0, w:0, d:0, l:0, gf:0, ga:0 }; 
-            let t = teams[m.t]; 
-            t.p++; 
-            t.gf += m.h; // Home is US
-            t.ga += m.a; // Away is THEM
+            let t = teams[m.t]; t.p++; t.gf += m.h; t.ga += m.a; if(m.h > m.a) t.w++; else if(m.h === m.a) t.d++; else t.l++;
             
-            if(m.h > m.a) t.w++; else if(m.h === m.a) t.d++; else t.l++;
-            
-            if(Array.isArray(m.s)) {
-                m.s.forEach(p => {
-                    if(p === "Joey") jG++;
-                    let key = `${p}|${m.t}`;
-                    scorers[key] = (scorers[key] || 0) + 1;
-                });
-            } else if (m.s !== "None") {
-                if(m.s === "Joey") jG++;
-                let key = `${m.s}|${m.t}`;
-                scorers[key] = (scorers[key] || 0) + 1;
-            }
+            const handleScorer = (p) => {
+                if(p === "Joey") jG++;
+                let key = `${p}|${m.t}`; scorers[key] = (scorers[key] || 0) + 1;
+            };
+            if(Array.isArray(m.s)) m.s.forEach(handleScorer); else if (m.s !== "None") handleScorer(m.s);
         });
-
-        document.getElementById('j-played').innerText = jP; 
-        document.getElementById('j-wins').innerText = jW; 
-        document.getElementById('j-goals').innerText = jG;
-        document.getElementById('j-record').innerText = `${jW}W - ${jD}D - ${jL}L`; 
-        document.getElementById('j-perc').innerText = jP > 0 ? Math.round((jW/jP)*100) + "%" : "0%";
+        document.getElementById('j-played').innerText = jP; document.getElementById('j-wins').innerText = jW; document.getElementById('j-goals').innerText = jG;
+        document.getElementById('j-record').innerText = `${jW}W - ${jD}D - ${jL}L`; document.getElementById('j-perc').innerText = jP > 0 ? Math.round((jW/jP)*100) + "%" : "0%";
         
         const lb = document.querySelector("#leagueTable tbody"); lb.innerHTML = "";
         Object.entries(teams).forEach(([n, t]) => { 
             let status = (appData[n] && !appData[n].active) ? " (Past)" : "";
-            lb.insertRow().innerHTML = `<td style="text-align:left">${n}${status}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf}</td><td>${t.ga}</td><td>${t.gf - t.ga}</td>`; 
+            lb.insertRow().innerHTML = `<td style="text-align:left">${n}${status}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf}</td><td>${t.ga}</td><td>${t.gf-t.ga}</td>`; 
         });
-        
         const sb = document.querySelector("#scorerTable tbody"); sb.innerHTML = "";
         Object.entries(scorers).sort((a,b)=>b[1]-a[1]).forEach(([key, g]) => { 
-            let [name, team] = key.split('|');
-            sb.insertRow().innerHTML = `<td>${name}</td><td style="font-size:0.75rem; opacity:0.7;">${team}</td><td>${g}</td>`; 
+            let [name, team] = key.split('|'); sb.insertRow().innerHTML = `<td>${name}</td><td style="font-size:0.75rem; opacity:0.7;">${team}</td><td>${g}</td>`; 
         });
     }
 
     function renderAdminLists() {
         document.getElementById('adminTeamLabel').innerText = activeTeam;
         ['players', 'coaches', 'opps'].forEach(cat => {
-            const el = document.getElementById(cat === 'players' ? 'playerList' : cat === 'coaches' ? 'coachList' : 'oppListAdmin');
-            el.innerHTML = "";
+            const el = document.getElementById(cat === 'players' ? 'playerList' : cat === 'coaches' ? 'coachList' : 'oppListAdmin'); el.innerHTML = "";
             if(appData[activeTeam] && appData[activeTeam][cat]) {
                 appData[activeTeam][cat].forEach((item, idx) => {
                     const li = document.createElement('li'); li.style = "display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border)";
@@ -501,51 +405,33 @@
                 });
             }
         });
+
+        // Render Tournament Admin List
+        const tournList = document.getElementById('activeTournList'); tournList.innerHTML = "";
+        if(appData[activeTeam].tournaments) {
+            appData[activeTeam].tournaments.forEach((t, idx) => {
+                if(t.active) {
+                    const li = document.createElement('li'); li.style = "display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #FFD700; background:rgba(255,215,0,0.05);";
+                    li.innerHTML = `<span>🏆 ${t.name}</span><button class="btn-tool" style="font-size:0.7rem; background:#444;" onclick="archiveTournament(${idx})">Finish & Archive</button>`;
+                    tournList.appendChild(li);
+                }
+            });
+        }
     }
 
-    function addItem(cat, id) { 
-        const val = document.getElementById(id).value; 
-        if(val) { appData[activeTeam][cat].push(val); saveData(); document.getElementById(id).value = ""; renderAdminLists(); loadMatchOptions(); }
-    }
-    
-    function deleteItem(cat, idx) { 
-        appData[activeTeam][cat].splice(idx, 1);
-        saveData(); renderAdminLists(); loadMatchOptions(); 
-    }
-
-    function saveData() { localStorage.setItem('footy_data_v10', JSON.stringify(appData)); }
-
-    function exportData() {
-        const out = { data: appData, history: history };
-        const blob = new Blob([JSON.stringify(out)], {type: 'application/json'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `JoeyStats_Backup.json`; a.click();
-    }
-
-    function importData(e) {
-        const reader = new FileReader(); reader.onload = (event) => {
-            const imported = JSON.parse(event.target.result); appData = imported.data; history = imported.history;
-            localStorage.setItem('footy_data_v10', JSON.stringify(appData)); localStorage.setItem('footy_history_v10', JSON.stringify(history));
-            location.reload();
-        }; reader.readAsText(e.target.files[0]);
-    }
-    
-    function saveFullWebsiteHTML() {
-        let htmlContent = document.documentElement.outerHTML;
-        const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v10', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v10', JSON.stringify(injectedHistory));`;
-        htmlContent = htmlContent.replace('const defaultData = {', dataInjection + ' const ignore = {');
-        const blob = new Blob([htmlContent], {type: 'text/html'});
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Joey_Full_Website_Backup.html`; a.click();
-    }
-
+    function addItem(cat, id) { const val = document.getElementById(id).value; if(val) { appData[activeTeam][cat].push(val); saveData(); document.getElementById(id).value = ""; renderAdminLists(); loadMatchOptions(); } }
+    function deleteItem(cat, idx) { appData[activeTeam][cat].splice(idx, 1); saveData(); renderAdminLists(); loadMatchOptions(); }
+    function saveData() { localStorage.setItem('footy_data_v11', JSON.stringify(appData)); }
+    function exportData() { const out = { data: appData, history: history }; const blob = new Blob([JSON.stringify(out)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `JoeyStats_Backup.json`; a.click(); }
+    function importData(e) { const reader = new FileReader(); reader.onload = (event) => { const imported = JSON.parse(event.target.result); appData = imported.data; history = imported.history; localStorage.setItem('footy_data_v11', JSON.stringify(appData)); localStorage.setItem('footy_history_v11', JSON.stringify(history)); location.reload(); }; reader.readAsText(e.target.files[0]); }
+    function saveFullWebsiteHTML() { let htmlContent = document.documentElement.outerHTML; const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v11', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v11', JSON.stringify(injectedHistory));`; htmlContent = htmlContent.replace('const defaultData = {', dataInjection + ' const ignore = {'); const blob = new Blob([htmlContent], {type: 'text/html'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Joey_Full_Website_Backup.html`; a.click(); }
     function resetAll() { if(confirm("Factory Reset? This deletes EVERYTHING.")) { localStorage.clear(); location.reload(); } }
     function toggleTheme() { const b = document.body; b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
     function showGuide() { document.getElementById('guideModal').style.display = "block"; }
     function closeGuide() { document.getElementById('guideModal').style.display = "none"; }
 
     // Init App
-    renderTeamButtons();
-    if(activeTeam) setActiveTeam(activeTeam);
-    renderHistory();
+    renderTeamButtons(); if(activeTeam) setActiveTeam(activeTeam); renderHistory();
 </script>
 </body>
 </html>
