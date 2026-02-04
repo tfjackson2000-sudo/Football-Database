@@ -18,7 +18,7 @@
         /* HEADER */
         .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         
-        /* TEAM SWITCHER - FIXED LAYOUT */
+        /* TEAM SWITCHER */
         .team-switcher { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
         .team-select-btn { flex: 1; min-width: 120px; padding: 12px; border: 2px solid transparent; border-radius: 8px; font-weight: bold; cursor: pointer; opacity: 0.5; transition: 0.2s; filter: grayscale(0.5); }
         .team-select-btn.active { opacity: 1; transform: scale(1.02); filter: grayscale(0); border-color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
@@ -35,7 +35,7 @@
         .stat-box { background: var(--team-primary); color: var(--btn-text); padding: 12px 5px; border-radius: 8px; font-size: 0.75rem; text-transform: uppercase; border: 1px solid rgba(0,0,0,0.1); }
         .stat-box b { display: block; font-size: 1.5rem; margin-bottom: 2px; }
 
-        /* FORMS */
+        /* FORM */
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
         select, input { width: 100%; padding: 12px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
@@ -44,10 +44,15 @@
         .btn-tool { background: #6c757d; color: white; padding: 8px 12px; font-size: 0.8rem; }
         .tag { font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; }
 
-        /* JOEY CARD */
-        .joey-card { background: var(--team-primary); color: var(--btn-text); padding: 20px; border-radius: 12px; text-align: center; }
+        /* JOEY CARD - NEUTRAL / GOLD THEME */
+        .joey-card { 
+            background: linear-gradient(135deg, #FFD700, #DAA520); /* Gold Gradient */
+            color: #333; /* Dark text for contrast on gold */
+            padding: 20px; border-radius: 12px; text-align: center; 
+            box-shadow: 0 4px 10px rgba(218, 165, 32, 0.3);
+        }
         .joey-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 15px; }
-        .joey-stat { background: rgba(255,255,255,0.2); padding: 8px 2px; border-radius: 8px; }
+        .joey-stat { background: rgba(255,255,255,0.4); padding: 8px 2px; border-radius: 8px; }
         .joey-stat strong { display: block; font-size: 1.1rem; }
 
         /* MODAL */
@@ -112,7 +117,7 @@
 
     <div id="stats" class="tab-content">
         <div class="joey-card">
-            <h3 style="margin:0;">👤 Career Performance</h3>
+            <h3 style="margin:0;">🏆 All-Time Career</h3>
             <div class="joey-grid">
                 <div class="joey-stat"><span>Games</span><strong id="j-played">0</strong></div>
                 <div class="joey-stat"><span>Wins</span><strong id="j-wins">0</strong></div>
@@ -121,10 +126,12 @@
             </div>
             <p id="j-record" style="margin-top:10px; font-size:0.85rem;">0W - 0D - 0L</p>
         </div>
-        <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">🏆 Stats by Team</h3>
+        
+        <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">📊 Stats by Team</h3>
         <table id="leagueTable"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th></tr></thead><tbody></tbody></table>
+        
         <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">⚽ Top Scorers</h3>
-        <table id="scorerTable"><thead><tr><th>Player</th><th>Goals</th></tr></thead><tbody></tbody></table>
+        <table id="scorerTable"><thead><tr><th>Player</th><th>Team</th><th>Goals</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="admin" class="tab-content">
@@ -132,13 +139,11 @@
         
         <div style="background: rgba(0,0,0,0.03); padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px;">
             <label><strong>🆕 Career Moves</strong></label>
-            
             <div style="display:flex; gap:10px; align-items:center; margin-top:5px; margin-bottom:15px;">
                 <input type="text" id="newTeamName" placeholder="New Team Name">
                 <input type="color" id="newTeamColor" value="#0000ff" style="width:50px; padding:2px; height:45px;">
                 <button class="btn-tool" style="background:#28a745" onclick="joinTeam()">Join Team</button>
             </div>
-            
             <button class="btn-tool" style="background:#dc3545; width:100%;" onclick="leaveCurrentTeam()">👋 Leave Current Team</button>
             
             <div id="pastTeamsSection" style="margin-top:15px; display:none;">
@@ -178,25 +183,22 @@
         <span class="close-guide" onclick="closeGuide()">&times;</span>
         <h2 style="color:var(--team-primary);">📖 User Guide</h2>
         <p><strong>1. Active Teams:</strong> The colored buttons at the top show the teams Joey is currently playing for.</p>
-        <p><strong>2. Career Moves:</strong> Go to <strong>Admin</strong> to "Join" a new team or "Leave" a current one. 
-        <br><em>Note: When you leave a team, it disappears from the top buttons, but your match history and stats are saved forever!</em></p>
-        <p><strong>3. Past Teams:</strong> You can see (and re-join) old teams in the Admin section under "Past Teams".</p>
+        <p><strong>2. Career Moves:</strong> Use <strong>Admin</strong> to Join/Leave teams. History is never deleted.</p>
+        <p><strong>3. Scorer Stats:</strong> The Career Stats tab now splits goals by team (e.g., Joey (Llanelli) vs. Joey (Dunvant)).</p>
         <p><strong>4. Backup:</strong> Regular backups are recommended using the 'Save as Offline Webpage' button.</p>
         <button class="btn-add" onclick="closeGuide()">Understood!</button>
     </div>
 </div>
 
 <script>
-    // New Data Structure: 'active' flag added to teams
     const defaultData = {
         "Llanelli Town": { active: true, color: "#d32f2f", opps: ["Garden Village", "Carmarthen"], players: ["Joey"], coaches: ["Coach A"] },
         "Dunvant": { active: true, color: "#fdd835", opps: ["Mumbles", "South Gower"], players: ["Joey"], coaches: ["Manager 1"] }
     };
 
-    let appData = JSON.parse(localStorage.getItem('footy_data_v8')) || defaultData;
-    let history = JSON.parse(localStorage.getItem('footy_history_v8') || "[]");
+    let appData = JSON.parse(localStorage.getItem('footy_data_v9')) || defaultData;
+    let history = JSON.parse(localStorage.getItem('footy_history_v9') || "[]");
     
-    // Set first active team as default
     let activeTeam = Object.keys(appData).find(t => appData[t].active) || Object.keys(appData)[0];
 
     function renderTeamButtons() {
@@ -206,8 +208,6 @@
 
         Object.keys(appData).forEach(teamName => {
             const teamData = appData[teamName];
-            
-            // MIGRATION: If 'active' property is missing (from older version), assume true
             if (typeof teamData.active === 'undefined') teamData.active = true;
 
             if (teamData.active) {
@@ -215,7 +215,7 @@
                 const btn = document.createElement('button');
                 btn.className = 'team-select-btn';
                 let txtColor = '#fff';
-                if(teamData.color === '#fdd835') txtColor = '#1b5e20'; // Dunvant fix
+                if(teamData.color === '#fdd835') txtColor = '#1b5e20'; 
                 
                 btn.style.backgroundColor = teamData.color;
                 btn.style.color = txtColor;
@@ -249,7 +249,6 @@
                 ul.appendChild(li);
             }
         });
-
         list.style.display = count > 0 ? "block" : "none";
     }
 
@@ -266,17 +265,15 @@
         root.style.setProperty('--btn-text', btnText);
     }
 
-    // --- CAREER MANAGEMENT ---
     function joinTeam() {
         const name = document.getElementById('newTeamName').value.trim();
         const color = document.getElementById('newTeamColor').value;
         if(!name) return alert("Enter a team name");
         if(appData[name] && appData[name].active) return alert("You are already in this team!");
         
-        // If team exists (archived), re-activate it. If new, create it.
         if (appData[name]) {
             appData[name].active = true;
-            appData[name].color = color; // Update color just in case
+            appData[name].color = color;
         } else {
             appData[name] = { active: true, color: color, opps: [], players: ["Joey"], coaches: [] };
         }
@@ -289,14 +286,11 @@
 
     function leaveCurrentTeam() {
         if(!confirm(`Leave ${activeTeam}? It will be moved to 'Past Teams'. History is saved.`)) return;
-        
         appData[activeTeam].active = false;
         saveData();
-        
-        // Switch to another active team if possible
         const nextTeam = Object.keys(appData).find(t => appData[t].active);
         if (nextTeam) setActiveTeam(nextTeam);
-        else renderTeamButtons(); // Will show empty state
+        else renderTeamButtons();
     }
 
     function rejoinTeam(teamName) {
@@ -305,7 +299,6 @@
         setActiveTeam(teamName);
     }
 
-    // --- EXISTING LOGIC ---
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -326,7 +319,7 @@
 
     function saveMatch() {
         const entry = { t: activeTeam, o: document.getElementById('oppList').value, h: parseInt(document.getElementById('hS').value), a: parseInt(document.getElementById('aS').value), s: document.getElementById('scorerSelect').value, coach: document.getElementById('managerSelect').value };
-        history.push(entry); localStorage.setItem('footy_history_v8', JSON.stringify(history));
+        history.push(entry); localStorage.setItem('footy_history_v9', JSON.stringify(history));
         renderHistory(); alert("Match Saved!");
     }
 
@@ -341,16 +334,11 @@
 
             row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span><br>vs ${x.o}`;
             row.insertCell(1).innerHTML = `<b>${x.h}-${x.a}</b>`; row.insertCell(2).innerHTML = x.s;
-            
-            // Only count stats for the ACTIVE team in the match day view? 
-            // Actually, match day view usually shows recent history. 
-            // We'll calculate totals based on the currently selected active team for the top widgets.
             if (x.t === activeTeam) {
                  if(x.h > x.a) w++; if(x.s === "Joey") g++;
             }
         });
         
-        // Update top widgets for CURRENTLY SELECTED TEAM only
         const teamHistory = history.filter(h => h.t === activeTeam);
         document.getElementById('st-m').innerText = teamHistory.length;
         document.getElementById('st-w').innerText = teamHistory.filter(h => h.h > h.a).length;
@@ -359,23 +347,42 @@
 
     function calculateStats() {
         let jP = 0, jW = 0, jD = 0, jL = 0, jG = 0, teams = {}, scorers = {};
-        history.forEach(m => {
-            jP++; if(m.h > m.a) jW++; else if(m.h === m.a) jD++; else jL++; if(m.s === "Joey") jG++;
-            if(!teams[m.t]) teams[m.t] = { p:0, w:0, d:0, l:0 }; let t = teams[m.t]; t.p++; if(m.h > m.a) t.w++; else if(m.h === m.a) t.d++; else t.l++;
-            if(m.s !== "None") scorers[m.s] = (scorers[m.s] || 0) + 1;
-        });
-        document.getElementById('j-played').innerText = jP; document.getElementById('j-wins').innerText = jW; document.getElementById('j-goals').innerText = jG;
-        document.getElementById('j-record').innerText = `${jW}W - ${jD}D - ${jL}L`; document.getElementById('j-perc').innerText = jP > 0 ? Math.round((jW/jP)*100) + "%" : "0%";
-        const lb = document.querySelector("#leagueTable tbody"); lb.innerHTML = "";
         
-        // Show ALL teams in stats, even past ones
+        history.forEach(m => {
+            // Joey's Total Stats (Global)
+            jP++; 
+            if(m.h > m.a) jW++; else if(m.h === m.a) jD++; else jL++; 
+            if(m.s === "Joey") jG++;
+            
+            // Team Stats
+            if(!teams[m.t]) teams[m.t] = { p:0, w:0, d:0, l:0 }; 
+            let t = teams[m.t]; t.p++; 
+            if(m.h > m.a) t.w++; else if(m.h === m.a) t.d++; else t.l++;
+            
+            // Scorer Stats (Key includes Team now)
+            if(m.s !== "None") {
+                let key = `${m.s}|${m.t}`; // Create unique key: Name + Team
+                scorers[key] = (scorers[key] || 0) + 1;
+            }
+        });
+
+        document.getElementById('j-played').innerText = jP; 
+        document.getElementById('j-wins').innerText = jW; 
+        document.getElementById('j-goals').innerText = jG;
+        document.getElementById('j-record').innerText = `${jW}W - ${jD}D - ${jL}L`; 
+        document.getElementById('j-perc').innerText = jP > 0 ? Math.round((jW/jP)*100) + "%" : "0%";
+        
+        const lb = document.querySelector("#leagueTable tbody"); lb.innerHTML = "";
         Object.entries(teams).forEach(([n, t]) => { 
             let status = (appData[n] && !appData[n].active) ? " (Past)" : "";
             lb.insertRow().innerHTML = `<td>${n}${status}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>`; 
         });
         
         const sb = document.querySelector("#scorerTable tbody"); sb.innerHTML = "";
-        Object.entries(scorers).sort((a,b)=>b[1]-a[1]).forEach(([n, g]) => { sb.insertRow().innerHTML = `<td>${n}</td><td>${g}</td>`; });
+        Object.entries(scorers).sort((a,b)=>b[1]-a[1]).forEach(([key, g]) => { 
+            let [name, team] = key.split('|');
+            sb.insertRow().innerHTML = `<td>${name}</td><td style="font-size:0.75rem; opacity:0.7;">${team}</td><td>${g}</td>`; 
+        });
     }
 
     function renderAdminLists() {
@@ -403,9 +410,7 @@
         saveData(); renderAdminLists(); loadMatchOptions(); 
     }
 
-    function saveData() {
-        localStorage.setItem('footy_data_v8', JSON.stringify(appData));
-    }
+    function saveData() { localStorage.setItem('footy_data_v9', JSON.stringify(appData)); }
 
     function exportData() {
         const out = { data: appData, history: history };
@@ -416,14 +421,14 @@
     function importData(e) {
         const reader = new FileReader(); reader.onload = (event) => {
             const imported = JSON.parse(event.target.result); appData = imported.data; history = imported.history;
-            localStorage.setItem('footy_data_v8', JSON.stringify(appData)); localStorage.setItem('footy_history_v8', JSON.stringify(history));
+            localStorage.setItem('footy_data_v9', JSON.stringify(appData)); localStorage.setItem('footy_history_v9', JSON.stringify(history));
             location.reload();
         }; reader.readAsText(e.target.files[0]);
     }
     
     function saveFullWebsiteHTML() {
         let htmlContent = document.documentElement.outerHTML;
-        const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v8', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v8', JSON.stringify(injectedHistory));`;
+        const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v9', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v9', JSON.stringify(injectedHistory));`;
         htmlContent = htmlContent.replace('const defaultData = {', dataInjection + ' const ignore = {');
         const blob = new Blob([htmlContent], {type: 'text/html'});
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Joey_Full_Website_Backup.html`; a.click();
