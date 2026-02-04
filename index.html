@@ -205,7 +205,8 @@
     };
 
     let appData = JSON.parse(localStorage.getItem('footy_data_v10')) || defaultData;
-    let history = JSON.parse(localStorage.getItem('footy_history_v10')) || "[]";
+    // FIXED: Moved closing parenthesis to correctly handle empty history
+    let history = JSON.parse(localStorage.getItem('footy_history_v10') || "[]");
     
     let activeTeam = Object.keys(appData).find(t => appData[t].active) || Object.keys(appData)[0];
 
@@ -367,7 +368,7 @@
         const entry = { 
             t: activeTeam, 
             o: document.getElementById('oppList').value, 
-            h: parseInt(document.getElementById('hS').value) || 0, // Fallback to 0 if empty
+            h: parseInt(document.getElementById('hS').value) || 0, 
             a: parseInt(document.getElementById('aS').value) || 0, 
             s: scorers, 
             coach: document.getElementById('managerSelect').value 
@@ -392,6 +393,7 @@
             let c = tm ? tm.color : '#666'; 
             let tc = '#fff'; if(c === '#fdd835') tc = '#1b5e20';
 
+            // ADDED COACH NAME HERE
             row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span><br>vs ${x.o}<br><small style="opacity:0.65; font-size:0.7rem;">Mgr: ${x.coach || '-'}</small>`;
             row.insertCell(1).innerHTML = `<b>${x.h}-${x.a}</b>`; 
             
