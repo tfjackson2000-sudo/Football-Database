@@ -209,14 +209,13 @@
     
     let activeTeam = Object.keys(appData).find(t => appData[t].active) || Object.keys(appData)[0];
 
-    // --- NEW: DYNAMIC SCORER DROPDOWNS ---
+    // --- DYNAMIC SCORER DROPDOWNS ---
     function updateScorerInputs() {
         const score = parseInt(document.getElementById('hS').value) || 0;
         const container = document.getElementById('scorerContainer');
-        container.innerHTML = ""; // Clear existing
+        container.innerHTML = ""; 
 
         if(score > 0) {
-            // Create a small label
             const title = document.createElement('label');
             title.innerText = "Goal Scorers:";
             title.style.marginBottom = "5px";
@@ -233,7 +232,6 @@
                 const select = document.createElement('select');
                 select.className = "dynamic-scorer-select";
                 
-                // Populate Players
                 if(appData[activeTeam]) {
                     appData[activeTeam].players.forEach(p => select.add(new Option(p,p)));
                 }
@@ -358,33 +356,29 @@
             appData[activeTeam].opps.forEach(o => oppS.add(new Option(o,o)));
             appData[activeTeam].coaches.forEach(c => mgrS.add(new Option(c,c)));
         }
-        // Force update of scorer dropdowns if score > 0
         updateScorerInputs();
     }
 
     function saveMatch() {
-        // Collect Scorers from dynamic inputs
         const scorerInputs = document.querySelectorAll('.dynamic-scorer-select');
         let scorers = [];
         scorerInputs.forEach(input => scorers.push(input.value));
         
-        // If score is 0, scorers is empty array
         const entry = { 
             t: activeTeam, 
             o: document.getElementById('oppList').value, 
-            h: parseInt(document.getElementById('hS').value), 
-            a: parseInt(document.getElementById('aS').value), 
-            s: scorers, // NOW AN ARRAY
+            h: parseInt(document.getElementById('hS').value) || 0, // Fallback to 0 if empty
+            a: parseInt(document.getElementById('aS').value) || 0, 
+            s: scorers, 
             coach: document.getElementById('managerSelect').value 
         };
         
         history.push(entry); localStorage.setItem('footy_history_v10', JSON.stringify(history));
         renderHistory(); 
         
-        // Reset form
         document.getElementById('hS').value = 0;
         document.getElementById('aS').value = 0;
-        updateScorerInputs(); // clears dropdowns
+        updateScorerInputs(); 
         
         alert("Match Saved!");
     }
@@ -398,22 +392,19 @@
             let c = tm ? tm.color : '#666'; 
             let tc = '#fff'; if(c === '#fdd835') tc = '#1b5e20';
 
-            // ADDED COACH NAME HERE
             row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span><br>vs ${x.o}<br><small style="opacity:0.65; font-size:0.7rem;">Mgr: ${x.coach || '-'}</small>`;
             row.insertCell(1).innerHTML = `<b>${x.h}-${x.a}</b>`; 
             
-            // FORMAT SCORERS LIST
             let scorerText = "-";
             if(Array.isArray(x.s) && x.s.length > 0) {
                 scorerText = x.s.join(', ');
             } else if (typeof x.s === 'string') {
-                scorerText = x.s; // Legacy support
+                scorerText = x.s;
             }
             row.insertCell(2).innerHTML = `<small>${scorerText}</small>`;
             
             if (x.t === activeTeam) {
                  if(x.h > x.a) w++; 
-                 // Count Joey goals in the array
                  if(Array.isArray(x.s)) {
                      x.s.forEach(player => { if(player === "Joey") g++; });
                  } else if (x.s === "Joey") {
@@ -426,7 +417,6 @@
         document.getElementById('st-m').innerText = teamHistory.length;
         document.getElementById('st-w').innerText = teamHistory.filter(h => h.h > h.a).length;
         
-        // Fix Top Widget Goal Count for Array
         let activeGoals = 0;
         teamHistory.forEach(h => {
              if(Array.isArray(h.s)) {
@@ -445,7 +435,6 @@
             jP++; 
             if(m.h > m.a) jW++; else if(m.h === m.a) jD++; else jL++; 
             
-            // Count Goals (handle Array vs String legacy)
             if(Array.isArray(m.s)) {
                 m.s.forEach(p => {
                     if(p === "Joey") jG++;
