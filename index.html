@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V11.2</title>
+    <title>Joey's Career Tracker V12</title>
     <style>
         :root { 
             --bg: #f0f2f5; --card: #ffffff; --text: #333; --border: #ddd; 
@@ -120,6 +120,8 @@
         
         <div id="scorerContainer" class="form-group"></div>
 
+        <div id="awardsContainer" class="form-group"></div>
+
         <button class="btn-add" onclick="saveMatch()">Save Match Result</button>
         
         <table id="matchTable"><thead><tr><th>Match</th><th>Score</th><th>Scorers</th></tr></thead><tbody></tbody></table>
@@ -138,21 +140,30 @@
         </div>
         <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">📊 Stats by Team</h3>
         <table id="leagueTable"><thead><tr><th style="text-align:left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th></tr></thead><tbody></tbody></table>
-        <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">⚽ Top Scorers</h3>
-        <table id="scorerTable"><thead><tr><th>Player</th><th>Team</th><th>Goals</th></tr></thead><tbody></tbody></table>
+        <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">⚽ Top Scorers & Awards</h3>
+        <table id="scorerTable"><thead><tr><th>Player</th><th>Team</th><th>Goals</th><th>Aw.</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="admin" class="tab-content">
         <p style="text-align:center; opacity:0.7; font-size:0.9rem;">Currently Managing: <b id="adminTeamLabel"></b></p>
         
+        <div style="background: rgba(0,0,0,0.03); padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px;">
+            <label><strong>⚙️ Team Settings</strong></label>
+            <label style="font-size:0.8rem; margin-top:5px;">Award Format:</label>
+            <select id="awardFormatSelect" onchange="updateAwardFormat()">
+                <option value="none">None</option>
+                <option value="single">Player of the Week (1)</option>
+                <option value="top3">Team of the Week (3)</option>
+            </select>
+        </div>
+
         <div style="background: rgba(255, 215, 0, 0.1); padding:10px; border-radius:8px; border:1px solid #FFD700; margin-bottom:20px;">
             <label style="color:#B8860B;"><strong>🏆 Tournament Manager</strong></label>
             <div style="display:flex; gap:10px; align-items:center; margin-top:5px; margin-bottom:10px;">
-                <input type="text" id="newTournName" placeholder="e.g. Summer Cup 2025">
+                <input type="text" id="newTournName" placeholder="e.g. Summer Cup">
                 <button class="btn-tool" style="background:#B8860B" onclick="addTournament()">Create</button>
             </div>
             <ul id="activeTournList" style="padding:0; list-style:none;"></ul>
-            <small style="opacity:0.6">Active tournaments appear on Match Day. Archive them when finished.</small>
         </div>
 
         <div style="background: rgba(0,0,0,0.03); padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px;">
@@ -187,9 +198,9 @@
     <div class="modal-content">
         <span class="close-guide" onclick="closeGuide()">&times;</span>
         <h2 style="color:var(--team-primary);">📖 User Guide</h2>
-        <p><strong>1. Tournaments (NEW):</strong> Go to Admin to Create a Tournament. Select it on Match Day to group games together. Archive it when done.</p>
+        <p><strong>1. Awards:</strong> Go to <strong>Admin > Team Settings</strong> to choose if the team uses "Player of the Week" (1 person) or "Team of the Week" (3 people).</p>
         <p><strong>2. Scoring:</strong> Enter "Our Score" to add specific scorers for each goal.</p>
-        <p><strong>3. Teams:</strong> Use Admin to Join/Leave teams. History is kept safe.</p>
+        <p><strong>3. Tournaments:</strong> Create tournaments in Admin to group matches.</p>
         <p><strong>4. Backup:</strong> Regular backups are recommended.</p>
         <button class="btn-add" onclick="closeGuide()">Understood!</button>
     </div>
@@ -197,29 +208,56 @@
 
 <script>
     const defaultData = {
-        "Llanelli Town": { active: true, color: "#d32f2f", opps: ["Garden Village", "Carmarthen"], players: ["Joey"], coaches: ["Coach A"], tournaments: [] },
-        "Dunvant": { active: true, color: "#fdd835", opps: ["Mumbles", "South Gower"], players: ["Joey"], coaches: ["Manager 1"], tournaments: [] }
+        "Llanelli Town": { active: true, color: "#d32f2f", opps: ["Garden Village", "Carmarthen"], players: ["Joey"], coaches: ["Coach A"], tournaments: [], awardStyle: "top3" },
+        "Dunvant": { active: true, color: "#fdd835", opps: ["Mumbles", "South Gower"], players: ["Joey"], coaches: ["Manager 1"], tournaments: [], awardStyle: "single" }
     };
 
-    let appData = JSON.parse(localStorage.getItem('footy_data_v11.2') || "null") || defaultData;
-    let history = JSON.parse(localStorage.getItem('footy_history_v11.2') || "[]");
+    let appData = JSON.parse(localStorage.getItem('footy_data_v12') || "null") || defaultData;
+    let history = JSON.parse(localStorage.getItem('footy_history_v12') || "[]");
     
     let activeTeam = Object.keys(appData).find(t => appData[t].active) || Object.keys(appData)[0];
+
+    // --- AWARD SETTINGS ---
+    function updateAwardFormat() {
+        const fmt = document.getElementById('awardFormatSelect').value;
+        appData[activeTeam].awardStyle = fmt;
+        saveData();
+        loadMatchOptions(); // Re-render awards input
+    }
+
+    function renderAwardsInput() {
+        const container = document.getElementById('awardsContainer');
+        container.innerHTML = "";
+        const style = appData[activeTeam].awardStyle || "none";
+
+        if(style === "none") return;
+
+        const label = document.createElement('label');
+        label.innerText = style === "top3" ? "⭐ Team of the Week (3):" : "🏆 Player of the Week:";
+        container.appendChild(label);
+
+        const count = style === "top3" ? 3 : 1;
+        
+        for(let i=0; i<count; i++) {
+             const select = document.createElement('select');
+             select.className = "award-select";
+             select.style.marginBottom = "5px";
+             select.add(new Option(style === "top3" ? `Select Star ${i+1}...` : "Select Winner...", ""));
+             if(appData[activeTeam]) { appData[activeTeam].players.forEach(p => select.add(new Option(p,p))); }
+             container.appendChild(select);
+        }
+    }
 
     // --- TOURNAMENT LOGIC ---
     function addTournament() {
         const name = document.getElementById('newTournName').value.trim();
         if(!name) return alert("Enter tournament name");
-        
         if(!appData[activeTeam].tournaments) appData[activeTeam].tournaments = [];
         appData[activeTeam].tournaments.push({ name: name, active: true });
-        saveData();
-        document.getElementById('newTournName').value = "";
-        renderAdminLists(); loadMatchOptions();
+        saveData(); document.getElementById('newTournName').value = ""; renderAdminLists(); loadMatchOptions();
     }
-
     function archiveTournament(idx) {
-        if(confirm("Finish and archive this tournament? It will hide from the Match Day list.")) {
+        if(confirm("Finish and archive?")) {
             appData[activeTeam].tournaments[idx].active = false;
             saveData(); renderAdminLists(); loadMatchOptions();
         }
@@ -280,7 +318,7 @@
         const name = document.getElementById('newTeamName').value.trim(); const color = document.getElementById('newTeamColor').value;
         if(!name) return alert("Enter team name"); if(appData[name] && appData[name].active) return alert("Already joined!");
         if (appData[name]) { appData[name].active = true; appData[name].color = color; } 
-        else { appData[name] = { active: true, color: color, opps: [], players: ["Joey"], coaches: [], tournaments: [] }; }
+        else { appData[name] = { active: true, color: color, opps: [], players: ["Joey"], coaches: [], tournaments: [], awardStyle: "none" }; }
         saveData(); document.getElementById('newTeamName').value = ""; setActiveTeam(name); alert(`Joined ${name}!`);
     }
 
@@ -298,18 +336,19 @@
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(tabId).classList.add('active'); document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
         if(tabId === 'stats') calculateStats();
+        if(tabId === 'admin') { 
+            document.getElementById('awardFormatSelect').value = appData[activeTeam].awardStyle || "none";
+        }
     }
 
     function loadMatchOptions() {
         const oppS = document.getElementById('oppList'), mgrS = document.getElementById('managerSelect'), tournS = document.getElementById('tournSelect');
         oppS.innerHTML = ""; mgrS.innerHTML = "<option>None</option>";
-        // UPDATED LABEL
         tournS.innerHTML = '<option value="">League</option>';
         
         if(appData[activeTeam]) {
             appData[activeTeam].opps.forEach(o => oppS.add(new Option(o,o)));
             appData[activeTeam].coaches.forEach(c => mgrS.add(new Option(c,c)));
-            // Load Active Tournaments
             if(appData[activeTeam].tournaments) {
                 appData[activeTeam].tournaments.forEach(t => {
                     if(t.active) tournS.add(new Option("🏆 " + t.name, t.name));
@@ -317,23 +356,31 @@
             }
         }
         updateScorerInputs();
+        renderAwardsInput();
     }
 
     function saveMatch() {
         const scorerInputs = document.querySelectorAll('.dynamic-scorer-select'); let scorers = [];
         scorerInputs.forEach(input => scorers.push(input.value));
+        
+        // Capture Awards
+        const awardInputs = document.querySelectorAll('.award-select'); let awards = [];
+        awardInputs.forEach(input => { if(input.value) awards.push(input.value); });
+
         const entry = { 
             t: activeTeam, 
             o: document.getElementById('oppList').value, 
-            tourn: document.getElementById('tournSelect').value, // Capture Tournament
+            tourn: document.getElementById('tournSelect').value,
             h: parseInt(document.getElementById('hS').value) || 0, 
             a: parseInt(document.getElementById('aS').value) || 0, 
             s: scorers, 
+            aw: awards, // New awards field
+            awType: appData[activeTeam].awardStyle,
             coach: document.getElementById('managerSelect').value 
         };
-        history.push(entry); localStorage.setItem('footy_history_v11.2', JSON.stringify(history));
+        history.push(entry); localStorage.setItem('footy_history_v12', JSON.stringify(history));
         renderHistory(); 
-        document.getElementById('hS').value = 0; document.getElementById('aS').value = 0; updateScorerInputs(); alert("Match Saved!");
+        document.getElementById('hS').value = 0; document.getElementById('aS').value = 0; updateScorerInputs(); loadMatchOptions(); alert("Match Saved!");
     }
 
     function renderHistory() {
@@ -342,17 +389,23 @@
         [...history].reverse().forEach(x => {
             let row = tbody.insertRow();
             let tm = appData[x.t]; let c = tm ? tm.color : '#666'; let tc = '#fff'; if(c === '#fdd835') tc = '#1b5e20';
-            
-            // Format Tournament Label
             let tournLabel = x.tourn ? `<br><span style="color:#B8860B; font-weight:bold; font-size:0.7rem">🏆 ${x.tourn}</span>` : "";
 
             row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span>${tournLabel}<br>vs ${x.o}<br><small style="opacity:0.65; font-size:0.7rem;">Mgr: ${x.coach || '-'}</small>`;
             row.insertCell(1).innerHTML = `<b>${x.h}-${x.a}</b>`; 
             
-            let scorerText = "-";
-            if(Array.isArray(x.s) && x.s.length > 0) scorerText = x.s.join(', ');
-            else if (typeof x.s === 'string') scorerText = x.s;
-            row.insertCell(2).innerHTML = `<small>${scorerText}</small>`;
+            let scorerText = "";
+            if(Array.isArray(x.s) && x.s.length > 0) scorerText = "⚽ " + x.s.join(', ');
+            else if (typeof x.s === 'string' && x.s !== "None") scorerText = "⚽ " + x.s;
+            
+            // Format Awards
+            let awardText = "";
+            if(x.aw && x.aw.length > 0) {
+                let icon = x.awType === "top3" ? "⭐" : "🏆";
+                awardText = `<br>${icon} ` + x.aw.join(', ');
+            }
+
+            row.insertCell(2).innerHTML = `<small>${scorerText}${awardText}</small>`;
             
             if (x.t === activeTeam) {
                  if(x.h > x.a) w++; 
@@ -376,9 +429,20 @@
             
             const handleScorer = (p) => {
                 if(p === "Joey") jG++;
-                let key = `${p}|${m.t}`; scorers[key] = (scorers[key] || 0) + 1;
+                let key = `${p}|${m.t}`; 
+                if(!scorers[key]) scorers[key] = {g:0, aw:0};
+                scorers[key].g++;
             };
             if(Array.isArray(m.s)) m.s.forEach(handleScorer); else if (m.s !== "None") handleScorer(m.s);
+
+            // Count Awards
+            if(m.aw && Array.isArray(m.aw)) {
+                m.aw.forEach(p => {
+                    let key = `${p}|${m.t}`;
+                    if(!scorers[key]) scorers[key] = {g:0, aw:0};
+                    scorers[key].aw++;
+                });
+            }
         });
         document.getElementById('j-played').innerText = jP; document.getElementById('j-wins').innerText = jW; document.getElementById('j-goals').innerText = jG;
         document.getElementById('j-record').innerText = `${jW}W - ${jD}D - ${jL}L`; document.getElementById('j-perc').innerText = jP > 0 ? Math.round((jW/jP)*100) + "%" : "0%";
@@ -389,8 +453,8 @@
             lb.insertRow().innerHTML = `<td style="text-align:left">${n}${status}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf}</td><td>${t.ga}</td><td>${t.gf-t.ga}</td>`; 
         });
         const sb = document.querySelector("#scorerTable tbody"); sb.innerHTML = "";
-        Object.entries(scorers).sort((a,b)=>b[1]-a[1]).forEach(([key, g]) => { 
-            let [name, team] = key.split('|'); sb.insertRow().innerHTML = `<td>${name}</td><td style="font-size:0.75rem; opacity:0.7;">${team}</td><td>${g}</td>`; 
+        Object.entries(scorers).sort((a,b)=>b[1].g-a[1].g).forEach(([key, stats]) => { 
+            let [name, team] = key.split('|'); sb.insertRow().innerHTML = `<td>${name}</td><td style="font-size:0.75rem; opacity:0.7;">${team}</td><td>${stats.g}</td><td>${stats.aw}</td>`; 
         });
     }
 
@@ -422,10 +486,10 @@
 
     function addItem(cat, id) { const val = document.getElementById(id).value; if(val) { appData[activeTeam][cat].push(val); saveData(); document.getElementById(id).value = ""; renderAdminLists(); loadMatchOptions(); } }
     function deleteItem(cat, idx) { appData[activeTeam][cat].splice(idx, 1); saveData(); renderAdminLists(); loadMatchOptions(); }
-    function saveData() { localStorage.setItem('footy_data_v11.2', JSON.stringify(appData)); }
+    function saveData() { localStorage.setItem('footy_data_v12', JSON.stringify(appData)); }
     function exportData() { const out = { data: appData, history: history }; const blob = new Blob([JSON.stringify(out)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `JoeyStats_Backup.json`; a.click(); }
-    function importData(e) { const reader = new FileReader(); reader.onload = (event) => { const imported = JSON.parse(event.target.result); appData = imported.data; history = imported.history; localStorage.setItem('footy_data_v11.2', JSON.stringify(appData)); localStorage.setItem('footy_history_v11.2', JSON.stringify(history)); location.reload(); }; reader.readAsText(e.target.files[0]); }
-    function saveFullWebsiteHTML() { let htmlContent = document.documentElement.outerHTML; const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v11.2', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v11.2', JSON.stringify(injectedHistory));`; htmlContent = htmlContent.replace('const defaultData = {', dataInjection + ' const ignore = {'); const blob = new Blob([htmlContent], {type: 'text/html'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Joey_Full_Website_Backup.html`; a.click(); }
+    function importData(e) { const reader = new FileReader(); reader.onload = (event) => { const imported = JSON.parse(event.target.result); appData = imported.data; history = imported.history; localStorage.setItem('footy_data_v12', JSON.stringify(appData)); localStorage.setItem('footy_history_v12', JSON.stringify(history)); location.reload(); }; reader.readAsText(e.target.files[0]); }
+    function saveFullWebsiteHTML() { let htmlContent = document.documentElement.outerHTML; const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v12', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v12', JSON.stringify(injectedHistory));`; htmlContent = htmlContent.replace('const defaultData = {', dataInjection + ' const ignore = {'); const blob = new Blob([htmlContent], {type: 'text/html'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Joey_Full_Website_Backup.html`; a.click(); }
     function resetAll() { if(confirm("Factory Reset? This deletes EVERYTHING.")) { localStorage.clear(); location.reload(); } }
     function toggleTheme() { const b = document.body; b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
     function showGuide() { document.getElementById('guideModal').style.display = "block"; }
