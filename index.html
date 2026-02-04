@@ -67,6 +67,9 @@
         table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 0.85rem; }
         th, td { padding: 10px 5px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
 
+        /* Mobile Optimization for Stats Table */
+        #leagueTable th, #leagueTable td { padding: 8px 2px; font-size: 0.8rem; }
+
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .hidden { display: none; }
     </style>
@@ -136,7 +139,16 @@
         </div>
         
         <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">📊 Stats by Team</h3>
-        <table id="leagueTable"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th></tr></thead><tbody></tbody></table>
+        <table id="leagueTable">
+            <thead>
+                <tr>
+                    <th style="text-align:left">Team</th>
+                    <th>P</th><th>W</th><th>D</th><th>L</th>
+                    <th>GF</th><th>GA</th><th>GD</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
         
         <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">⚽ Top Scorers</h3>
         <table id="scorerTable"><thead><tr><th>Player</th><th>Team</th><th>Goals</th></tr></thead><tbody></tbody></table>
@@ -205,7 +217,6 @@
     };
 
     let appData = JSON.parse(localStorage.getItem('footy_data_v10')) || defaultData;
-    // FIXED: Moved closing parenthesis to correctly handle empty history
     let history = JSON.parse(localStorage.getItem('footy_history_v10') || "[]");
     
     let activeTeam = Object.keys(appData).find(t => appData[t].active) || Object.keys(appData)[0];
@@ -393,7 +404,6 @@
             let c = tm ? tm.color : '#666'; 
             let tc = '#fff'; if(c === '#fdd835') tc = '#1b5e20';
 
-            // ADDED COACH NAME HERE
             row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span><br>vs ${x.o}<br><small style="opacity:0.65; font-size:0.7rem;">Mgr: ${x.coach || '-'}</small>`;
             row.insertCell(1).innerHTML = `<b>${x.h}-${x.a}</b>`; 
             
@@ -437,6 +447,15 @@
             jP++; 
             if(m.h > m.a) jW++; else if(m.h === m.a) jD++; else jL++; 
             
+            // Calculate GF/GA/GD
+            if(!teams[m.t]) teams[m.t] = { p:0, w:0, d:0, l:0, gf:0, ga:0 }; 
+            let t = teams[m.t]; 
+            t.p++; 
+            t.gf += m.h; // Home is US
+            t.ga += m.a; // Away is THEM
+            
+            if(m.h > m.a) t.w++; else if(m.h === m.a) t.d++; else t.l++;
+            
             if(Array.isArray(m.s)) {
                 m.s.forEach(p => {
                     if(p === "Joey") jG++;
@@ -448,10 +467,6 @@
                 let key = `${m.s}|${m.t}`;
                 scorers[key] = (scorers[key] || 0) + 1;
             }
-            
-            if(!teams[m.t]) teams[m.t] = { p:0, w:0, d:0, l:0 }; 
-            let t = teams[m.t]; t.p++; 
-            if(m.h > m.a) t.w++; else if(m.h === m.a) t.d++; else t.l++;
         });
 
         document.getElementById('j-played').innerText = jP; 
@@ -463,7 +478,7 @@
         const lb = document.querySelector("#leagueTable tbody"); lb.innerHTML = "";
         Object.entries(teams).forEach(([n, t]) => { 
             let status = (appData[n] && !appData[n].active) ? " (Past)" : "";
-            lb.insertRow().innerHTML = `<td>${n}${status}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>`; 
+            lb.insertRow().innerHTML = `<td style="text-align:left">${n}${status}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf}</td><td>${t.ga}</td><td>${t.gf - t.ga}</td>`; 
         });
         
         const sb = document.querySelector("#scorerTable tbody"); sb.innerHTML = "";
