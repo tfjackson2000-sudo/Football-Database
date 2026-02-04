@@ -44,11 +44,14 @@
         .btn-tool { background: #6c757d; color: white; padding: 8px 12px; font-size: 0.8rem; }
         .tag { font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; }
 
-        /* JOEY CARD - NEUTRAL / GOLD THEME */
+        /* DYNAMIC SCORER INPUTS */
+        .scorer-input-group { display: flex; align-items: center; margin-bottom: 5px; gap: 10px; }
+        .scorer-label { font-size: 0.8rem; opacity: 0.7; white-space: nowrap; width: 60px; }
+
+        /* JOEY CARD */
         .joey-card { 
-            background: linear-gradient(135deg, #FFD700, #DAA520); /* Gold Gradient */
-            color: #333; /* Dark text for contrast on gold */
-            padding: 20px; border-radius: 12px; text-align: center; 
+            background: linear-gradient(135deg, #FFD700, #DAA520); 
+            color: #333; padding: 20px; border-radius: 12px; text-align: center; 
             box-shadow: 0 4px 10px rgba(218, 165, 32, 0.3);
         }
         .joey-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 15px; }
@@ -62,7 +65,7 @@
 
         /* TABLES */
         table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { padding: 10px 5px; border-bottom: 1px solid var(--border); text-align: center; }
+        th, td { padding: 10px 5px; border-bottom: 1px solid var(--border); text-align: center; vertical-align: middle; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .hidden { display: none; }
@@ -103,16 +106,21 @@
             <select id="managerSelect"></select>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-            <div><label>Our Score:</label><input type="number" id="hS" value="0"></div>
-            <div><label>Opp Score:</label><input type="number" id="aS" value="0"></div>
+            <div>
+                <label>Our Score:</label>
+                <input type="number" id="hS" value="0" min="0" oninput="updateScorerInputs()">
+            </div>
+            <div>
+                <label>Opp Score:</label>
+                <input type="number" id="aS" value="0" min="0">
+            </div>
         </div>
-        <div class="form-group">
-            <label>Goal Scorer:</label>
-            <select id="scorerSelect"></select>
-        </div>
+        
+        <div id="scorerContainer" class="form-group"></div>
+
         <button class="btn-add" onclick="saveMatch()">Save Match Result</button>
         
-        <table id="matchTable"><thead><tr><th>Match</th><th>Score</th><th>Scorer</th></tr></thead><tbody></tbody></table>
+        <table id="matchTable"><thead><tr><th>Match</th><th>Score</th><th>Scorers</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="stats" class="tab-content">
@@ -147,7 +155,7 @@
             <button class="btn-tool" style="background:#dc3545; width:100%;" onclick="leaveCurrentTeam()">👋 Leave Current Team</button>
             
             <div id="pastTeamsSection" style="margin-top:15px; display:none;">
-                <label style="border-top:1px solid var(--border); padding-top:10px;">📜 Past Teams (History)</label>
+                <label style="border-top:1px solid var(--border); padding-top:10px;">📜 Past Teams</label>
                 <ul id="pastTeamsList" style="padding:0; list-style:none;"></ul>
             </div>
         </div>
@@ -182,9 +190,9 @@
     <div class="modal-content">
         <span class="close-guide" onclick="closeGuide()">&times;</span>
         <h2 style="color:var(--team-primary);">📖 User Guide</h2>
-        <p><strong>1. Active Teams:</strong> The colored buttons at the top show the teams Joey is currently playing for.</p>
-        <p><strong>2. Career Moves:</strong> Use <strong>Admin</strong> to Join/Leave teams. History is never deleted.</p>
-        <p><strong>3. Scorer Stats:</strong> The Career Stats tab now splits goals by team (e.g., Joey (Llanelli) vs. Joey (Dunvant)).</p>
+        <p><strong>1. Scoring:</strong> Enter "Our Score" first. The app will create a dropdown for each goal so you can say who scored it!</p>
+        <p><strong>2. Coaches:</strong> The Coach/Manager for each game is now saved and shown in the match history list.</p>
+        <p><strong>3. Teams:</strong> Use the colored buttons to switch teams. Use Admin to Join or Leave teams.</p>
         <p><strong>4. Backup:</strong> Regular backups are recommended using the 'Save as Offline Webpage' button.</p>
         <button class="btn-add" onclick="closeGuide()">Understood!</button>
     </div>
@@ -196,10 +204,46 @@
         "Dunvant": { active: true, color: "#fdd835", opps: ["Mumbles", "South Gower"], players: ["Joey"], coaches: ["Manager 1"] }
     };
 
-    let appData = JSON.parse(localStorage.getItem('footy_data_v9')) || defaultData;
-    let history = JSON.parse(localStorage.getItem('footy_history_v9') || "[]");
+    let appData = JSON.parse(localStorage.getItem('footy_data_v10')) || defaultData;
+    let history = JSON.parse(localStorage.getItem('footy_history_v10')) || "[]";
     
     let activeTeam = Object.keys(appData).find(t => appData[t].active) || Object.keys(appData)[0];
+
+    // --- NEW: DYNAMIC SCORER DROPDOWNS ---
+    function updateScorerInputs() {
+        const score = parseInt(document.getElementById('hS').value) || 0;
+        const container = document.getElementById('scorerContainer');
+        container.innerHTML = ""; // Clear existing
+
+        if(score > 0) {
+            // Create a small label
+            const title = document.createElement('label');
+            title.innerText = "Goal Scorers:";
+            title.style.marginBottom = "5px";
+            container.appendChild(title);
+
+            for(let i=1; i<=score; i++) {
+                const div = document.createElement('div');
+                div.className = "scorer-input-group";
+                
+                const label = document.createElement('span');
+                label.className = "scorer-label";
+                label.innerText = `Goal ${i}:`;
+                
+                const select = document.createElement('select');
+                select.className = "dynamic-scorer-select";
+                
+                // Populate Players
+                if(appData[activeTeam]) {
+                    appData[activeTeam].players.forEach(p => select.add(new Option(p,p)));
+                }
+                
+                div.appendChild(label);
+                div.appendChild(select);
+                container.appendChild(div);
+            }
+        }
+    }
 
     function renderTeamButtons() {
         const container = document.getElementById('teamSwitcherContainer');
@@ -308,19 +352,41 @@
     }
 
     function loadMatchOptions() {
-        const oppS = document.getElementById('oppList'), scS = document.getElementById('scorerSelect'), mgrS = document.getElementById('managerSelect');
-        oppS.innerHTML = ""; scS.innerHTML = "<option>None</option>"; mgrS.innerHTML = "<option>None</option>";
+        const oppS = document.getElementById('oppList'), mgrS = document.getElementById('managerSelect');
+        oppS.innerHTML = ""; mgrS.innerHTML = "<option>None</option>";
         if(appData[activeTeam]) {
             appData[activeTeam].opps.forEach(o => oppS.add(new Option(o,o)));
-            appData[activeTeam].players.forEach(p => scS.add(new Option(p,p)));
             appData[activeTeam].coaches.forEach(c => mgrS.add(new Option(c,c)));
         }
+        // Force update of scorer dropdowns if score > 0
+        updateScorerInputs();
     }
 
     function saveMatch() {
-        const entry = { t: activeTeam, o: document.getElementById('oppList').value, h: parseInt(document.getElementById('hS').value), a: parseInt(document.getElementById('aS').value), s: document.getElementById('scorerSelect').value, coach: document.getElementById('managerSelect').value };
-        history.push(entry); localStorage.setItem('footy_history_v9', JSON.stringify(history));
-        renderHistory(); alert("Match Saved!");
+        // Collect Scorers from dynamic inputs
+        const scorerInputs = document.querySelectorAll('.dynamic-scorer-select');
+        let scorers = [];
+        scorerInputs.forEach(input => scorers.push(input.value));
+        
+        // If score is 0, scorers is empty array
+        const entry = { 
+            t: activeTeam, 
+            o: document.getElementById('oppList').value, 
+            h: parseInt(document.getElementById('hS').value), 
+            a: parseInt(document.getElementById('aS').value), 
+            s: scorers, // NOW AN ARRAY
+            coach: document.getElementById('managerSelect').value 
+        };
+        
+        history.push(entry); localStorage.setItem('footy_history_v10', JSON.stringify(history));
+        renderHistory(); 
+        
+        // Reset form
+        document.getElementById('hS').value = 0;
+        document.getElementById('aS').value = 0;
+        updateScorerInputs(); // clears dropdowns
+        
+        alert("Match Saved!");
     }
 
     function renderHistory() {
@@ -332,38 +398,69 @@
             let c = tm ? tm.color : '#666'; 
             let tc = '#fff'; if(c === '#fdd835') tc = '#1b5e20';
 
-            row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span><br>vs ${x.o}`;
-            row.insertCell(1).innerHTML = `<b>${x.h}-${x.a}</b>`; row.insertCell(2).innerHTML = x.s;
+            // ADDED COACH NAME HERE
+            row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span><br>vs ${x.o}<br><small style="opacity:0.65; font-size:0.7rem;">Mgr: ${x.coach || '-'}</small>`;
+            row.insertCell(1).innerHTML = `<b>${x.h}-${x.a}</b>`; 
+            
+            // FORMAT SCORERS LIST
+            let scorerText = "-";
+            if(Array.isArray(x.s) && x.s.length > 0) {
+                scorerText = x.s.join(', ');
+            } else if (typeof x.s === 'string') {
+                scorerText = x.s; // Legacy support
+            }
+            row.insertCell(2).innerHTML = `<small>${scorerText}</small>`;
+            
             if (x.t === activeTeam) {
-                 if(x.h > x.a) w++; if(x.s === "Joey") g++;
+                 if(x.h > x.a) w++; 
+                 // Count Joey goals in the array
+                 if(Array.isArray(x.s)) {
+                     x.s.forEach(player => { if(player === "Joey") g++; });
+                 } else if (x.s === "Joey") {
+                     g++;
+                 }
             }
         });
         
         const teamHistory = history.filter(h => h.t === activeTeam);
         document.getElementById('st-m').innerText = teamHistory.length;
         document.getElementById('st-w').innerText = teamHistory.filter(h => h.h > h.a).length;
-        document.getElementById('st-g').innerText = teamHistory.filter(h => h.s === "Joey").length;
+        
+        // Fix Top Widget Goal Count for Array
+        let activeGoals = 0;
+        teamHistory.forEach(h => {
+             if(Array.isArray(h.s)) {
+                 h.s.forEach(p => { if(p === "Joey") activeGoals++; });
+             } else if(h.s === "Joey") {
+                 activeGoals++;
+             }
+        });
+        document.getElementById('st-g').innerText = activeGoals;
     }
 
     function calculateStats() {
         let jP = 0, jW = 0, jD = 0, jL = 0, jG = 0, teams = {}, scorers = {};
         
         history.forEach(m => {
-            // Joey's Total Stats (Global)
             jP++; 
             if(m.h > m.a) jW++; else if(m.h === m.a) jD++; else jL++; 
-            if(m.s === "Joey") jG++;
             
-            // Team Stats
+            // Count Goals (handle Array vs String legacy)
+            if(Array.isArray(m.s)) {
+                m.s.forEach(p => {
+                    if(p === "Joey") jG++;
+                    let key = `${p}|${m.t}`;
+                    scorers[key] = (scorers[key] || 0) + 1;
+                });
+            } else if (m.s !== "None") {
+                if(m.s === "Joey") jG++;
+                let key = `${m.s}|${m.t}`;
+                scorers[key] = (scorers[key] || 0) + 1;
+            }
+            
             if(!teams[m.t]) teams[m.t] = { p:0, w:0, d:0, l:0 }; 
             let t = teams[m.t]; t.p++; 
             if(m.h > m.a) t.w++; else if(m.h === m.a) t.d++; else t.l++;
-            
-            // Scorer Stats (Key includes Team now)
-            if(m.s !== "None") {
-                let key = `${m.s}|${m.t}`; // Create unique key: Name + Team
-                scorers[key] = (scorers[key] || 0) + 1;
-            }
         });
 
         document.getElementById('j-played').innerText = jP; 
@@ -410,7 +507,7 @@
         saveData(); renderAdminLists(); loadMatchOptions(); 
     }
 
-    function saveData() { localStorage.setItem('footy_data_v9', JSON.stringify(appData)); }
+    function saveData() { localStorage.setItem('footy_data_v10', JSON.stringify(appData)); }
 
     function exportData() {
         const out = { data: appData, history: history };
@@ -421,14 +518,14 @@
     function importData(e) {
         const reader = new FileReader(); reader.onload = (event) => {
             const imported = JSON.parse(event.target.result); appData = imported.data; history = imported.history;
-            localStorage.setItem('footy_data_v9', JSON.stringify(appData)); localStorage.setItem('footy_history_v9', JSON.stringify(history));
+            localStorage.setItem('footy_data_v10', JSON.stringify(appData)); localStorage.setItem('footy_history_v10', JSON.stringify(history));
             location.reload();
         }; reader.readAsText(e.target.files[0]);
     }
     
     function saveFullWebsiteHTML() {
         let htmlContent = document.documentElement.outerHTML;
-        const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v9', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v9', JSON.stringify(injectedHistory));`;
+        const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v10', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v10', JSON.stringify(injectedHistory));`;
         htmlContent = htmlContent.replace('const defaultData = {', dataInjection + ' const ignore = {');
         const blob = new Blob([htmlContent], {type: 'text/html'});
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Joey_Full_Website_Backup.html`; a.click();
