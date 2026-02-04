@@ -3,90 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stats Tracker & Totals</title>
+    <title>Llanelli & Dunvant Tracker</title>
     <style>
         :root { --bg: #f0f2f5; --card: #ffffff; --text: #333; --accent: #1a73e8; --border: #ddd; }
         [data-theme="dark"] { --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --accent: #8ab4f8; --border: #444; }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); color: var(--text); padding: 15px; transition: 0.3s; margin: 0; }
-        .container { max-width: 800px; background: var(--card); padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto; }
-        
-        /* Stats Dashboard */
-        .stats-dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; text-align: center; }
-        .stat-card { background: var(--accent); color: white; padding: 10px; border-radius: 10px; }
-        .stat-num { font-size: 1.5rem; font-weight: bold; display: block; }
-        .stat-label { font-size: 0.7rem; text-transform: uppercase; }
-
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        select, input { width: 100%; padding: 10px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; }
-        button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .btn-main { background: var(--accent); color: white; width: 100%; margin-bottom: 10px; }
-        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-sec { background: #6c757d; color: white; font-size: 0.8rem; }
-        
-        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
-        th, td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; font-size: 0.9rem; }
-        .team-tag { background: #eee; color: #333; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
-        [data-theme="dark"] .team-tag { background: #444; color: #fff; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; transition: 0.3s; }
+        .container { max-width: 600px; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: auto; }
+        .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; text-align: center; }
+        .stat-box { background: var(--accent); color: #fff; padding: 10px; border-radius: 8px; font-size: 0.8rem; }
+        .stat-box b { display: block; font-size: 1.4rem; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
+        select, input { width: 100%; padding: 10px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 6px; box-sizing: border-box; }
+        .flex-group { display: flex; gap: 10px; align-items: flex-end; }
+        button { padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-add { background: var(--accent); color: white; width: 100%; margin: 10px 0; }
+        .btn-tool { background: #6c757d; color: white; padding: 10px 15px; }
+        .btn-danger { background: #dc3545; color: white; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 10px; border-bottom: 1px solid var(--border); text-align: center; }
+        .tag { font-size: 0.7rem; font-weight: bold; color: var(--accent); }
     </style>
 </head>
 <body>
 
-<div class="container" id="mainContent">
-    <div class="header">
-        <h2 id="pageTitle">⚽ Season Tracker</h2>
-        <button class="btn-sec" onclick="toggleTheme()">🌓</button>
+<div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>⚽ Match Tracker</h2>
+        <button class="btn-tool" onclick="toggleTheme()">🌓</button>
     </div>
 
-    <div class="stats-dashboard">
-        <div class="stat-card">
-            <span class="stat-num" id="totalMatches">0</span>
-            <span class="stat-label">Matches</span>
-        </div>
-        <div class="stat-card" style="background: #28a745;">
-            <span class="stat-num" id="totalWins">0</span>
-            <span class="stat-label">Wins</span>
-        </div>
-        <div class="stat-card" style="background: #f39c12;">
-            <span class="stat-num" id="totalGoals">0</span>
-            <span class="stat-label">Son's Goals</span>
+    <div class="stats-row">
+        <div class="stat-box">Played<b id="st-m">0</b></div>
+        <div class="stat-box" style="background:#28a745">Wins<b id="st-w">0</b></div>
+        <div class="stat-box" style="background:#f39c12">Goals<b id="st-g">0</b></div>
+    </div>
+
+    <div class="form-group">
+        <label>Playing For:</label>
+        <select id="myTeam" onchange="loadOptions()"></select>
+    </div>
+
+    <div class="form-group">
+        <label>Opponent:</label>
+        <div class="flex-group">
+            <select id="oppList" style="flex-grow: 1;"></select>
+            <button class="btn-tool" onclick="addOpponent()">+</button>
+            <button class="btn-danger" onclick="deleteOpponent()">🗑</button>
         </div>
     </div>
 
-    <div class="form-grid">
-        <div style="grid-column: span 2;">
-            <label>Playing For:</label>
-            <select id="myTeam" onchange="updateUI()"></select>
-        </div>
-        <div>
-            <label>Opponent:</label>
-            <select id="opponent"></select>
-        </div>
-        <div>
-            <label>Goal Scorer:</label>
-            <select id="scorer"></select>
-        </div>
-        <div><label>Our Score:</label><input type="number" id="hScore" value="0"></div>
-        <div><label>Their Score:</label><input type="number" id="aScore" value="0"></div>
+    <div class="form-group">
+        <label>Goal Scorer:</label>
+        <select id="scorer"></select>
     </div>
 
-    <button class="btn-main" onclick="addMatch()">➕ Save Result</button>
+    <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="form-group"><label>Our Score:</label><input type="number" id="hS" value="0"></div>
+        <div class="form-group"><label>Their Score:</label><input type="number" id="aS" value="0"></div>
+    </div>
+
+    <button class="btn-add" onclick="saveMatch()">➕ Save Match</button>
     
-    <div class="btn-row">
-        <button class="btn-sec" style="background:#28a745" onclick="downloadFullHTML()">📄 Export HTML File</button>
-        <button class="btn-sec" style="background:#dc3545" onclick="clearData()">🗑️ Reset All</button>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button class="btn-tool" style="background:#28a745" onclick="exportHTML()">📄 Export HTML</button>
+        <button class="btn-tool" style="background:#dc3545" onclick="resetAll()">🗑 Reset All</button>
     </div>
 
-    <table id="resultsTable">
-        <thead><tr><th>Team</th><th>Opponent</th><th>Score</th><th>Scorer</th></tr></thead>
+    <table id="matchTable">
+        <thead><tr><th>Team</th><th>Vs</th><th>Score</th><th>Scorer</th></tr></thead>
         <tbody></tbody>
     </table>
 </div>
 
 <script>
-    const config = {
-        "Llanelli Town": { opps: ["Garden Village", "Carmarthen", "Trostre"], players: ["Your Son", "Mate 1", "Mate 2"] },
-        "Dunvant 3X": { opps: ["Mumbles Rangers", "Bishopston", "South Gower"], players: ["Your Son", "Mate A", "Mate B"] }
+    let data = JSON.parse(localStorage.getItem('footy_config')) || {
+        "Llanelli Town": { opps: ["Garden Village", "Carmarthen"], players: ["Your Son", "Mate 1"] },
+        "Dunvant 3X": { opps: ["Mumbles", "Bishopston"], players: ["Your Son", "Mate A"] }
     };
 
     function toggleTheme() {
@@ -94,65 +87,83 @@
         b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
     }
 
-    function updateUI() {
-        const team = document.getElementById('myTeam').value || Object.keys(config)[0];
-        const oppS = document.getElementById('opponent');
-        const pS = document.getElementById('scorer');
+    function loadOptions() {
+        const team = document.getElementById('myTeam');
+        if(!team.innerHTML) Object.keys(data).forEach(t => team.add(new Option(t,t)));
         
-        if(!document.getElementById('myTeam').innerHTML) {
-            Object.keys(config).forEach(t => { let o = new Option(t,t); document.getElementById('myTeam').add(o); });
-        }
-
-        oppS.innerHTML = ""; pS.innerHTML = "<option>None</option>";
-        config[team].opps.forEach(o => oppS.add(new Option(o,o)));
-        config[team].players.forEach(p => pS.add(new Option(p,p)));
+        const selTeam = team.value;
+        const oppS = document.getElementById('oppList');
+        const scS = document.getElementById('scorer');
+        
+        oppS.innerHTML = ""; scS.innerHTML = "<option>None</option>";
+        data[selTeam].opps.forEach(o => oppS.add(new Option(o,o)));
+        data[selTeam].players.forEach(p => scS.add(new Option(p,p)));
     }
 
-    function addMatch() {
+    function addOpponent() {
+        const name = prompt("Enter new opponent name:");
+        if(name) {
+            const team = document.getElementById('myTeam').value;
+            data[team].opps.push(name);
+            localStorage.setItem('footy_config', JSON.stringify(data));
+            loadOptions();
+        }
+    }
+
+    function deleteOpponent() {
+        const team = document.getElementById('myTeam').value;
+        const opp = document.getElementById('oppList').value;
+        if(confirm(`Delete ${opp} from list?`)) {
+            data[team].opps = data[team].opps.filter(o => o !== opp);
+            localStorage.setItem('footy_config', JSON.stringify(data));
+            loadOptions();
+        }
+    }
+
+    function saveMatch() {
         const m = {
             t: document.getElementById('myTeam').value,
-            o: document.getElementById('opponent').value,
-            h: parseInt(document.getElementById('hScore').value),
-            a: parseInt(document.getElementById('aScore').value),
+            o: document.getElementById('oppList').value,
+            h: parseInt(document.getElementById('hS').value),
+            a: parseInt(document.getElementById('aS').value),
             s: document.getElementById('scorer').value
         };
-        let h = JSON.parse(localStorage.getItem('matches') || "[]");
+        let h = JSON.parse(localStorage.getItem('footy_history') || "[]");
         h.push(m);
-        localStorage.setItem('matches', JSON.stringify(h));
+        localStorage.setItem('footy_history', JSON.stringify(h));
         render();
     }
 
     function render() {
-        const h = JSON.parse(localStorage.getItem('matches') || "[]");
-        const tbody = document.querySelector("#resultsTable tbody");
+        const h = JSON.parse(localStorage.getItem('footy_history') || "[]");
+        const tbody = document.querySelector("#matchTable tbody");
         tbody.innerHTML = "";
-        
         let wins = 0, goals = 0;
-        h.reverse().forEach(x => {
+
+        [...h].reverse().forEach(x => {
             let r = tbody.insertRow();
-            r.innerHTML = `<td><span class="team-tag">${x.t}</span></td><td>${x.o}</td><td>${x.h}-${x.a}</td><td>${x.s}</td>`;
+            r.innerHTML = `<td><span class="tag">${x.t}</span></td><td>${x.o}</td><td>${x.h}-${x.a}</td><td>${x.s}</td>`;
             if(x.h > x.a) wins++;
             if(x.s === "Your Son") goals++;
         });
 
-        document.getElementById('totalMatches').innerText = h.length;
-        document.getElementById('totalWins').innerText = wins;
-        document.getElementById('totalGoals').innerText = goals;
+        document.getElementById('st-m').innerText = h.length;
+        document.getElementById('st-w').innerText = wins;
+        document.getElementById('st-g').innerText = goals;
     }
 
-    function downloadFullHTML() {
-        // This takes the current page and makes a copy
-        const pageContent = document.documentElement.outerHTML;
-        const blob = new Blob([pageContent], { type: 'text/html' });
+    function exportHTML() {
+        const html = `<html>${document.documentElement.innerHTML}</html>`;
+        const blob = new Blob([html], {type: 'text/html'});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `Football_Stats_${new Date().toLocaleDateString()}.html`;
+        a.download = 'Football_Stats_Backup.html';
         a.click();
     }
 
-    function clearData() { if(confirm("Clear history?")) { localStorage.clear(); render(); } }
+    function resetAll() { if(confirm("Clear all matches?")) { localStorage.removeItem('footy_history'); render(); } }
 
-    updateUI(); render();
+    loadOptions(); render();
 </script>
 </body>
 </html>
