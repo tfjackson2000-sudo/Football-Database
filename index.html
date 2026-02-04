@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker</title>
+    <title>Joey's Career Tracker V11.1</title>
     <style>
         :root { 
             --bg: #f0f2f5; --card: #ffffff; --text: #333; --border: #ddd; 
@@ -201,8 +201,10 @@
         "Dunvant": { active: true, color: "#fdd835", opps: ["Mumbles", "South Gower"], players: ["Joey"], coaches: ["Manager 1"], tournaments: [] }
     };
 
-    let appData = JSON.parse(localStorage.getItem('footy_data_v11')) || defaultData;
-    let history = JSON.parse(localStorage.getItem('footy_history_v11')) || "[]";
+    // FIXED: The syntax error in JSON.parse is fixed here
+    let appData = JSON.parse(localStorage.getItem('footy_data_v11.1') || "null") || defaultData;
+    let history = JSON.parse(localStorage.getItem('footy_history_v11.1') || "[]");
+    
     let activeTeam = Object.keys(appData).find(t => appData[t].active) || Object.keys(appData)[0];
 
     // --- TOURNAMENT LOGIC ---
@@ -330,7 +332,7 @@
             s: scorers, 
             coach: document.getElementById('managerSelect').value 
         };
-        history.push(entry); localStorage.setItem('footy_history_v11', JSON.stringify(history));
+        history.push(entry); localStorage.setItem('footy_history_v11.1', JSON.stringify(history));
         renderHistory(); 
         document.getElementById('hS').value = 0; document.getElementById('aS').value = 0; updateScorerInputs(); alert("Match Saved!");
     }
@@ -421,10 +423,10 @@
 
     function addItem(cat, id) { const val = document.getElementById(id).value; if(val) { appData[activeTeam][cat].push(val); saveData(); document.getElementById(id).value = ""; renderAdminLists(); loadMatchOptions(); } }
     function deleteItem(cat, idx) { appData[activeTeam][cat].splice(idx, 1); saveData(); renderAdminLists(); loadMatchOptions(); }
-    function saveData() { localStorage.setItem('footy_data_v11', JSON.stringify(appData)); }
+    function saveData() { localStorage.setItem('footy_data_v11.1', JSON.stringify(appData)); }
     function exportData() { const out = { data: appData, history: history }; const blob = new Blob([JSON.stringify(out)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `JoeyStats_Backup.json`; a.click(); }
-    function importData(e) { const reader = new FileReader(); reader.onload = (event) => { const imported = JSON.parse(event.target.result); appData = imported.data; history = imported.history; localStorage.setItem('footy_data_v11', JSON.stringify(appData)); localStorage.setItem('footy_history_v11', JSON.stringify(history)); location.reload(); }; reader.readAsText(e.target.files[0]); }
-    function saveFullWebsiteHTML() { let htmlContent = document.documentElement.outerHTML; const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v11', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v11', JSON.stringify(injectedHistory));`; htmlContent = htmlContent.replace('const defaultData = {', dataInjection + ' const ignore = {'); const blob = new Blob([htmlContent], {type: 'text/html'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Joey_Full_Website_Backup.html`; a.click(); }
+    function importData(e) { const reader = new FileReader(); reader.onload = (event) => { const imported = JSON.parse(event.target.result); appData = imported.data; history = imported.history; localStorage.setItem('footy_data_v11.1', JSON.stringify(appData)); localStorage.setItem('footy_history_v11.1', JSON.stringify(history)); location.reload(); }; reader.readAsText(e.target.files[0]); }
+    function saveFullWebsiteHTML() { let htmlContent = document.documentElement.outerHTML; const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v11.1', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v11.1', JSON.stringify(injectedHistory));`; htmlContent = htmlContent.replace('const defaultData = {', dataInjection + ' const ignore = {'); const blob = new Blob([htmlContent], {type: 'text/html'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Joey_Full_Website_Backup.html`; a.click(); }
     function resetAll() { if(confirm("Factory Reset? This deletes EVERYTHING.")) { localStorage.clear(); location.reload(); } }
     function toggleTheme() { const b = document.body; b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
     function showGuide() { document.getElementById('guideModal').style.display = "block"; }
