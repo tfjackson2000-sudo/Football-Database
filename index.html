@@ -23,8 +23,8 @@
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
 
         /* MODAL / GUIDE */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); overflow-y: auto; }
-        .modal-content { background: var(--card); margin: 10% auto; padding: 25px; border-radius: 12px; width: 85%; max-width: 500px; line-height: 1.6; position: relative; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); overflow-y: auto; }
+        .modal-content { background: var(--card); margin: 15% auto; padding: 25px; border-radius: 12px; width: 85%; max-width: 500px; line-height: 1.6; position: relative; color: var(--text); }
         .close-guide { float: right; font-size: 28px; font-weight: bold; cursor: pointer; color: var(--text); }
 
         /* STATS */
@@ -141,11 +141,15 @@
             <div style="display:flex; gap:5px;"><input type="text" id="newOppName"><button class="btn-tool" onclick="addItem('opps','newOppName')">Add</button></div>
             <ul id="oppListAdmin" style="padding:0; list-style:none;"></ul>
         </div>
+        
         <div style="margin-top:30px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
             <button class="btn-tool" style="background:#28a745" onclick="exportData()">💾 Export Data</button>
             <button class="btn-tool" style="background:#1a73e8" onclick="document.getElementById('importInput').click()">📂 Import Data</button>
             <input type="file" id="importInput" class="hidden" onchange="importData(event)">
-            <button class="btn-tool" style="background:#dc3545" onclick="resetAll()">⚠️ Full Reset</button>
+            
+            <button class="btn-tool" style="background:#6c757d; grid-column: span 2;" onclick="saveFullWebsiteHTML()">📄 Save as Offline Webpage</button>
+            
+            <button class="btn-tool" style="background:#dc3545; grid-column: span 2;" onclick="resetAll()">⚠️ Full Reset</button>
         </div>
     </div>
 </div>
@@ -154,15 +158,18 @@
     <div class="modal-content">
         <span class="close-guide" onclick="closeGuide()">&times;</span>
         <h2 style="color:var(--team-primary);">📖 User Guide</h2>
-        <p><strong>1. Match Day:</strong> Choose your team (Llanelli or Dunvant) to automatically change colors. Enter the score and scorer, then hit "Save."</p>
-        <p><strong>2. Season Stats:</strong> This tab automatically updates Joey's personal record, team performance, and the top scorers list.</p>
-        <p><strong>3. Admin:</strong> Use this to add/edit players, coaches, or regular opponents. This is also where you save your data.</p>
-        <p><strong>4. Backup:</strong> Use <strong>Export</strong> to save a file to your phone. Use <strong>Import</strong> if you ever get a new phone and want to restore your history.</p>
-        <button class="btn-add" onclick="closeGuide()">Got it!</button>
+        <p><strong>1. Match Day:</strong> Select the team, opponent, and score. The colors will change automatically based on who Joey is playing for!</p>
+        <p><strong>2. Season Stats:</strong> This page updates automatically. It tracks Joey's personal win rate, goals, and team form.</p>
+        <p><strong>3. Admin:</strong> Use this to Add or Delete players, coaches, and opponents from the dropdown lists.</p>
+        <p><strong>4. Backup & Save:</strong> 
+            <br>• <strong>Export Data:</strong> Saves a small file to restore data if you switch phones.
+            <br>• <strong>Save as Offline Webpage:</strong> Downloads a full copy of this app with all your data inside it. You can email this file to yourself to keep forever.</p>
+        <button class="btn-add" onclick="closeGuide()">Understood!</button>
     </div>
 </div>
 
 <script>
+    // Initial Config
     const defaultData = {
         "Llanelli Town U10 Academy": { opps: ["Garden Village", "Carmarthen Town"], players: ["Joey"], coaches: ["Coach A"] },
         "Dunvant & 3X": { opps: ["Mumbles Rangers", "South Gower"], players: ["Joey"], coaches: ["Manager 1"] }
@@ -174,9 +181,13 @@
     function updateTeamColors(teamName) {
         const root = document.documentElement;
         if (teamName.includes("Llanelli")) {
-            root.style.setProperty('--team-primary', '#d32f2f'); root.style.setProperty('--team-secondary', '#b71c1c'); root.style.setProperty('--btn-text', '#fff');
+            root.style.setProperty('--team-primary', '#d32f2f'); 
+            root.style.setProperty('--team-secondary', '#b71c1c'); 
+            root.style.setProperty('--btn-text', '#fff');
         } else {
-            root.style.setProperty('--team-primary', '#fdd835'); root.style.setProperty('--team-secondary', '#fbc02d'); root.style.setProperty('--btn-text', '#1b5e20');
+            root.style.setProperty('--team-primary', '#fdd835'); 
+            root.style.setProperty('--team-secondary', '#fbc02d'); 
+            root.style.setProperty('--btn-text', '#1b5e20');
         }
     }
 
@@ -255,15 +266,18 @@
         const val = document.getElementById(id).value; const team = document.getElementById('adminTeamSelect').value;
         if(val) { appData[team][cat].push(val); localStorage.setItem('footy_data_v5', JSON.stringify(appData)); document.getElementById(id).value = ""; renderAdminLists(); loadMatchOptions(); }
     }
+    
     function deleteItem(cat, idx) { 
         const team = document.getElementById('adminTeamSelect').value; appData[team][cat].splice(idx, 1);
         localStorage.setItem('footy_data_v5', JSON.stringify(appData)); renderAdminLists(); loadMatchOptions(); 
     }
+
     function exportData() {
         const out = { data: appData, history: history };
         const blob = new Blob([JSON.stringify(out)], {type: 'application/json'});
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `JoeyStats_Backup.json`; a.click();
     }
+
     function importData(e) {
         const reader = new FileReader(); reader.onload = (event) => {
             const imported = JSON.parse(event.target.result); appData = imported.data; history = imported.history;
@@ -271,12 +285,31 @@
             location.reload();
         }; reader.readAsText(e.target.files[0]);
     }
+    
+    // This saves the webpage AND injects your current data into it so it works offline
+    function saveFullWebsiteHTML() {
+        let htmlContent = document.documentElement.outerHTML;
+        // Inject current data into the defaultData variable so it loads when opened
+        const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v5', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v5', JSON.stringify(injectedHistory));`;
+        
+        // We replace the first line of script to ensure data loads
+        htmlContent = htmlContent.replace('const defaultData = {', dataInjection + ' const ignore = {');
+        
+        const blob = new Blob([htmlContent], {type: 'text/html'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Joey_Full_Website_Backup.html`;
+        a.click();
+    }
+
     function resetAll() { if(confirm("Factory Reset? This deletes EVERYTHING.")) { localStorage.clear(); location.reload(); } }
     function toggleTheme() { const b = document.body; b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
     function showGuide() { document.getElementById('guideModal').style.display = "block"; }
     function closeGuide() { document.getElementById('guideModal').style.display = "none"; }
 
-    loadMatchOptions(); renderHistory();
+    // Start App
+    loadMatchOptions(); 
+    renderHistory();
 </script>
 </body>
 </html>
