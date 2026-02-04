@@ -3,17 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Football Tracker</title>
+    <title>Joey's Tracker V7</title>
     <style>
         :root { 
             --bg: #f0f2f5; --card: #ffffff; --text: #333; --border: #ddd; 
-            --team-primary: #333; --team-secondary: #555; --btn-text: #fff;
+            --team-primary: #333; --btn-text: #fff; /* These update dynamically */
         }
         [data-theme="dark"] { 
             --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #444; 
         }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; transition: 0.3s; }
-        .container { max-width: 600px; background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: auto; border-top: 5px solid var(--team-primary); }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; transition: 0.3s; }
+        .container { max-width: 600px; background: var(--card); padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: auto; border-top: 5px solid var(--team-primary); }
+
+        /* HEADER */
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        
+        /* TEAM SWITCHER - NOW DYNAMIC */
+        .team-switcher { display: flex; gap: 10px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .team-select-btn { flex: 1; min-width: 100px; padding: 12px; border: 2px solid transparent; border-radius: 8px; font-weight: bold; cursor: pointer; opacity: 0.5; transition: 0.2s; filter: grayscale(0.6); white-space: nowrap; }
+        .team-select-btn.active { opacity: 1; transform: scale(1.02); filter: grayscale(0); border-color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
 
         /* TABS */
         .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
@@ -22,32 +30,34 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
 
-        /* MODAL / GUIDE */
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); overflow-y: auto; }
-        .modal-content { background: var(--card); margin: 15% auto; padding: 25px; border-radius: 12px; width: 85%; max-width: 500px; line-height: 1.6; position: relative; color: var(--text); }
-        .close-guide { float: right; font-size: 28px; font-weight: bold; cursor: pointer; color: var(--text); }
-
         /* STATS */
         .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; text-align: center; }
         .stat-box { background: var(--team-primary); color: var(--btn-text); padding: 12px 5px; border-radius: 8px; font-size: 0.75rem; text-transform: uppercase; border: 1px solid rgba(0,0,0,0.1); }
         .stat-box b { display: block; font-size: 1.5rem; margin-bottom: 2px; }
 
-        /* FORM & TABLE */
+        /* FORMS */
         .form-group { margin-bottom: 15px; }
         label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
         select, input { width: 100%; padding: 12px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
         button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.2s; }
         .btn-add { background: var(--team-primary); color: var(--btn-text); width: 100%; margin: 10px 0; }
         .btn-tool { background: #6c757d; color: white; padding: 8px 12px; font-size: 0.8rem; }
-        table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { padding: 10px 5px; border-bottom: 1px solid var(--border); text-align: center; }
-        .tag { font-size: 0.7rem; font-weight: bold; color: var(--btn-text); background: var(--team-primary); padding: 2px 6px; border-radius: 4px; display: inline-block; }
+        .tag { font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; }
 
         /* JOEY CARD */
-        .joey-card { background: linear-gradient(135deg, var(--team-primary), var(--team-secondary)); color: var(--btn-text); padding: 20px; border-radius: 12px; text-align: center; }
+        .joey-card { background: var(--team-primary); color: var(--btn-text); padding: 20px; border-radius: 12px; text-align: center; }
         .joey-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 15px; }
         .joey-stat { background: rgba(255,255,255,0.2); padding: 8px 2px; border-radius: 8px; }
         .joey-stat strong { display: block; font-size: 1.1rem; }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); overflow-y: auto; }
+        .modal-content { background: var(--card); margin: 15% auto; padding: 25px; border-radius: 12px; width: 85%; max-width: 500px; color: var(--text); }
+        .close-guide { float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+
+        /* TABLES */
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 10px 5px; border-bottom: 1px solid var(--border); text-align: center; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .hidden { display: none; }
@@ -56,13 +66,15 @@
 <body>
 
 <div class="container">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+    <div class="header-row">
         <h2 style="margin:0; color:var(--team-primary);">⚽ Joey's Tracker</h2>
         <div style="display:flex; gap:8px;">
             <button class="btn-tool" onclick="showGuide()">📖 Guide</button>
             <button class="btn-tool" onclick="toggleTheme()" style="border-radius:50%; width:35px; height:35px; padding:0;">🌓</button>
         </div>
     </div>
+
+    <div id="teamSwitcherContainer" class="team-switcher"></div>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('match')">Match Day</button>
@@ -77,10 +89,6 @@
             <div class="stat-box" style="filter: brightness(0.9);">Goals<b id="st-g">0</b></div>
         </div>
 
-        <div class="form-group">
-            <label>Playing For:</label>
-            <select id="myTeam" onchange="loadMatchOptions()"></select>
-        </div>
         <div class="form-group">
             <label>Opponent:</label>
             <select id="oppList"></select>
@@ -98,10 +106,8 @@
             <select id="scorerSelect"></select>
         </div>
         <button class="btn-add" onclick="saveMatch()">Save Match Result</button>
-        <table id="matchTable">
-            <thead><tr><th>Match</th><th>Score</th><th>Scorer</th></tr></thead>
-            <tbody></tbody>
-        </table>
+        
+        <table id="matchTable"><thead><tr><th>Match</th><th>Score</th><th>Scorer</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="stats" class="tab-content">
@@ -115,24 +121,34 @@
             </div>
             <p id="j-record" style="margin-top:10px; font-size:0.85rem;">0W - 0D - 0L</p>
         </div>
-        <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">🏆 Team Stats</h3>
+        <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">🏆 League Stats</h3>
         <table id="leagueTable"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th></tr></thead><tbody></tbody></table>
         <h3 style="border-bottom:1px solid var(--border); margin-top:20px;">⚽ Top Scorers</h3>
         <table id="scorerTable"><thead><tr><th>Player</th><th>Goals</th></tr></thead><tbody></tbody></table>
     </div>
 
     <div id="admin" class="tab-content">
-        <div class="form-group">
-            <label>Edit Team Data:</label>
-            <select id="adminTeamSelect" onchange="renderAdminLists()"></select>
+        <p style="text-align:center; opacity:0.7; font-size:0.9rem;">Currently editing: <b id="adminTeamLabel"></b></p>
+        
+        <div style="background: rgba(0,0,0,0.03); padding:10px; border-radius:8px; border:1px solid var(--border); margin-bottom:20px;">
+            <label><strong>🆕 Manage My Teams</strong></label>
+            <div style="display:flex; gap:10px; align-items:center; margin-top:5px;">
+                <input type="text" id="newTeamName" placeholder="New Team Name">
+                <input type="color" id="newTeamColor" value="#ff0000" style="width:50px; padding:2px; height:45px;">
+                <button class="btn-tool" style="background:#28a745" onclick="addNewTeam()">Add</button>
+            </div>
+            <div style="margin-top:10px;">
+                <button class="btn-tool" style="background:#dc3545; width:100%;" onclick="deleteCurrentTeam()">🗑 Delete Current Active Team</button>
+            </div>
         </div>
+
         <div class="form-group">
-            <label>Add Player to Squad:</label>
+            <label>Add Player:</label>
             <div style="display:flex; gap:5px;"><input type="text" id="newPlayerName"><button class="btn-tool" onclick="addItem('players','newPlayerName')">Add</button></div>
             <ul id="playerList" style="padding:0; list-style:none;"></ul>
         </div>
         <div class="form-group">
-            <label>Add Manager/Coach:</label>
+            <label>Add Coach:</label>
             <div style="display:flex; gap:5px;"><input type="text" id="newCoachName"><button class="btn-tool" onclick="addItem('coaches','newCoachName')">Add</button></div>
             <ul id="coachList" style="padding:0; list-style:none;"></ul>
         </div>
@@ -146,10 +162,8 @@
             <button class="btn-tool" style="background:#28a745" onclick="exportData()">💾 Export Data</button>
             <button class="btn-tool" style="background:#1a73e8" onclick="document.getElementById('importInput').click()">📂 Import Data</button>
             <input type="file" id="importInput" class="hidden" onchange="importData(event)">
-            
             <button class="btn-tool" style="background:#6c757d; grid-column: span 2;" onclick="saveFullWebsiteHTML()">📄 Save as Offline Webpage</button>
-            
-            <button class="btn-tool" style="background:#dc3545; grid-column: span 2;" onclick="resetAll()">⚠️ Full Reset</button>
+            <button class="btn-tool" style="background:#dc3545; grid-column: span 2;" onclick="resetAll()">⚠️ Factory Reset</button>
         </div>
     </div>
 </div>
@@ -158,66 +172,121 @@
     <div class="modal-content">
         <span class="close-guide" onclick="closeGuide()">&times;</span>
         <h2 style="color:var(--team-primary);">📖 User Guide</h2>
-        <p><strong>1. Match Day:</strong> Select the team, opponent, and score. The colors will change automatically based on who Joey is playing for!</p>
-        <p><strong>2. Season Stats:</strong> This page updates automatically. It tracks Joey's personal win rate, goals, and team form.</p>
-        <p><strong>3. Admin:</strong> Use this to Add or Delete players, coaches, and opponents from the dropdown lists.</p>
-        <p><strong>4. Backup & Save:</strong> 
-            <br>• <strong>Export Data:</strong> Saves a small file to restore data if you switch phones.
-            <br>• <strong>Save as Offline Webpage:</strong> Downloads a full copy of this app with all your data inside it. You can email this file to yourself to keep forever.</p>
+        <p><strong>1. Teams:</strong> Use the top buttons to switch teams. In <strong>Admin</strong>, you can now Add new teams (choose their color!) or delete old ones.</p>
+        <p><strong>2. Match Day:</strong> Enter score/scorer. The app adapts to the color of the team you are currently managing.</p>
+        <p><strong>3. Admin:</strong> Manage squad players, coaches, and opponents for the active team.</p>
+        <p><strong>4. Backup:</strong> Regular backups are recommended using the 'Save as Offline Webpage' button.</p>
         <button class="btn-add" onclick="closeGuide()">Understood!</button>
     </div>
 </div>
 
 <script>
-    // Initial Config
+    // New Data Structure includes Color
     const defaultData = {
-        "Llanelli Town U10 Academy": { opps: ["Garden Village", "Carmarthen Town"], players: ["Joey"], coaches: ["Coach A"] },
-        "Dunvant & 3X": { opps: ["Mumbles Rangers", "South Gower"], players: ["Joey"], coaches: ["Manager 1"] }
+        "Llanelli Town": { color: "#d32f2f", opps: ["Garden Village", "Carmarthen"], players: ["Joey"], coaches: ["Coach A"] },
+        "Dunvant": { color: "#fdd835", opps: ["Mumbles", "South Gower"], players: ["Joey"], coaches: ["Manager 1"] }
     };
 
-    let appData = JSON.parse(localStorage.getItem('footy_data_v5')) || defaultData;
-    let history = JSON.parse(localStorage.getItem('footy_history_v5') || "[]");
+    let appData = JSON.parse(localStorage.getItem('footy_data_v7')) || defaultData;
+    let history = JSON.parse(localStorage.getItem('footy_history_v7') || "[]");
+    
+    // Set first team as active by default
+    let activeTeam = Object.keys(appData)[0]; 
 
-    function updateTeamColors(teamName) {
+    function renderTeamButtons() {
+        const container = document.getElementById('teamSwitcherContainer');
+        container.innerHTML = "";
+        
+        Object.keys(appData).forEach(teamName => {
+            const teamData = appData[teamName];
+            const btn = document.createElement('button');
+            btn.className = 'team-select-btn';
+            
+            // Determine text color based on background brightness
+            // Simple logic: if user picks default red/yellow we know. 
+            // For custom, we default to white text unless it's the yellow one.
+            let txtColor = '#fff';
+            if(teamData.color === '#fdd835') txtColor = '#1b5e20'; // Keep Dunvant style logic
+            
+            btn.style.backgroundColor = teamData.color;
+            btn.style.color = txtColor;
+            btn.innerHTML = teamName;
+            
+            if(teamName === activeTeam) {
+                btn.classList.add('active');
+                updateTheme(teamData.color, txtColor);
+            }
+            
+            btn.onclick = () => setActiveTeam(teamName);
+            container.appendChild(btn);
+        });
+    }
+
+    function setActiveTeam(teamName) {
+        activeTeam = teamName;
+        renderTeamButtons(); // Re-render to update active state styling
+        loadMatchOptions();
+        renderAdminLists();
+    }
+
+    function updateTheme(primary, btnText) {
         const root = document.documentElement;
-        if (teamName.includes("Llanelli")) {
-            root.style.setProperty('--team-primary', '#d32f2f'); 
-            root.style.setProperty('--team-secondary', '#b71c1c'); 
-            root.style.setProperty('--btn-text', '#fff');
-        } else {
-            root.style.setProperty('--team-primary', '#fdd835'); 
-            root.style.setProperty('--team-secondary', '#fbc02d'); 
-            root.style.setProperty('--btn-text', '#1b5e20');
+        root.style.setProperty('--team-primary', primary);
+        root.style.setProperty('--btn-text', btnText);
+    }
+
+    // --- NEW TEAM MANAGEMENT ---
+    function addNewTeam() {
+        const name = document.getElementById('newTeamName').value.trim();
+        const color = document.getElementById('newTeamColor').value;
+        
+        if(!name) return alert("Enter a team name");
+        if(appData[name]) return alert("Team already exists");
+        
+        appData[name] = { color: color, opps: [], players: ["Joey"], coaches: [] };
+        localStorage.setItem('footy_data_v7', JSON.stringify(appData));
+        
+        document.getElementById('newTeamName').value = "";
+        setActiveTeam(name); // Switch to new team
+        alert(`Team ${name} added!`);
+    }
+
+    function deleteCurrentTeam() {
+        const teamCount = Object.keys(appData).length;
+        if(teamCount <= 1) return alert("You must have at least one team!");
+        
+        if(confirm(`Are you sure you want to delete ${activeTeam} and all its settings? (Match history remains)`)) {
+            delete appData[activeTeam];
+            localStorage.setItem('footy_data_v7', JSON.stringify(appData));
+            
+            // Switch to whatever team is first in the list
+            activeTeam = Object.keys(appData)[0];
+            setActiveTeam(activeTeam);
         }
     }
 
+    // --- EXISTING LOGIC ---
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         document.querySelector(`button[onclick="switchTab('${tabId}')"]`).classList.add('active');
-        if(tabId === 'admin') renderAdminLists();
         if(tabId === 'stats') calculateStats();
     }
 
     function loadMatchOptions() {
-        const teamSelect = document.getElementById('myTeam');
-        if(teamSelect.options.length === 0) {
-            Object.keys(appData).forEach(t => teamSelect.add(new Option(t,t)));
-            Object.keys(appData).forEach(t => document.getElementById('adminTeamSelect').add(new Option(t,t)));
-        }
-        const selTeam = teamSelect.value;
-        updateTeamColors(selTeam);
         const oppS = document.getElementById('oppList'), scS = document.getElementById('scorerSelect'), mgrS = document.getElementById('managerSelect');
         oppS.innerHTML = ""; scS.innerHTML = "<option>None</option>"; mgrS.innerHTML = "<option>None</option>";
-        appData[selTeam].opps.forEach(o => oppS.add(new Option(o,o)));
-        appData[selTeam].players.forEach(p => scS.add(new Option(p,p)));
-        appData[selTeam].coaches.forEach(c => mgrS.add(new Option(c,c)));
+        if(appData[activeTeam]) {
+            appData[activeTeam].opps.forEach(o => oppS.add(new Option(o,o)));
+            appData[activeTeam].players.forEach(p => scS.add(new Option(p,p)));
+            appData[activeTeam].coaches.forEach(c => mgrS.add(new Option(c,c)));
+        }
     }
 
     function saveMatch() {
-        const entry = { t: document.getElementById('myTeam').value, o: document.getElementById('oppList').value, h: parseInt(document.getElementById('hS').value), a: parseInt(document.getElementById('aS').value), s: document.getElementById('scorerSelect').value, coach: document.getElementById('managerSelect').value };
-        history.push(entry); localStorage.setItem('footy_history_v5', JSON.stringify(history));
+        const entry = { t: activeTeam, o: document.getElementById('oppList').value, h: parseInt(document.getElementById('hS').value), a: parseInt(document.getElementById('aS').value), s: document.getElementById('scorerSelect').value, coach: document.getElementById('managerSelect').value };
+        history.push(entry); localStorage.setItem('footy_history_v7', JSON.stringify(history));
         renderHistory(); alert("Match Saved!");
     }
 
@@ -226,7 +295,12 @@
         let w = 0, g = 0;
         [...history].reverse().forEach(x => {
             let row = tbody.insertRow();
-            let c = x.t.includes("Llanelli") ? "#d32f2f" : "#fdd835", tc = x.t.includes("Llanelli") ? "#fff" : "#1b5e20";
+            // Try to find color from current config, otherwise default grey
+            let tm = appData[x.t];
+            let c = tm ? tm.color : '#666'; 
+            let tc = '#fff';
+            if(c === '#fdd835') tc = '#1b5e20'; // Legacy dunvant fix
+
             row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span><br>vs ${x.o}`;
             row.insertCell(1).innerHTML = `<b>${x.h}-${x.a}</b>`; row.insertCell(2).innerHTML = x.s;
             if(x.h > x.a) w++; if(x.s === "Joey") g++;
@@ -250,26 +324,28 @@
     }
 
     function renderAdminLists() {
-        const team = document.getElementById('adminTeamSelect').value; updateTeamColors(team);
+        document.getElementById('adminTeamLabel').innerText = activeTeam;
         ['players', 'coaches', 'opps'].forEach(cat => {
             const el = document.getElementById(cat === 'players' ? 'playerList' : cat === 'coaches' ? 'coachList' : 'oppListAdmin');
             el.innerHTML = "";
-            appData[team][cat].forEach((item, idx) => {
-                const li = document.createElement('li'); li.style = "display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border)";
-                li.innerHTML = `<span>${item}</span><button style="background:none; color:#dc3545" onclick="deleteItem('${cat}',${idx})">🗑</button>`;
-                el.appendChild(li);
-            });
+            if(appData[activeTeam] && appData[activeTeam][cat]) {
+                appData[activeTeam][cat].forEach((item, idx) => {
+                    const li = document.createElement('li'); li.style = "display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border)";
+                    li.innerHTML = `<span>${item}</span><button style="background:none; color:#dc3545" onclick="deleteItem('${cat}',${idx})">🗑</button>`;
+                    el.appendChild(li);
+                });
+            }
         });
     }
 
     function addItem(cat, id) { 
-        const val = document.getElementById(id).value; const team = document.getElementById('adminTeamSelect').value;
-        if(val) { appData[team][cat].push(val); localStorage.setItem('footy_data_v5', JSON.stringify(appData)); document.getElementById(id).value = ""; renderAdminLists(); loadMatchOptions(); }
+        const val = document.getElementById(id).value; 
+        if(val) { appData[activeTeam][cat].push(val); localStorage.setItem('footy_data_v7', JSON.stringify(appData)); document.getElementById(id).value = ""; renderAdminLists(); loadMatchOptions(); }
     }
     
     function deleteItem(cat, idx) { 
-        const team = document.getElementById('adminTeamSelect').value; appData[team][cat].splice(idx, 1);
-        localStorage.setItem('footy_data_v5', JSON.stringify(appData)); renderAdminLists(); loadMatchOptions(); 
+        appData[activeTeam][cat].splice(idx, 1);
+        localStorage.setItem('footy_data_v7', JSON.stringify(appData)); renderAdminLists(); loadMatchOptions(); 
     }
 
     function exportData() {
@@ -281,25 +357,17 @@
     function importData(e) {
         const reader = new FileReader(); reader.onload = (event) => {
             const imported = JSON.parse(event.target.result); appData = imported.data; history = imported.history;
-            localStorage.setItem('footy_data_v5', JSON.stringify(appData)); localStorage.setItem('footy_history_v5', JSON.stringify(history));
+            localStorage.setItem('footy_data_v7', JSON.stringify(appData)); localStorage.setItem('footy_history_v7', JSON.stringify(history));
             location.reload();
         }; reader.readAsText(e.target.files[0]);
     }
     
-    // This saves the webpage AND injects your current data into it so it works offline
     function saveFullWebsiteHTML() {
         let htmlContent = document.documentElement.outerHTML;
-        // Inject current data into the defaultData variable so it loads when opened
-        const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v5', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v5', JSON.stringify(injectedHistory));`;
-        
-        // We replace the first line of script to ensure data loads
+        const dataInjection = `const defaultData = ${JSON.stringify(appData)}; \n const injectedHistory = ${JSON.stringify(history)}; \n localStorage.setItem('footy_data_v7', JSON.stringify(defaultData)); \n localStorage.setItem('footy_history_v7', JSON.stringify(injectedHistory));`;
         htmlContent = htmlContent.replace('const defaultData = {', dataInjection + ' const ignore = {');
-        
         const blob = new Blob([htmlContent], {type: 'text/html'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `Joey_Full_Website_Backup.html`;
-        a.click();
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `Joey_Full_Website_Backup.html`; a.click();
     }
 
     function resetAll() { if(confirm("Factory Reset? This deletes EVERYTHING.")) { localStorage.clear(); location.reload(); } }
@@ -307,8 +375,9 @@
     function showGuide() { document.getElementById('guideModal').style.display = "block"; }
     function closeGuide() { document.getElementById('guideModal').style.display = "none"; }
 
-    // Start App
-    loadMatchOptions(); 
+    // Init App
+    renderTeamButtons();
+    setActiveTeam(Object.keys(appData)[0]);
     renderHistory();
 </script>
 </body>
