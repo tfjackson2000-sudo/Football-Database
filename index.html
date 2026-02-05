@@ -3,424 +3,557 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V13</title>
+    <title>Joey's Career Tracker V15</title>
     <style>
         :root { 
-            --bg: #f0f2f5; --card: #ffffff; --text: #333; --border: #ddd; 
-            --team-primary: #333; --btn-text: #fff; 
+            --bg: #f4f7f6; --card: #ffffff; --text: #333; --border: #ddd; 
+            --primary: #333; --accent: #ffd700; --danger: #dc3545; --success: #28a745;
         }
-        [data-theme="dark"] { 
-            --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #444; 
-        }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); padding: 10px; margin: 0; transition: 0.3s; }
-        .container { max-width: 600px; background: var(--card); padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin: auto; border-top: 5px solid var(--team-primary); }
-
-        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .team-switcher { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
-        .team-select-btn { flex: 1; min-width: 120px; padding: 12px; border: 2px solid transparent; border-radius: 8px; font-weight: bold; cursor: pointer; opacity: 0.5; transition: 0.2s; filter: grayscale(0.5); }
-        .team-select-btn.active { opacity: 1; transform: scale(1.02); filter: grayscale(0); border-color: var(--text); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
-        .tab-btn { background: none; border: none; font-size: 0.85rem; font-weight: bold; color: var(--text); opacity: 0.6; padding: 10px 5px; cursor: pointer; flex: 1; text-align: center; border-radius: 6px; }
-        .tab-btn.active { opacity: 1; background: var(--team-primary); color: var(--btn-text); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s; }
-
-        .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; text-align: center; }
-        .stat-box { background: var(--team-primary); color: var(--btn-text); padding: 12px 5px; border-radius: 8px; font-size: 0.75rem; text-transform: uppercase; border: 1px solid rgba(0,0,0,0.1); }
-        .stat-box b { display: block; font-size: 1.5rem; margin-bottom: 2px; }
-
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9rem; }
-        select, input { width: 100%; padding: 12px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 8px; box-sizing: border-box; font-size: 1rem; }
-        button { padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; transition: 0.2s; }
-        .btn-add { background: var(--team-primary); color: var(--btn-text); width: 100%; margin: 10px 0; }
-        .btn-tool { background: #6c757d; color: white; padding: 8px 12px; font-size: 0.8rem; }
-        .tag { font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; }
-
-        .award-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: center; margin-bottom: 8px; background: rgba(0,0,0,0.02); padding: 5px; border-radius: 6px; }
-
-        .joey-card { 
-            background: linear-gradient(135deg, #FFD700, #DAA520); 
-            color: #333; padding: 20px; border-radius: 12px; text-align: center; 
-        }
-        .joey-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 15px; }
-        .joey-stat { background: rgba(255,255,255,0.4); padding: 8px 2px; border-radius: 8px; }
-
-        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); overflow-y: auto; }
-        .modal-content { background: var(--card); margin: 15% auto; padding: 25px; border-radius: 12px; width: 85%; max-width: 500px; color: var(--text); }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 60px; }
         
-        table { width: 100%; margin-top: 20px; border-collapse: collapse; font-size: 0.85rem; }
-        th, td { padding: 10px 5px; border-bottom: 1px solid var(--border); text-align: center; }
+        /* NAVIGATION */
+        .navbar { background: #fff; border-bottom: 1px solid #ccc; padding: 10px; display: flex; gap: 10px; overflow-x: auto; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .nav-item { padding: 8px 15px; border-radius: 20px; border: 1px solid transparent; cursor: pointer; font-weight: 600; font-size: 0.9rem; white-space: nowrap; opacity: 0.7; transition: 0.2s; }
+        .nav-item.active { opacity: 1; background: var(--primary); color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .nav-item.career { border-color: #DAA520; color: #B8860B; }
+        .nav-item.career.active { background: linear-gradient(135deg, #FFD700, #DAA520); color: #000; border: none; }
+        .nav-item.admin { margin-left: auto; background: #e9ecef; color: #333; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
+
+        /* CARDS */
+        .card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        .card-header { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; border-bottom: 2px solid var(--bg); padding-bottom: 10px; display:flex; justify-content:space-between; align-items:center; }
+        
+        /* STATS GRID */
+        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
+        .stat-item { display: flex; flex-direction: column; gap: 5px; }
+        .stat-item span { font-size: 0.75rem; text-transform: uppercase; opacity: 0.7; letter-spacing: 0.5px; }
+        .stat-item strong { font-size: 1.6rem; color: var(--primary); }
+
+        /* TABLES */
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        th { background: #f8f9fa; text-align: center; padding: 10px 5px; border-bottom: 2px solid #dee2e6; color: #666; font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 10px 5px; border-bottom: 1px solid #eee; text-align: center; }
+        .t-left { text-align: left; font-weight: 600; }
+        .pos-1 { border-left: 3px solid #FFD700; background: rgba(255,215,0,0.05); }
+
+        /* FORMS */
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px; color: #555; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        
+        /* BUTTONS */
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: 0.2s; }
+        .btn-add { background: var(--success); color: white; margin-bottom: 10px; }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-small { width: auto; padding: 5px 10px; font-size: 0.8rem; }
+        .btn-del { background: none; color: var(--danger); }
+
+        /* SESSION QUEUE */
+        .queue-item { background: #fff3cd; border: 1px solid #ffeeba; padding: 10px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
+<div class="navbar" id="navBar">
+    </div>
+
 <div class="container">
-    <div class="header-row">
-        <h2 style="margin:0; color:var(--team-primary);">⚽ Joey's Tracker</h2>
-        <div style="display:flex; gap:8px;">
-            <button class="btn-tool" onclick="showGuide()">📖 Guide</button>
-            <button class="btn-tool" onclick="toggleTheme()">🌓</button>
-        </div>
-    </div>
 
-    <div id="teamSwitcherContainer" class="team-switcher"></div>
-
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('match')">Match Day</button>
-        <button class="tab-btn" onclick="switchTab('stats')">Career Stats</button>
-        <button class="tab-btn" onclick="switchTab('admin')">Admin</button>
-    </div>
-
-    <div id="match" class="tab-content active">
-        <div class="stats-row">
-            <div class="stat-box">Played<b id="st-m">0</b></div>
-            <div class="stat-box">Wins<b id="st-w">0</b></div>
-            <div class="stat-box">Goals<b id="st-g">0</b></div>
-        </div>
-
-        <div class="form-group">
-            <label>🏆 Competition:</label>
-            <select id="tournSelect"><option value="">League</option></select>
-        </div>
-        <div class="form-group">
-            <label>Opponent:</label>
-            <select id="oppList"></select>
-        </div>
-        <div class="form-group">
-            <label>Coach / Manager:</label>
-            <select id="managerSelect"></select>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div><label>Our Score:</label><input type="number" id="hS" value="0" oninput="updateScorerInputs()"></div>
-            <div><label>Opp Score:</label><input type="number" id="aS" value="0"></div>
-        </div>
-        
-        <div id="scorerContainer" class="form-group" style="margin-top:10px;"></div>
-
-        <div id="awardsContainer" class="form-group">
-            <label>🏅 Match Awards:</label>
-            <div id="awardListMatch"></div>
-        </div>
-
-        <button id="saveMatchBtn" class="btn-add" onclick="saveMatch()">Save Match Result</button>
-        <button id="cancelEditBtn" class="btn-tool" style="display:none; width:100%; margin-bottom:10px;" onclick="cancelEdit()">Cancel Edit</button>
-        
-        <table id="matchTable"><thead><tr><th>Match</th><th>Score</th><th>Scorers/Awards</th><th>Actions</th></tr></thead><tbody></tbody></table>
-    </div>
-
-    <div id="stats" class="tab-content">
-        <div class="joey-card">
-            <h3>🏆 All-Time Career</h3>
-            <div class="joey-grid">
-                <div class="joey-stat"><span>Games</span><strong id="j-played">0</strong></div>
-                <div class="joey-stat"><span>Wins</span><strong id="j-wins">0</strong></div>
-                <div class="joey-stat"><span>Goals</span><strong id="j-goals">0</strong></div>
-                <div class="joey-stat"><span>Win %</span><strong id="j-perc">0%</strong></div>
+    <div id="viewMatchDay" class="hidden">
+        <div class="card">
+            <div class="card-header">📊 <span id="teamStatTitle">Stats</span></div>
+            <div class="stat-grid">
+                <div class="stat-item"><span>Played</span><strong id="st-p">0</strong></div>
+                <div class="stat-item"><span>Wins</span><strong id="st-w">0</strong></div>
+                <div class="stat-item"><span>Goals</span><strong id="st-g">0</strong></div>
+                <div class="stat-item"><span>Awards</span><strong id="st-a">0</strong></div>
             </div>
         </div>
-        <h3 style="margin-top:20px;">📊 Stats by Team</h3>
-        <table id="leagueTable"><thead><tr><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th></tr></thead><tbody></tbody></table>
-        <h3 style="margin-top:20px;">⚽ Leaders</h3>
-        <table id="scorerTable"><thead><tr><th>Player</th><th>Team</th><th>Goals</th><th>Aw.</th></tr></thead><tbody></tbody></table>
+
+        <div class="card" style="border-top: 4px solid var(--success);">
+            <div class="card-header">⚽ Match Day Input</div>
+            <p style="font-size:0.8rem; color:#666; margin-top:-10px; margin-bottom:15px;">Add one or more games, then click "Save Session".</p>
+            
+            <div class="form-group">
+                <label>Competition:</label>
+                <select id="mTourn"><option value="League">League</option></select>
+            </div>
+            
+            <div class="form-row">
+                <div><label>Opponent:</label><select id="mOpp"></select></div>
+                <div><label>Manager:</label><select id="mCoach"></select></div>
+            </div>
+
+            <div class="form-row">
+                <div><label>Us:</label><input type="number" id="mOur" value="0" oninput="renderScorers()"></div>
+                <div><label>Them:</label><input type="number" id="mTheir" value="0"></div>
+            </div>
+
+            <div id="mScorerList" class="form-group"></div>
+            <div id="mAwardList" class="form-group"></div>
+
+            <button class="btn btn-add" onclick="addToQueue()">+ Add Game to Weekend Queue</button>
+            
+            <div id="matchQueue" style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;"></div>
+            <button id="btnFinalize" class="btn btn-save hidden" onclick="saveSession()">💾 Save Weekend Session</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">🕒 Match History (This Team)</div>
+            <table id="teamHistoryTable">
+                <thead><tr><th class="t-left">Opponent</th><th>Result</th><th>Details</th><th>Act</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 
-    <div id="admin" class="tab-content">
-        <p>Managing: <b id="adminTeamLabel"></b></p>
-        
-        <div style="background: rgba(0,0,0,0.03); padding:10px; border-radius:8px; margin-bottom:15px;">
-            <label><strong>🏅 Manage Custom Awards</strong></label>
+    <div id="viewCareer" class="hidden">
+        <div class="card" style="background: linear-gradient(135deg, #fff, #f8f9fa); border: 1px solid #DAA520;">
+            <div class="card-header" style="color: #B8860B;">🌟 Career Overview</div>
+            <div class="stat-grid">
+                <div class="stat-item"><span>Total Games</span><strong id="c-p">0</strong></div>
+                <div class="stat-item"><span>Total Wins</span><strong id="c-w">0</strong></div>
+                <div class="stat-item"><span>Total Goals</span><strong id="c-g">0</strong></div>
+                <div class="stat-item"><span>Total Awards</span><strong id="c-a">0</strong></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">🏆 Master League Table</div>
+            <table id="masterTable">
+                <thead>
+                    <tr>
+                        <th class="t-left">Team</th>
+                        <th>P</th><th>W</th><th>D</th><th>L</th>
+                        <th>GD</th><th>GF</th><th>Pts</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <p style="font-size:0.7rem; text-align:center; margin-top:10px; color:#888;">3 pts Win / 1 pt Draw / 0 pts Loss</p>
+        </div>
+    </div>
+
+    <div id="viewAdmin" class="hidden">
+        <h2>⚙️ Admin & Settings</h2>
+
+        <div class="card">
+            <div class="card-header">🏅 Configure Awards</div>
+            <div class="form-group">
+                <label>Select Team to Edit:</label>
+                <select id="admTeamSelect" onchange="renderAdminAwards()"></select>
+            </div>
+            <div style="background:#f9f9f9; padding:10px; border-radius:8px;">
+                <label>Create New Award:</label>
+                <div style="display:flex; gap:5px;">
+                    <input type="text" id="newAwardName" placeholder="Name (e.g. MOTM)">
+                    <input type="number" id="newAwardMax" placeholder="Qty" style="width:60px;" value="1">
+                    <button class="btn btn-save" style="width:auto;" onclick="addAwardConfig()">Add</button>
+                </div>
+            </div>
+            <ul id="admAwardList" style="list-style:none; padding:0; margin-top:10px;"></ul>
+        </div>
+
+        <div class="card">
+            <div class="card-header">🛡 Manage Teams</div>
             <div style="display:flex; gap:5px; margin-bottom:10px;">
-                <input type="text" id="newAwardName" placeholder="e.g. Spectators Player">
-                <button class="btn-tool" style="background:#28a745" onclick="addCustomAward()">Add</button>
+                <input type="text" id="newTeamName" placeholder="New Club Name">
+                <input type="color" id="newTeamColor" value="#000000" style="width:50px; padding:2px; height:46px;">
+                <button class="btn btn-add" style="width:auto; margin:0;" onclick="addTeam()">Add</button>
             </div>
-            <ul id="customAwardList" style="padding:0; list-style:none;"></ul>
+            <div id="admTeamList"></div>
         </div>
 
-        <div style="background: rgba(255, 215, 0, 0.1); padding:10px; border-radius:8px; border:1px solid #FFD700; margin-bottom:15px;">
-            <label><strong>🏆 Tournaments</strong></label>
-            <div style="display:flex; gap:5px;"><input type="text" id="newTournName"><button class="btn-tool" onclick="addTournament()">Create</button></div>
-            <ul id="activeTournList" style="padding:0; list-style:none;"></ul>
-        </div>
-
-        <div class="form-group"><label>Add Player:</label><div style="display:flex; gap:5px;"><input type="text" id="newPlayerName"><button class="btn-tool" onclick="addItem('players','newPlayerName')">Add</button></div><ul id="playerList" style="padding:0; list-style:none;"></ul></div>
-        <div class="form-group"><label>Add Coach:</label><div style="display:flex; gap:5px;"><input type="text" id="newCoachName"><button class="btn-tool" onclick="addItem('coaches','newCoachName')">Add</button></div><ul id="coachList" style="padding:0; list-style:none;"></ul></div>
-        <div class="form-group"><label>Add Opponent:</label><div style="display:flex; gap:5px;"><input type="text" id="newOppName"><button class="btn-tool" onclick="addItem('opps','newOppName')">Add</button></div><ul id="oppListAdmin" style="padding:0; list-style:none;"></ul></div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:20px;">
-            <button class="btn-tool" style="background:#28a745" onclick="exportData()">💾 Export</button>
-            <button class="btn-tool" style="background:#1a73e8" onclick="document.getElementById('importInput').click()">📂 Import</button>
-            <input type="file" id="importInput" style="display:none" onchange="importData(event)">
-            <button class="btn-tool" style="background:#dc3545; grid-column: span 2;" onclick="resetAll()">⚠️ Factory Reset</button>
+        <div class="card">
+            <div class="card-header">💾 Data Management</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button class="btn btn-save" onclick="exportData()">Export Backup</button>
+                <button class="btn" style="background:#6c757d; color:white;" onclick="document.getElementById('importFile').click()">Import Backup</button>
+                <input type="file" id="importFile" class="hidden" onchange="importData(event)">
+                <button class="btn btn-del" style="grid-column:span 2; border:1px solid red;" onclick="factoryReset()">Factory Reset App</button>
+            </div>
         </div>
     </div>
-</div>
 
-<div id="guideModal" class="modal">
-    <div class="modal-content">
-        <h2 style="margin-top:0">📖 User Guide V13</h2>
-        <p><strong>1. Editing Matches:</strong> Notice a mistake? Use the <strong>Edit</strong> button in the history table to reload a match and fix scores, scorers, or awards.</p>
-        <p><strong>2. Custom Awards:</strong> In <strong>Admin</strong>, you can create specific awards for your team. These will appear as checkboxes on the Match Day screen.</p>
-        <p><strong>3. Saving History:</strong> After editing, the "Update Match" button replaces the original record so your career stats stay accurate.</p>
-        <button class="btn-add" onclick="closeGuide()">Understood!</button>
-    </div>
 </div>
 
 <script>
-    const defaultData = {
-        "Llanelli Town": { active: true, color: "#d32f2f", opps: [], players: ["Joey"], coaches: [], tournaments: [], customAwards: ["Man of the Match"] },
-        "Dunvant": { active: true, color: "#fdd835", opps: [], players: ["Joey"], coaches: [], tournaments: [], customAwards: ["Player of the Week"] }
+    // --- DATA STORE ---
+    const defaultDB = {
+        teams: {
+            "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: ["Swansea"], coaches: ["Coach A"], awards: [{name:"TOTW", max:3}], active: true },
+            "Dunvant": { color: "#fdd835", players: ["Joey"], opps: ["Mumbles"], coaches: ["Coach B"], awards: [{name:"MOTM", max:1}], active: true }
+        },
+        history: [] // { id, date, team, opp, tourn, our, their, scorers:[], awards:[{name,player}], coach }
     };
 
-    let appData = JSON.parse(localStorage.getItem('footy_v13_data')) || defaultData;
-    let history = JSON.parse(localStorage.getItem('footy_v13_hist')) || [];
-    let activeTeam = Object.keys(appData)[0];
-    let editIndex = -1;
+    let db = JSON.parse(localStorage.getItem('joey_v15')) || defaultDB;
+    let currentView = Object.keys(db.teams)[0];
+    let sessionQueue = [];
 
-    function saveData() { 
-        localStorage.setItem('footy_v13_data', JSON.stringify(appData));
-        localStorage.setItem('footy_v13_hist', JSON.stringify(history));
+    // --- CORE FUNCTIONS ---
+    function save() { localStorage.setItem('joey_v15', JSON.stringify(db)); }
+    
+    function init() {
+        renderNav();
+        // If current view is invalid (deleted team), reset
+        if(currentView !== 'Career' && currentView !== 'Admin' && !db.teams[currentView]) {
+            currentView = Object.keys(db.teams)[0];
+        }
+        switchView(currentView);
     }
 
-    function setActiveTeam(team) { 
-        activeTeam = team; 
-        renderTeamButtons(); loadMatchOptions(); renderAdminLists(); renderAwardsInput();
-    }
-
-    function renderTeamButtons() {
-        const container = document.getElementById('teamSwitcherContainer');
-        container.innerHTML = "";
-        Object.keys(appData).forEach(t => {
-            const btn = document.createElement('button');
-            btn.className = `team-select-btn ${t === activeTeam ? 'active' : ''}`;
-            btn.style.backgroundColor = appData[t].color;
-            btn.style.color = (appData[t].color === '#fdd835') ? '#1b5e20' : '#fff';
+    function renderNav() {
+        const nav = document.getElementById('navBar');
+        nav.innerHTML = '';
+        
+        // Team Tabs
+        Object.keys(db.teams).forEach(t => {
+            if(!db.teams[t].active) return;
+            const btn = document.createElement('div');
+            btn.className = `nav-item ${currentView === t ? 'active' : ''}`;
             btn.innerText = t;
-            btn.onclick = () => setActiveTeam(t);
-            container.appendChild(btn);
+            btn.onclick = () => switchView(t);
+            nav.appendChild(btn);
         });
-        document.documentElement.style.setProperty('--team-primary', appData[activeTeam].color);
-        document.documentElement.style.setProperty('--btn-text', (appData[activeTeam].color === '#fdd835') ? '#1b5e20' : '#fff');
+
+        // Career Tab
+        const career = document.createElement('div');
+        career.className = `nav-item career ${currentView === 'Career' ? 'active' : ''}`;
+        career.innerHTML = '🌟 Career';
+        career.onclick = () => switchView('Career');
+        nav.appendChild(career);
+
+        // Admin Tab
+        const admin = document.createElement('div');
+        admin.className = `nav-item admin ${currentView === 'Admin' ? 'active' : ''}`;
+        admin.innerHTML = '⚙️';
+        admin.onclick = () => switchView('Admin');
+        nav.appendChild(admin);
     }
 
-    function loadMatchOptions() {
-        const oppS = document.getElementById('oppList'), mgrS = document.getElementById('managerSelect'), tournS = document.getElementById('tournSelect');
-        oppS.innerHTML = ""; mgrS.innerHTML = "<option>None</option>";
-        tournS.innerHTML = '<option value="">League</option>';
-        if(appData[activeTeam]) {
-            appData[activeTeam].opps.forEach(o => oppS.add(new Option(o,o)));
-            appData[activeTeam].coaches.forEach(c => mgrS.add(new Option(c,c)));
-            appData[activeTeam].tournaments.forEach(t => { if(t.active) tournS.add(new Option("🏆 " + t.name, t.name)); });
-        }
-    }
+    function switchView(viewName) {
+        currentView = viewName;
+        renderNav();
+        
+        // Hide all views
+        ['viewMatchDay', 'viewCareer', 'viewAdmin'].forEach(id => document.getElementById(id).classList.add('hidden'));
 
-    function renderAwardsInput() {
-        const list = document.getElementById('awardListMatch');
-        list.innerHTML = "";
-        const awards = appData[activeTeam].customAwards || [];
-        awards.forEach(aw => {
-            const div = document.createElement('div');
-            div.className = "award-row";
-            div.innerHTML = `<span>${aw}</span><select class="match-award-select" data-award="${aw}"><option value="">- Select -</option></select>`;
-            const sel = div.querySelector('select');
-            appData[activeTeam].players.forEach(p => sel.add(new Option(p,p)));
-            list.appendChild(div);
-        });
-    }
-
-    function updateScorerInputs() {
-        const score = parseInt(document.getElementById('hS').value) || 0;
-        const container = document.getElementById('scorerContainer');
-        container.innerHTML = "";
-        for(let i=1; i<=score; i++) {
-            const sel = document.createElement('select');
-            sel.className = "dynamic-scorer-select";
-            sel.style.marginBottom = "5px";
-            appData[activeTeam].players.forEach(p => sel.add(new Option(p,p)));
-            container.appendChild(sel);
-        }
-    }
-
-    function saveMatch() {
-        const scorers = Array.from(document.querySelectorAll('.dynamic-scorer-select')).map(s => s.value);
-        const awards = Array.from(document.querySelectorAll('.match-award-select'))
-            .filter(s => s.value !== "").map(s => ({ name: s.getAttribute('data-award'), player: s.value }));
-
-        const entry = {
-            t: activeTeam, o: document.getElementById('oppList').value,
-            tourn: document.getElementById('tournSelect').value,
-            h: parseInt(document.getElementById('hS').value) || 0,
-            aS: parseInt(document.getElementById('aS').value) || 0,
-            s: scorers, aw: awards, coach: document.getElementById('managerSelect').value
-        };
-
-        if(editIndex > -1) {
-            history[editIndex] = entry;
-            editIndex = -1;
-            document.getElementById('saveMatchBtn').innerText = "Save Match Result";
-            document.getElementById('cancelEditBtn').style.display = "none";
+        if(viewName === 'Career') {
+            document.getElementById('viewCareer').classList.remove('hidden');
+            renderCareer();
+        } else if (viewName === 'Admin') {
+            document.getElementById('viewAdmin').classList.remove('hidden');
+            renderAdmin();
         } else {
-            history.push(entry);
+            // Team View
+            document.getElementById('viewMatchDay').classList.remove('hidden');
+            // Set Color Theme
+            document.documentElement.style.setProperty('--primary', db.teams[viewName].color);
+            renderMatchDayInputs();
+            renderTeamStats();
+            renderTeamHistory();
         }
+    }
+
+    // --- MATCH DAY LOGIC ---
+    function renderMatchDayInputs() {
+        const t = db.teams[currentView];
         
-        saveData();
-        clearMatchForm();
-        renderHistory();
-        alert("Success!");
-    }
-
-    function editMatch(idx) {
-        editIndex = idx;
-        const m = history[idx];
-        setActiveTeam(m.t);
-        document.getElementById('oppList').value = m.o;
-        document.getElementById('tournSelect').value = m.tourn;
-        document.getElementById('hS').value = m.h;
-        document.getElementById('aS').value = m.aS;
-        document.getElementById('managerSelect').value = m.coach;
+        // Populate Dropdowns
+        const fill = (id, arr) => {
+            const el = document.getElementById(id);
+            el.innerHTML = ""; // Keep selection reset logic? No, let's allow typing
+            // Actually for Opponent/Coach allow adding new on fly? For now stick to lists + "Add New" in admin
+            arr.forEach(x => el.add(new Option(x,x)));
+        };
+        fill('mOpp', t.opps);
+        fill('mCoach', t.coaches);
         
-        updateScorerInputs();
-        const scorerSels = document.querySelectorAll('.dynamic-scorer-select');
-        m.s.forEach((name, i) => { if(scorerSels[i]) scorerSels[i].value = name; });
+        renderScorers(); // Reset scorer inputs
+    }
 
-        renderAwardsInput();
-        const awardSels = document.querySelectorAll('.match-award-select');
-        m.aw.forEach(awardObj => {
-            const sel = Array.from(awardSels).find(s => s.getAttribute('data-award') === awardObj.name);
-            if(sel) sel.value = awardObj.player;
+    function renderScorers() {
+        const count = parseInt(document.getElementById('mOur').value) || 0;
+        const div = document.getElementById('mScorerList');
+        div.innerHTML = count > 0 ? '<label>Goal Scorers:</label>' : '';
+        const players = db.teams[currentView].players;
+        
+        for(let i=0; i<count; i++) {
+            const sel = document.createElement('select');
+            sel.className = 'sc-input';
+            sel.style.marginBottom = '5px';
+            players.forEach(p => sel.add(new Option(p,p)));
+            div.appendChild(sel);
+        }
+
+        // Render Awards based on Config
+        const awDiv = document.getElementById('mAwardList');
+        awDiv.innerHTML = '';
+        const awards = db.teams[currentView].awards || [];
+        
+        if(awards.length > 0) awDiv.innerHTML = '<label>Awards:</label>';
+        
+        awards.forEach(aw => {
+            const wrapper = document.createElement('div');
+            wrapper.style.background = '#f9f9f9';
+            wrapper.style.padding = '5px';
+            wrapper.style.marginBottom = '5px';
+            wrapper.innerHTML = `<small><strong>${aw.name}</strong> (Pick up to ${aw.max})</small>`;
+            
+            for(let k=0; k<aw.max; k++) {
+                const s = document.createElement('select');
+                s.className = 'aw-input';
+                s.dataset.name = aw.name;
+                s.add(new Option("- Select Winner -", ""));
+                players.forEach(p => s.add(new Option(p,p)));
+                s.style.marginTop = '2px';
+                wrapper.appendChild(s);
+            }
+            awDiv.appendChild(wrapper);
         });
-
-        document.getElementById('saveMatchBtn').innerText = "Update Match Result";
-        document.getElementById('cancelEditBtn').style.display = "block";
-        window.scrollTo(0,0);
     }
 
-    function cancelEdit() {
-        editIndex = -1;
-        clearMatchForm();
-        document.getElementById('saveMatchBtn').innerText = "Save Match Result";
-        document.getElementById('cancelEditBtn').style.display = "none";
+    function addToQueue() {
+        const opp = document.getElementById('mOpp').value;
+        if(!opp) return alert("Select an opponent (Add in Admin if empty)");
+        
+        const game = {
+            id: Date.now() + Math.random(),
+            date: new Date().toLocaleDateString(),
+            team: currentView,
+            opp: opp,
+            tourn: document.getElementById('mTourn').value,
+            our: parseInt(document.getElementById('mOur').value) || 0,
+            their: parseInt(document.getElementById('mTheir').value) || 0,
+            coach: document.getElementById('mCoach').value,
+            scorers: Array.from(document.querySelectorAll('.sc-input')).map(s => s.value),
+            awards: Array.from(document.querySelectorAll('.aw-input')).filter(s => s.value).map(s => ({name: s.dataset.name, player: s.value}))
+        };
+        
+        sessionQueue.push(game);
+        renderQueue();
+        
+        // Reset Inputs
+        document.getElementById('mOur').value = 0;
+        document.getElementById('mTheir').value = 0;
+        renderScorers();
     }
 
-    function clearMatchForm() {
-        document.getElementById('hS').value = 0;
-        document.getElementById('aS').value = 0;
-        updateScorerInputs();
-        renderAwardsInput();
+    function renderQueue() {
+        const qDiv = document.getElementById('matchQueue');
+        const btn = document.getElementById('btnFinalize');
+        
+        qDiv.innerHTML = sessionQueue.map((g, i) => `
+            <div class="queue-item">
+                <div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div>
+                <button class="btn btn-del" style="width:auto" onclick="removeFromQueue(${i})">✕</button>
+            </div>
+        `).join('');
+        
+        if(sessionQueue.length > 0) btn.classList.remove('hidden');
+        else btn.classList.add('hidden');
     }
 
-    function deleteMatch(idx) {
-        if(confirm("Delete match?")) { history.splice(idx, 1); saveData(); renderHistory(); }
+    function removeFromQueue(i) { sessionQueue.splice(i,1); renderQueue(); }
+
+    function saveSession() {
+        db.history.push(...sessionQueue);
+        sessionQueue = [];
+        save();
+        renderQueue();
+        renderTeamStats();
+        renderTeamHistory();
+        alert("Session Saved!");
     }
 
-    function renderHistory() {
-        const tbody = document.querySelector("#matchTable tbody");
-        tbody.innerHTML = "";
-        [...history].reverse().forEach((x, i) => {
-            const realIdx = history.length - 1 - i;
-            const row = tbody.insertRow();
-            const tm = appData[x.t];
-            const c = tm ? tm.color : '#666';
-            const tc = (c === '#fdd835') ? '#1b5e20' : '#fff';
-            
-            row.insertCell(0).innerHTML = `<span class="tag" style="background:${c}; color:${tc}">${x.t}</span><br>${x.o}<br><small>${x.coach}</small>`;
-            row.insertCell(1).innerHTML = `<b>${x.h}-${x.aS}</b>`;
-            
-            const scorers = x.s.join(', ');
-            const awards = x.aw.map(a => `🏅 ${a.name}: ${a.player}`).join('<br>');
-            row.insertCell(2).innerHTML = `<small>⚽ ${scorers}<br>${awards}</small>`;
-            
-            row.insertCell(3).innerHTML = `<button class="btn-tool" onclick="editMatch(${realIdx})">Edit</button><br><button class="btn-tool" style="background:#dc3545;margin-top:5px" onclick="deleteMatch(${realIdx})">🗑</button>`;
+    // --- STATS & HISTORY ---
+    function renderTeamStats() {
+        const h = db.history.filter(m => m.team === currentView);
+        document.getElementById('st-p').innerText = h.length;
+        document.getElementById('st-w').innerText = h.filter(m => m.our > m.their).length;
+        
+        let goals = 0;
+        let awards = 0;
+        h.forEach(m => {
+            goals += m.scorers.filter(p => p === "Joey").length;
+            awards += m.awards.filter(a => a.player === "Joey").length;
         });
-        updateDashboard();
-    }
-
-    function updateDashboard() {
-        const h = history.filter(m => m.t === activeTeam);
-        document.getElementById('st-m').innerText = h.length;
-        document.getElementById('st-w').innerText = h.filter(m => m.h > m.aS).length;
-        let goals = 0; h.forEach(m => m.s.forEach(p => { if(p === "Joey") goals++; }));
         document.getElementById('st-g').innerText = goals;
+        document.getElementById('st-a').innerText = awards;
     }
 
-    function calculateStats() {
-        let jP = 0, jW = 0, jG = 0, teams = {}, scorers = {};
-        history.forEach(m => {
-            jP++; if(m.h > m.aS) jW++;
-            if(!teams[m.t]) teams[m.t] = { p:0, w:0, gf:0, ga:0 };
-            teams[m.t].p++; teams[m.t].gf += m.h; teams[m.t].ga += m.aS; if(m.h > m.aS) teams[m.t].w++;
-            
-            m.s.forEach(p => {
-                if(p === "Joey") jG++;
-                const k = `${p}|${m.t}`; scorers[k] = scorers[k] || { g:0, a:0 }; scorers[k].g++;
-            });
-            m.aw.forEach(a => {
-                const k = `${a.player}|${m.t}`; scorers[k] = scorers[k] || { g:0, a:0 }; scorers[k].a++;
-            });
-        });
-        document.getElementById('j-played').innerText = jP;
-        document.getElementById('j-wins').innerText = jW;
-        document.getElementById('j-goals').innerText = jG;
-        document.getElementById('j-perc').innerText = jP ? Math.round((jW/jP)*100)+'%' : '0%';
+    function renderTeamHistory() {
+        const tbody = document.querySelector('#teamHistoryTable tbody');
+        tbody.innerHTML = '';
+        const h = db.history.filter(m => m.team === currentView).reverse();
         
-        const lb = document.querySelector("#leagueTable tbody"); lb.innerHTML = "";
-        Object.entries(teams).forEach(([n, t]) => {
-            lb.insertRow().innerHTML = `<td>${n}</td><td>${t.p}</td><td>${t.w}</td><td>${t.p-t.w}</td><td>-</td><td>${t.gf}</td><td>${t.ga}</td>`;
-        });
-        const sb = document.querySelector("#scorerTable tbody"); sb.innerHTML = "";
-        Object.entries(scorers).sort((a,b) => b[1].g - a[1].g).forEach(([k, v]) => {
-            const [n, t] = k.split('|');
-            lb.insertRow(); sb.insertRow().innerHTML = `<td>${n}</td><td>${t}</td><td>${v.g}</td><td>${v.a}</td>`;
+        h.forEach(m => {
+            const tr = document.createElement('tr');
+            
+            // Result Logic (W/D/L)
+            let res = "D";
+            let col = "#ffc107";
+            if(m.our > m.their) { res = "W"; col = "#28a745"; }
+            else if(m.our < m.their) { res = "L"; col = "#dc3545"; }
+
+            // Details String
+            let details = "";
+            if(m.scorers.length) details += `⚽ ${m.scorers.join(', ')}<br>`;
+            if(m.awards.length) details += `🏅 ${m.awards.map(a => a.player).join(', ')}`;
+
+            tr.innerHTML = `
+                <td class="t-left">${m.opp}<br><small style="color:#888">${m.date}</small></td>
+                <td style="color:${col}; font-weight:bold;">${res} ${m.our}-${m.their}</td>
+                <td style="font-size:0.8rem;">${details}</td>
+                <td><button class="btn-del" onclick="deleteMatch('${m.id}')">🗑</button></td>
+            `;
+            tbody.appendChild(tr);
         });
     }
 
-    function renderAdminLists() {
-        document.getElementById('adminTeamLabel').innerText = activeTeam;
-        ['players', 'coaches', 'opps'].forEach(cat => {
-            const el = document.getElementById(cat === 'players' ? 'playerList' : cat === 'coaches' ? 'coachList' : 'oppListAdmin');
-            el.innerHTML = "";
-            appData[activeTeam][cat].forEach((item, idx) => {
-                const li = document.createElement('li'); li.style = "display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid var(--border)";
-                li.innerHTML = `<span>${item}</span><button style="color:red; background:none; border:none" onclick="deleteItem('${cat}',${idx})">🗑</button>`;
-                el.appendChild(li);
+    function deleteMatch(id) {
+        if(confirm("Delete this match?")) {
+            db.history = db.history.filter(m => m.id != id); // Loose comparison for string/num safety
+            save();
+            renderTeamStats();
+            renderTeamHistory();
+        }
+    }
+
+    // --- CAREER / LEAGUE TABLE ---
+    function renderCareer() {
+        // Global Stats
+        const h = db.history;
+        document.getElementById('c-p').innerText = h.length;
+        document.getElementById('c-w').innerText = h.filter(m => m.our > m.their).length;
+        document.getElementById('c-g').innerText = h.reduce((acc, m) => acc + m.scorers.filter(p => p === "Joey").length, 0);
+        document.getElementById('c-a').innerText = h.reduce((acc, m) => acc + m.awards.filter(a => a.player === "Joey").length, 0);
+
+        // LEAGUE TABLE LOGIC
+        // Every match has 2 sides: The Team and The Opponent
+        let stats = {};
+
+        h.forEach(m => {
+            const update = (name, gf, ga) => {
+                if(!stats[name]) stats[name] = { name, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 };
+                const s = stats[name];
+                s.p++; s.gf += gf; s.ga += ga;
+                
+                if(gf > ga) { s.w++; s.pts += 3; }
+                else if(gf < ga) { s.l++; s.pts += 0; } // Loss = 0
+                else { s.d++; s.pts += 1; } // Draw = 1
+            };
+            
+            update(m.team, m.our, m.their);
+            update(m.opp, m.their, m.our);
+        });
+
+        // Sorting: Points > GD > GF > Name
+        const sorted = Object.values(stats).sort((a,b) => {
+            if(b.pts !== a.pts) return b.pts - a.pts;
+            const gdA = a.gf - a.ga; const gdB = b.gf - b.ga;
+            if(gdB !== gdA) return gdB - gdA;
+            if(b.gf !== a.gf) return b.gf - a.gf;
+            return a.name.localeCompare(b.name);
+        });
+
+        const tbody = document.querySelector('#masterTable tbody');
+        tbody.innerHTML = sorted.map((t, i) => `
+            <tr class="${i===0 ? 'pos-1' : ''}">
+                <td class="t-left">${i+1}. ${t.name}</td>
+                <td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>
+                <td>${t.gf - t.ga}</td><td>${t.gf}</td><td><b>${t.pts}</b></td>
+            </tr>
+        `).join('');
+    }
+
+    // --- ADMIN ---
+    function renderAdmin() {
+        // Team Select for Awards
+        const tSel = document.getElementById('admTeamSelect');
+        tSel.innerHTML = '';
+        Object.keys(db.teams).forEach(t => tSel.add(new Option(t,t)));
+        renderAdminAwards();
+
+        // Team List
+        document.getElementById('admTeamList').innerHTML = Object.keys(db.teams).map(t => `
+            <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #eee;">
+                <span><span style="color:${db.teams[t].color}">●</span> ${t}</span>
+                <button class="btn-del" onclick="deleteTeam('${t}')">🗑</button>
+            </div>
+        `).join('');
+    }
+
+    function renderAdminAwards() {
+        const t = document.getElementById('admTeamSelect').value;
+        const ul = document.getElementById('admAwardList');
+        ul.innerHTML = '';
+        if(db.teams[t]) {
+            db.teams[t].awards.forEach((aw, i) => {
+                ul.innerHTML += `
+                    <li style="display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid #eee;">
+                        <span>${aw.name} (Max: ${aw.max})</span>
+                        <button class="btn-del" onclick="deleteAward('${t}', ${i})">🗑</button>
+                    </li>
+                `;
             });
-        });
-        renderAwardAdmin();
+        }
     }
 
-    function addCustomAward() {
-        const name = document.getElementById('newAwardName').value.trim();
-        if(!name) return;
-        if(!appData[activeTeam].customAwards) appData[activeTeam].customAwards = [];
-        appData[activeTeam].customAwards.push(name);
-        saveData(); document.getElementById('newAwardName').value = ""; renderAwardAdmin(); renderAwardsInput();
+    function addAwardConfig() {
+        const t = document.getElementById('admTeamSelect').value;
+        const n = document.getElementById('newAwardName').value;
+        const m = document.getElementById('newAwardMax').value;
+        if(t && n) {
+            db.teams[t].awards.push({name: n, max: parseInt(m)||1});
+            save(); renderAdminAwards();
+        }
     }
 
-    function renderAwardAdmin() {
-        const ul = document.getElementById('customAwardList'); ul.innerHTML = "";
-        (appData[activeTeam].customAwards || []).forEach((aw, idx) => {
-            const li = document.createElement('li'); li.style = "display:flex; justify-content:space-between; padding:5px; border-bottom:1px solid var(--border)";
-            li.innerHTML = `<span>${aw}</span><button style="color:red; background:none; border:none" onclick="deleteAward(${idx})">🗑</button>`;
-            ul.appendChild(li);
-        });
+    function deleteAward(team, index) {
+        db.teams[team].awards.splice(index, 1);
+        save(); renderAdminAwards();
     }
 
-    function deleteAward(idx) { appData[activeTeam].customAwards.splice(idx,1); saveData(); renderAwardAdmin(); renderAwardsInput(); }
-    function addItem(cat, id) { const v = document.getElementById(id).value; if(v){ appData[activeTeam][cat].push(v); saveData(); document.getElementById(id).value=""; renderAdminLists(); loadMatchOptions(); }}
-    function deleteItem(cat, idx) { appData[activeTeam][cat].splice(idx,1); saveData(); renderAdminLists(); loadMatchOptions(); }
-    function switchTab(t) { document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active')); document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.getElementById(t).classList.add('active'); event.target.classList.add('active'); if(t==='stats') calculateStats(); }
-    function toggleTheme() { const b = document.body; b.setAttribute('data-theme', b.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); }
-    function showGuide() { document.getElementById('guideModal').style.display='block'; }
-    function closeGuide() { document.getElementById('guideModal').style.display='none'; }
-    function exportData() { const b = new Blob([JSON.stringify({appData, history})], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download='JoeyCareer.json'; a.click(); }
-    function importData(e) { const r = new FileReader(); r.onload = (ev) => { const d = JSON.parse(ev.target.result); appData = d.appData; history = d.history; saveData(); location.reload(); }; r.readAsText(e.target.files[0]); }
-    function resetAll() { if(confirm("FULL RESET?")) { localStorage.clear(); location.reload(); } }
+    function addTeam() {
+        const n = document.getElementById('newTeamName').value;
+        const c = document.getElementById('newTeamColor').value;
+        if(n && !db.teams[n]) {
+            db.teams[n] = { color: c, players: ["Joey"], opps: [], coaches: [], awards: [], active: true };
+            save(); renderAdmin(); renderNav();
+        }
+    }
 
-    setActiveTeam(activeTeam);
-    renderHistory();
+    function deleteTeam(n) {
+        if(confirm(`Delete ${n}? History remains, but you won't be able to add new games.`)) {
+            delete db.teams[n];
+            save(); location.reload();
+        }
+    }
+
+    function exportData() {
+        const blob = new Blob([JSON.stringify(db)], {type: 'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob); a.download = 'JoeyTracker_V15_Backup.json'; a.click();
+    }
+
+    function importData(e) {
+        const r = new FileReader();
+        r.onload = (ev) => { db = JSON.parse(ev.target.result); save(); location.reload(); };
+        r.readAsText(e.target.files[0]);
+    }
+    
+    function factoryReset() {
+        if(confirm("Are you sure? This deletes EVERYTHING.")) { localStorage.clear(); location.reload(); }
+    }
+
+    init();
 </script>
 </body>
 </html>
