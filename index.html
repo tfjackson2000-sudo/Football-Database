@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V28</title>
+    <title>Joey's Career Tracker V29</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -47,6 +47,8 @@
         .nav-item.tournaments.active { background: var(--tourn-color); color: #fff; border-color: transparent; }
         .nav-item.admin { margin-left: auto; background: #e9ecef; color: #333; }
         .nav-item.admin.active { background: #333; color: #fff; }
+
+        .season-display { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); background: var(--session-bg); padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border); white-space: nowrap; display: flex; align-items: center; }
 
         .icon-btn { margin-left: 5px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; min-width: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text); transition: 0.2s; }
 
@@ -303,7 +305,7 @@
         settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"] }
     };
 
-    let db = JSON.parse(localStorage.getItem('joey_v28')) || defaultDB;
+    let db = JSON.parse(localStorage.getItem('joey_v29')) || defaultDB;
     let currentView = Object.keys(db.teams)[0];
     let sessionQueue = [];
 
@@ -312,7 +314,7 @@
     db.history.forEach(m => { if(!m.season) m.season = "2025/26"; });
     // ---------------------------------------------
 
-    function save() { localStorage.setItem('joey_v28', JSON.stringify(db)); }
+    function save() { localStorage.setItem('joey_v29', JSON.stringify(db)); }
     
     function init() {
         applyTheme();
@@ -356,6 +358,13 @@
         career.innerHTML = '🌟 Career'; career.onclick = () => switchView('Career'); nav.appendChild(career);
         const admin = document.createElement('div'); admin.className = `nav-item admin ${currentView === 'Admin' ? 'active' : ''}`;
         admin.innerHTML = '⚙️ Admin'; admin.onclick = () => switchView('Admin'); nav.appendChild(admin);
+        
+        // Season Display
+        const seasonEl = document.createElement('div');
+        seasonEl.className = 'season-display';
+        seasonEl.innerText = '📅 ' + db.settings.currentSeason;
+        nav.appendChild(seasonEl);
+
         const themeBtn = document.createElement('button'); themeBtn.className = 'icon-btn'; themeBtn.innerHTML = db.settings.theme === 'light' ? '🌙' : '☀️'; themeBtn.onclick = toggleTheme; nav.appendChild(themeBtn);
         const guideBtn = document.createElement('button'); guideBtn.className = 'icon-btn'; guideBtn.innerHTML = '📖'; guideBtn.onclick = () => document.getElementById('guideModal').classList.remove('hidden'); nav.appendChild(guideBtn);
     }
@@ -391,7 +400,7 @@
             save();
             alert("New Season Started: " + newName);
             document.getElementById('newSeasonModal').classList.add('hidden');
-            renderAdmin(); 
+            renderAdmin(); renderNav(); // Refresh nav to update top label
         }
     }
 
@@ -400,6 +409,7 @@
         if(val) {
             db.settings.currentSeason = val;
             save();
+            renderNav(); // Update top label
         }
     }
 
@@ -421,6 +431,7 @@
         db.settings.currentSeason = db.settings.seasons[db.settings.seasons.length - 1];
         save();
         renderAdmin();
+        renderNav();
         alert("Season deleted.");
     }
 
@@ -522,7 +533,7 @@
     function admDelAw(t,i) { db.teams[t].awards.splice(i,1); save(); renderAdminDetails(); }
     function addTeam() { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n&&!db.teams[n]){ db.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; save(); renderAdmin(); renderNav(); }}
     function deleteTeam(n) { if(confirm(`Delete ${n}?`)) { delete db.teams[n]; save(); location.reload(); }}
-    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV28.json'; a.click(); }
+    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV29.json'; a.click(); }
     function importData(e) { const r=new FileReader(); r.onload=(ev)=>{try{let imp=JSON.parse(ev.target.result); if(imp.data&&!imp.teams){imp.teams=imp.data;delete imp.data;} if(imp.teams)Object.values(imp.teams).forEach(t=>{if(!t.tournaments)t.tournaments=[];if(!t.awards)t.awards=[];if(typeof t.active==='undefined')t.active=true;}); if(imp.history)imp.history.forEach(m=>{if(!m.batchId)m.batchId=m.id||Date.now();if(!m.scorers)m.scorers=[];if(!m.awards)m.awards=[];if(!m.season)m.season="2025/26";}); if(!imp.settings)imp.settings={theme:'light',currentSeason:"2025/26",seasons:["2025/26"]}; db=imp; save(); alert("Imported!"); location.reload();}catch(e){alert("Failed");}}; r.readAsText(e.target.files[0]); }
     function factoryReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); }}
 
