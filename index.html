@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V21</title>
+    <title>Joey's Career Tracker V21.2</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -11,7 +11,7 @@
             --text: #1f1f1f; 
             --text-muted: #666;
             --border: #e1e4e8; 
-            --primary: #333; /* Dynamic Team Color */
+            --primary: #333; 
             --input-bg: #fff;
             --input-border: #ccc;
             --session-bg: #f8f9fa;
@@ -41,12 +41,11 @@
         .nav-item { padding: 8px 16px; border-radius: 25px; cursor: pointer; font-weight: 700; font-size: 0.9rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; }
         .nav-item.active { opacity: 1; background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transform: translateY(-1px); border-color: var(--primary); }
         
-        /* Special Tabs */
         .nav-item.career { border-color: #ffd700; color: #b8860b; background: transparent; }
         .nav-item.career.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
         .nav-item.tournaments { border-color: var(--tourn-color); color: var(--tourn-color); background: transparent; }
         .nav-item.tournaments.active { background: var(--tourn-color); color: #fff; border-color: transparent; }
-        .nav-item.admin { margin-left: auto; background: #e9ecef; color: #333; } /* Admin specific style */
+        .nav-item.admin { margin-left: auto; background: #e9ecef; color: #333; }
 
         .icon-btn { margin-left: 5px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; min-width: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text); transition: 0.2s; }
 
@@ -55,7 +54,6 @@
         /* CARDS */
         .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; }
         .card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: var(--primary); opacity: 0.8; }
-        
         .card-header { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; color: var(--text); }
         
         /* STATS GRID */
@@ -68,7 +66,6 @@
         .form-group { margin-bottom: 20px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        
         select, input { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; box-sizing: border-box; background: var(--input-bg); color: var(--text); transition: border 0.2s; outline: none; }
         select:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(100,100,100,0.1); }
 
@@ -115,7 +112,6 @@
 <div class="navbar" id="navBar"></div>
 
 <div class="container">
-
     <div id="viewMatchDay" class="hidden">
         <div class="card">
             <div class="card-header">📊 <span id="teamStatTitle">Stats</span></div>
@@ -130,46 +126,24 @@
         <div class="card" style="border-top: 4px solid var(--success);">
             <div class="card-header">⚽ Match Day Input</div>
             <p style="font-size:0.85rem; opacity:0.7; margin-top:-15px; margin-bottom:20px;">Record games below. Add multiple games for tournaments.</p>
-            
             <div class="form-group"><label>Competition:</label><select id="mTourn"><option value="League">League</option></select></div>
-            <div class="form-row">
-                <div><label>Opponent:</label><select id="mOpp"></select></div>
-                <div><label>Manager:</label><select id="mCoach"></select></div>
-            </div>
-            <div class="form-row">
-                <div><label>Us:</label><input type="number" id="mOur" value="0" oninput="renderScorers('m')"></div>
-                <div><label>Them:</label><input type="number" id="mTheir" value="0"></div>
-            </div>
+            <div class="form-row"><div><label>Opponent:</label><select id="mOpp"></select></div><div><label>Manager:</label><select id="mCoach"></select></div></div>
+            <div class="form-row"><div><label>Us:</label><input type="number" id="mOur" value="0" oninput="renderScorers('m')"></div><div><label>Them:</label><input type="number" id="mTheir" value="0"></div></div>
             <div id="mScorerList" class="form-group"></div>
             <div id="mAwardList" class="form-group"></div>
-
             <button class="btn btn-add" onclick="addToQueue()">+ Add Game to Queue</button>
             <div id="matchQueue" style="margin-top:15px; border-top:1px solid var(--border); padding-top:15px;"></div>
             <button id="btnFinalize" class="btn btn-save hidden" onclick="saveSession()">💾 Save Session</button>
         </div>
 
-        <div class="card">
-            <div class="card-header">🏆 <span id="teamLeagueTitle">League Table</span></div>
-            <table id="teamLeagueTable">
-                <thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="card">
-            <div class="card-header">🕒 Match History</div>
-            <div id="teamHistoryList"></div>
-        </div>
+        <div class="card"><div class="card-header">🏆 <span id="teamLeagueTitle">League Table</span></div><table id="teamLeagueTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody></tbody></table></div>
+        <div class="card"><div class="card-header">🕒 Match History</div><div id="teamHistoryList"></div></div>
     </div>
 
     <div id="viewTournaments" class="hidden">
         <div class="card" style="border-color: var(--tourn-color);">
             <div class="card-header" style="color: var(--tourn-color);">🏆 Tournament Hub</div>
-            <div class="form-group">
-                <label>Select Active Tournament:</label>
-                <select id="tournSelector" onchange="renderTournamentView()"></select>
-            </div>
-            
+            <div class="form-group"><label>Select Active Tournament:</label><select id="tournSelector" onchange="renderTournamentView()"></select></div>
             <div id="tournStatsArea" class="hidden">
                 <div class="stat-grid">
                     <div class="stat-item"><span>Games</span><strong id="tr-p">0</strong></div>
@@ -181,7 +155,6 @@
                 <div id="tournHistoryList"></div>
             </div>
         </div>
-
         <div class="card">
             <div class="card-header">📂 Archived Tournaments</div>
             <ul id="tournArchiveList" class="admin-list"></ul>
@@ -199,107 +172,22 @@
                 <div class="stat-item"><span>Total Awards</span><strong id="c-a">0</strong></div>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-header">🏆 Team Comparison Table</div>
-            <table id="masterTable">
-                <thead><tr><th class="t-left">My Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
+        <div class="card"><div class="card-header">🏆 Team Comparison Table</div><table id="masterTable"><thead><tr><th class="t-left">My Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead><tbody></tbody></table></div>
     </div>
 
     <div id="viewAdmin" class="hidden">
         <h2 style="margin-bottom:20px;">⚙️ Admin & Settings</h2>
-        
-        <div class="card" style="border-left: 5px solid var(--primary);">
-            <div class="card-header">🛠 Select Team to Edit</div>
-            <select id="admTeamSelect" onchange="renderAdminDetails()"></select>
-        </div>
-
-        <div class="card">
-            <div class="card-header">🏆 Tournament Manager</div>
-            <div style="display:flex; gap:5px; margin-bottom:10px;">
-                <input type="text" id="newTournName" placeholder="New Tournament Name">
-                <button class="btn btn-save" style="width:auto;" onclick="addTournament()">Create</button>
-            </div>
-            <label style="margin-top:10px;">Manage Existing:</label>
-            <ul id="admTournList" class="admin-list"></ul>
-        </div>
-
-        <div class="card">
-            <div class="card-header">🏃‍♂️ Squad & Staff</div>
-            <div class="form-group"><label>Players:</label><div style="display:flex; gap:5px;"><input type="text" id="admNewPlayer" placeholder="Name"><button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('players', 'admNewPlayer')">Add</button></div><ul id="admPlayerList" class="admin-list"></ul></div>
-            <div class="form-group" style="margin-top:20px; border-top:1px solid var(--border); padding-top:10px;"><label>Coaches:</label><div style="display:flex; gap:5px;"><input type="text" id="admNewCoach" placeholder="Name"><button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('coaches', 'admNewCoach')">Add</button></div><ul id="admCoachList" class="admin-list"></ul></div>
-            <div class="form-group" style="margin-top:20px; border-top:1px solid var(--border); padding-top:10px;"><label>Opponents:</label><div style="display:flex; gap:5px;"><input type="text" id="admNewOpp" placeholder="Name"><button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('opps', 'admNewOpp')">Add</button></div><ul id="admOppList" class="admin-list"></ul></div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">🏅 Awards Configuration</div>
-            <div style="display:flex; gap:5px;"><input type="text" id="newAwardName" placeholder="Name"><input type="number" id="newAwardMax" placeholder="Qty" style="width:80px;" value="1"><button class="btn btn-save" style="width:auto;" onclick="addAwardConfig()">Add</button></div>
-            <ul id="admAwardList" class="admin-list"></ul>
-        </div>
-
-        <div class="card">
-            <div class="card-header">🌍 Global Settings</div>
-            <label>Add New Club:</label><div style="display:flex; gap:5px; margin-bottom:10px;"><input type="text" id="newTeamName" placeholder="Club Name"><input type="color" id="newTeamColor" value="#333333" style="width:60px; padding:2px; height:46px;"><button class="btn btn-add" style="width:auto; margin:0;" onclick="addTeam()">Create</button></div>
-            <div id="admTeamList" class="admin-list"></div>
-            <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button class="btn btn-save" onclick="exportData()">Export</button>
-                <button class="btn" style="background:#6c757d; color:white;" onclick="document.getElementById('importFile').click()">Import</button>
-                <input type="file" id="importFile" class="hidden" onchange="importData(event)">
-                <button class="btn btn-del" style="grid-column:span 2; border:1px solid var(--danger); margin-top:10px;" onclick="factoryReset()">Factory Reset</button>
-            </div>
-        </div>
-    </div>
-
-</div>
-
-<div id="guideModal" class="modal-overlay hidden">
-    <div class="modal-box">
-        <h2 style="margin-top:0; color:var(--text);">📖 User Guide (V21)</h2>
-        <div style="line-height:1.6; font-size:0.95rem;">
-            <p><strong>1. Match Day & Queues:</strong><br>
-            To record games, go to your Team Tab. Enter match details and click <strong>"+ Add Game to Queue"</strong>. You can add multiple games (e.g. a tournament weekend). When finished, click <strong>"💾 Save Session"</strong> to store them.</p>
-            
-            <p><strong>2. Editing Matches:</strong><br>
-            Made a mistake? Scroll down to "Match History", find the game, and click the <strong>✎ Pencil Icon</strong>. You can change scores, opponents, and even the tournament name.</p>
-            
-            <p><strong>3. Tournaments Hub:</strong><br>
-            Use the <strong>🏆 Tournaments</strong> tab to see specific stats for a cup run. Create new tournaments in the Admin tab first.</p>
-            
-            <p><strong>4. Admin & Settings:</strong><br>
-            Use the <strong>⚙️ Admin</strong> tab to add new Players, Coaches, Opponents, and customize your Awards (e.g. Man of the Match).</p>
-        </div>
-        <button class="btn btn-add" style="margin-top:20px;" onclick="document.getElementById('guideModal').classList.add('hidden')">Got it!</button>
+        <div class="card" style="border-left: 5px solid var(--primary);"><div class="card-header">🛠 Select Team to Edit</div><select id="admTeamSelect" onchange="renderAdminDetails()"></select></div>
+        <div class="card"><div class="card-header">🏆 Tournament Manager</div><div style="display:flex; gap:5px; margin-bottom:10px;"><input type="text" id="newTournName" placeholder="New Tournament Name"><button class="btn btn-save" style="width:auto;" onclick="addTournament()">Create</button></div><label style="margin-top:10px;">Manage Existing:</label><ul id="admTournList" class="admin-list"></ul></div>
+        <div class="card"><div class="card-header">🏃‍♂️ Squad & Staff</div><div class="form-group"><label>Players:</label><div style="display:flex; gap:5px;"><input type="text" id="admNewPlayer" placeholder="Name"><button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('players', 'admNewPlayer')">Add</button></div><ul id="admPlayerList" class="admin-list"></ul></div><div class="form-group" style="margin-top:20px; border-top:1px solid var(--border); padding-top:10px;"><label>Coaches:</label><div style="display:flex; gap:5px;"><input type="text" id="admNewCoach" placeholder="Name"><button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('coaches', 'admNewCoach')">Add</button></div><ul id="admCoachList" class="admin-list"></ul></div><div class="form-group" style="margin-top:20px; border-top:1px solid var(--border); padding-top:10px;"><label>Opponents:</label><div style="display:flex; gap:5px;"><input type="text" id="admNewOpp" placeholder="Name"><button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('opps', 'admNewOpp')">Add</button></div><ul id="admOppList" class="admin-list"></ul></div></div>
+        <div class="card"><div class="card-header">🏅 Awards Configuration</div><div style="display:flex; gap:5px;"><input type="text" id="newAwardName" placeholder="Name"><input type="number" id="newAwardMax" placeholder="Qty" style="width:80px;" value="1"><button class="btn btn-save" style="width:auto;" onclick="addAwardConfig()">Add</button></div><ul id="admAwardList" class="admin-list"></ul></div>
+        <div class="card"><div class="card-header">🌍 Global Settings</div><label>Add New Club:</label><div style="display:flex; gap:5px; margin-bottom:10px;"><input type="text" id="newTeamName" placeholder="Club Name"><input type="color" id="newTeamColor" value="#333333" style="width:60px; padding:2px; height:46px;"><button class="btn btn-add" style="width:auto; margin:0;" onclick="addTeam()">Create</button></div><div id="admTeamList" class="admin-list"></div><hr style="border:0; border-top:1px solid var(--border); margin:20px 0;"><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><button class="btn btn-save" onclick="exportData()">Export</button><button class="btn" style="background:#6c757d; color:white;" onclick="document.getElementById('importFile').click()">Import</button><input type="file" id="importFile" class="hidden" onchange="importData(event)"><button class="btn btn-del" style="grid-column:span 2; border:1px solid var(--danger); margin-top:10px;" onclick="factoryReset()">Factory Reset</button></div></div>
     </div>
 </div>
 
-<div id="editModal" class="modal-overlay hidden">
-    <div class="modal-box">
-        <h3 style="margin-top:0">✏️ Edit Match Details</h3>
-        <input type="hidden" id="editId">
-        <div class="form-group"><label>Date:</label><input type="text" id="eDate"></div>
-        <div class="form-group"><label>Competition:</label><select id="eTourn"></select></div>
-        <div class="form-row"><div><label>Opponent:</label><select id="eOpp"></select></div><div><label>Manager:</label><select id="eCoach"></select></div></div>
-        <div class="form-row"><div><label>Us:</label><input type="number" id="eOur" oninput="renderScorers('e')"></div><div><label>Them:</label><input type="number" id="eTheir"></div></div>
-        <div id="eScorerList" class="form-group"></div>
-        <div id="eAwardList" class="form-group"></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px;"><button class="btn btn-save" onclick="saveEditedMatch()">Update Match</button><button class="btn" style="border:1px solid var(--border); color:var(--text);" onclick="closeEditModal()">Cancel</button></div>
-    </div>
-</div>
-
-<div id="editTournModal" class="modal-overlay hidden">
-    <div class="modal-box">
-        <h3>🏆 Edit Tournament</h3>
-        <input type="hidden" id="etTeam">
-        <input type="hidden" id="etIdx">
-        <div class="form-group"><label>Tournament Name:</label><input type="text" id="etName"></div>
-        <div class="form-group"><label>Status:</label><select id="etStatus"><option value="true">Active</option><option value="false">Archived</option></select></div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><button class="btn btn-save" onclick="saveEditedTourn()">Save Changes</button><button class="btn" onclick="document.getElementById('editTournModal').classList.add('hidden')">Cancel</button></div>
-    </div>
-</div>
+<div id="guideModal" class="modal-overlay hidden"><div class="modal-box"><h2 style="margin-top:0; color:var(--text);">📖 User Guide (V21.2)</h2><div style="line-height:1.6; font-size:0.95rem;"><p><strong>1. Smart Import:</strong><br>You can now import backups from ANY previous version. The system will automatically upgrade old data to the new format.</p><p><strong>2. Match Day:</strong><br>Record games in your Team Tab. Add multiple games to the queue (for weekends) then click <strong>"Save Session"</strong>.</p><p><strong>3. Editing:</strong><br>Find any game in "Match History" and click <strong>✎</strong> to fix scores or opponents.</p></div><button class="btn btn-add" style="margin-top:20px;" onclick="document.getElementById('guideModal').classList.add('hidden')">Got it!</button></div></div>
+<div id="editModal" class="modal-overlay hidden"><div class="modal-box"><h3 style="margin-top:0">✏️ Edit Match Details</h3><input type="hidden" id="editId"><div class="form-group"><label>Date:</label><input type="text" id="eDate"></div><div class="form-group"><label>Competition:</label><select id="eTourn"></select></div><div class="form-row"><div><label>Opponent:</label><select id="eOpp"></select></div><div><label>Manager:</label><select id="eCoach"></select></div></div><div class="form-row"><div><label>Us:</label><input type="number" id="eOur" oninput="renderScorers('e')"></div><div><label>Them:</label><input type="number" id="eTheir"></div></div><div id="eScorerList" class="form-group"></div><div id="eAwardList" class="form-group"></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px;"><button class="btn btn-save" onclick="saveEditedMatch()">Update Match</button><button class="btn" style="border:1px solid var(--border); color:var(--text);" onclick="closeEditModal()">Cancel</button></div></div></div>
+<div id="editTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>🏆 Edit Tournament</h3><input type="hidden" id="etTeam"><input type="hidden" id="etIdx"><div class="form-group"><label>Tournament Name:</label><input type="text" id="etName"></div><div class="form-group"><label>Status:</label><select id="etStatus"><option value="true">Active</option><option value="false">Archived</option></select></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><button class="btn btn-save" onclick="saveEditedTourn()">Save Changes</button><button class="btn" onclick="document.getElementById('editTournModal').classList.add('hidden')">Cancel</button></div></div></div>
 
 <script>
     const defaultDB = {
@@ -311,11 +199,11 @@
         settings: { theme: 'light' }
     };
 
-    let db = JSON.parse(localStorage.getItem('joey_v21')) || defaultDB;
+    let db = JSON.parse(localStorage.getItem('joey_v21_2')) || defaultDB;
     let currentView = Object.keys(db.teams)[0];
     let sessionQueue = [];
 
-    function save() { localStorage.setItem('joey_v21', JSON.stringify(db)); }
+    function save() { localStorage.setItem('joey_v21_2', JSON.stringify(db)); }
     
     function init() {
         applyTheme();
@@ -370,55 +258,82 @@
         }
     }
 
-    // --- TOURNAMENTS VIEW ---
-    function renderTournamentView() {
-        const sel = document.getElementById('tournSelector');
-        // If empty, populate
-        if(sel.options.length === 0 || sel.innerHTML === "") {
-            sel.innerHTML = '<option value="">-- Select Active Tournament --</option>';
-            Object.keys(db.teams).forEach(t => {
-                if(db.teams[t].tournaments) {
-                    db.teams[t].tournaments.forEach(tr => {
-                        if(tr.active) sel.add(new Option(`${tr.name} (${t})`, tr.name));
+    // --- SMART IMPORT (MIGRATION LOGIC) ---
+    function importData(e) {
+        const r = new FileReader();
+        r.onload = (ev) => {
+            try {
+                let imported = JSON.parse(ev.target.result);
+                
+                // MIGRATION 1: Handle V11-V13 format (Root 'data' key instead of 'teams')
+                if (imported.data && !imported.teams) {
+                    imported.teams = imported.data;
+                    delete imported.data;
+                }
+
+                // MIGRATION 2: Fix Team Objects (Add missing tournaments/awards arrays)
+                if (imported.teams) {
+                    Object.values(imported.teams).forEach(t => {
+                        if (!t.tournaments) t.tournaments = [];
+                        if (!t.awards) t.awards = [];
+                        if (typeof t.active === 'undefined') t.active = true;
                     });
                 }
-            });
+
+                // MIGRATION 3: Fix History (Add Batch IDs for grouping)
+                if (imported.history) {
+                    imported.history.forEach(m => {
+                        if (!m.batchId) m.batchId = m.id || Date.now();
+                        // Fix undefined arrays if they exist
+                        if (!m.scorers) m.scorers = [];
+                        if (!m.awards) m.awards = [];
+                    });
+                }
+
+                // MIGRATION 4: Ensure Settings
+                if (!imported.settings) imported.settings = { theme: 'light' };
+
+                db = imported;
+                save();
+                alert("Data Imported & Upgraded Successfully!");
+                location.reload();
+            } catch (err) {
+                alert("Import Failed: Invalid File Format");
+            }
+        };
+        r.readAsText(e.target.files[0]);
+    }
+
+    // --- REST OF APP LOGIC ---
+    function renderTournamentView() {
+        const sel = document.getElementById('tournSelector');
+        if(sel.options.length === 0 || sel.innerHTML === "") {
+            sel.innerHTML = '<option value="">-- Select Active Tournament --</option>';
+            Object.keys(db.teams).forEach(t => { if(db.teams[t].tournaments) { db.teams[t].tournaments.forEach(tr => { if(tr.active) sel.add(new Option(`${tr.name} (${t})`, tr.name)); }); }});
         }
-        
         const tName = sel.value;
         if(!tName) { document.getElementById('tournStatsArea').classList.add('hidden'); return; }
         document.getElementById('tournStatsArea').classList.remove('hidden');
 
-        // Filter Data
         const h = db.history.filter(m => m.tourn === tName);
         document.getElementById('tr-p').innerText = h.length;
         document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length;
         let g=0, a=0; h.forEach(m => { g+=m.scorers.filter(p=>p==="Joey").length; a+=m.awards.filter(x=>x.player==="Joey").length; });
         document.getElementById('tr-g').innerText = g; document.getElementById('tr-a').innerText = a;
-
         renderHistoryList('tournHistoryList', h);
         renderArchiveList();
     }
     
     function renderArchiveList() {
         const ul = document.getElementById('tournArchiveList'); ul.innerHTML = "";
-        Object.keys(db.teams).forEach(t => {
-            if(db.teams[t].tournaments) {
-                db.teams[t].tournaments.forEach(tr => {
-                    if(!tr.active) ul.innerHTML += `<li><span>${tr.name} (${t})</span><span style="opacity:0.6; font-size:0.8rem;">Archived</span></li>`;
-                });
-            }
-        });
+        Object.keys(db.teams).forEach(t => { if(db.teams[t].tournaments) { db.teams[t].tournaments.forEach(tr => { if(!tr.active) ul.innerHTML += `<li><span>${tr.name} (${t})</span><span style="opacity:0.6; font-size:0.8rem;">Archived</span></li>`; }); }});
     }
 
-    // --- MATCH DAY ---
     function renderMatchDayInputs() {
         const t = db.teams[currentView];
         const fill = (id, arr) => { const el = document.getElementById(id); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); };
-        
         const tournEl = document.getElementById('mTourn'); tournEl.innerHTML = '<option value="League">League</option>';
         if(t.tournaments) t.tournaments.forEach(tr => { if(tr.active) tournEl.add(new Option("🏆 " + tr.name, tr.name)); });
-
         fill('mOpp', t.opps); fill('mCoach', t.coaches); renderScorers('m');
     }
 
@@ -639,8 +554,7 @@
     function admDelAw(t,i) { db.teams[t].awards.splice(i,1); save(); renderAdminDetails(); }
     function addTeam() { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n && !db.teams[n]) { db.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; save(); renderAdmin(); renderNav(); }}
     function deleteTeam(n) { if(confirm(`Delete ${n}?`)) { delete db.teams[n]; save(); location.reload(); }}
-    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV21.json'; a.click(); }
-    function importData(e) { const r=new FileReader(); r.onload=(ev)=>{db=JSON.parse(ev.target.result); save(); location.reload();}; r.readAsText(e.target.files[0]); }
+    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV21.2.json'; a.click(); }
     function factoryReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); }}
 
     init();
