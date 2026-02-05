@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V33</title>
+    <title>Joey's Career Tracker V34</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -135,7 +135,6 @@
         
         .card-header { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; color: var(--text); }
         
-        /* Reduce margin when using details/summary so content isn't too far down */
         details[open] .card-header { margin-bottom: 20px; }
         details:not([open]) .card-header { margin-bottom: 0; }
 
@@ -195,7 +194,6 @@
 
 <div class="nav-container">
     <div class="nav-primary" id="navPrimary"></div>
-    
     <div class="nav-secondary hidden" id="navSecondary">
         <div class="tab-btn" id="tabStats" onclick="switchSubTab('Stats')">📊 Stats & Input</div>
         <div class="tab-btn" id="tabTourn" onclick="switchSubTab('Tournaments')">🏆 Tournaments</div>
@@ -230,9 +228,10 @@
                 <div id="mScorerList" class="form-group"></div>
                 <div id="mAwardList" class="form-group"></div>
                 <div class="form-group"><label>Notes (Optional):</label><textarea id="mNotes" rows="2" placeholder="Formations, key moments, tactical notes..."></textarea></div>
-                <button class="btn btn-add" onclick="addToQueue()">+ Add Game to Queue</button>
+                
+                <button type="button" class="btn btn-add" onclick="addToQueue()">+ Add Game to Queue</button>
                 <div id="matchQueue" style="margin-top:15px; border-top:1px solid var(--border); padding-top:15px;"></div>
-                <button id="btnFinalize" class="btn btn-save hidden" onclick="saveSession()">💾 Save Session</button>
+                <button type="button" id="btnFinalize" class="btn btn-save hidden" onclick="saveSession()">💾 Save Session</button>
             </details>
         </div>
 
@@ -263,15 +262,14 @@
             </div>
             
             <div id="tournStatsArea" class="hidden">
-                <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-                    <button class="btn-edit" style="font-size:0.9rem; display:flex; align-items:center; gap:5px;" onclick="openEditActiveTourn()">⚙️ Manage Tournament</button>
-                </div>
-
                 <div class="stat-grid">
                     <div class="stat-item"><span>Games</span><strong id="tr-p">0</strong></div>
                     <div class="stat-item"><span>Wins</span><strong id="tr-w">0</strong></div>
                     <div class="stat-item"><span>Goals</span><strong id="tr-g">0</strong></div>
                     <div class="stat-item"><span>Awards</span><strong id="tr-a">0</strong></div>
+                </div>
+                <div style="margin-top:20px; text-align:right;">
+                    <button class="btn-edit" style="font-size:0.9rem; display:inline-flex; align-items:center; gap:5px; width:auto;" onclick="openEditActiveTourn()">⚙️ Manage Tournament</button>
                 </div>
 
                 <h3 style="margin-top:25px; font-size:1rem; border-bottom:2px solid var(--border); padding-bottom:5px;">🏆 Mini-League Table</h3>
@@ -403,7 +401,7 @@
         settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"] }
     };
 
-    let db = JSON.parse(localStorage.getItem('joey_v33')) || defaultDB;
+    let db = JSON.parse(localStorage.getItem('joey_v34')) || defaultDB;
     
     // NAVIGATION STATE
     let activeContext = Object.keys(db.teams)[0]; 
@@ -414,7 +412,7 @@
     db.history.forEach(m => { if(!m.season) m.season = "2025/26"; });
     // ---------------------------------------------
 
-    function save() { localStorage.setItem('joey_v33', JSON.stringify(db)); }
+    function save() { localStorage.setItem('joey_v34', JSON.stringify(db)); }
     
     function init() {
         applyTheme();
@@ -662,7 +660,7 @@
     function admDelAw(t,i) { db.teams[t].awards.splice(i,1); save(); renderAdminDetails(); }
     function addTeam() { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n&&!db.teams[n]){ db.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; save(); renderAdmin(); renderNav(); }}
     function deleteTeam(n) { if(confirm(`Delete ${n}?`)) { delete db.teams[n]; if(activeContext===n)activeContext=Object.keys(db.teams)[0]||'Career'; save(); location.reload(); }}
-    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV33.json'; a.click(); }
+    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV34.json'; a.click(); }
     function importData(e) { const r=new FileReader(); r.onload=(ev)=>{try{let imp=JSON.parse(ev.target.result); if(imp.data&&!imp.teams){imp.teams=imp.data;delete imp.data;} if(imp.teams)Object.values(imp.teams).forEach(t=>{if(!t.tournaments)t.tournaments=[];if(!t.awards)t.awards=[];if(typeof t.active==='undefined')t.active=true;}); if(imp.history)imp.history.forEach(m=>{if(!m.batchId)m.batchId=m.id||Date.now();if(!m.scorers)m.scorers=[];if(!m.awards)m.awards=[];if(!m.season)m.season="2025/26";}); if(!imp.settings)imp.settings={theme:'light',currentSeason:"2025/26",seasons:["2025/26"]}; db=imp; save(); alert("Imported!"); location.reload();}catch(e){alert("Failed");}}; r.readAsText(e.target.files[0]); }
     function factoryReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); }}
 
@@ -696,37 +694,85 @@
             awDiv.appendChild(wrapper);
         });
     }
+    
+    // --- UPDATED ADD TO QUEUE FUNCTION (V34) ---
+    let sessionQueue = [];
+
     function addToQueue() {
-        const opp = document.getElementById('mOpp').value;
-        if(!opp) return alert("Select an opponent (Add in Admin if empty)");
-        let dVal = document.getElementById('mDate').value;
-        if(!dVal) dVal = new Date().toISOString().split('T')[0];
-        sessionQueue.push({
-            id: Date.now() + Math.random(), 
-            date: dVal,
-            team: activeContext, opp: opp, tourn: document.getElementById('mTourn').value,
-            our: parseInt(document.getElementById('mOur').value)||0, their: parseInt(document.getElementById('mTheir').value)||0,
-            coach: document.getElementById('mCoach').value,
-            scorers: Array.from(document.querySelectorAll('.m-sc-input')).map(s => s.value),
-            awards: Array.from(document.querySelectorAll('.m-aw-input')).filter(s => s.value).map(s => ({name: s.dataset.name, player: s.value})),
-            notes: document.getElementById('mNotes').value,
-            season: db.settings.currentSeason 
-        });
-        renderQueue(); 
-        document.getElementById('mOur').value=0; 
-        document.getElementById('mTheir').value=0; 
-        document.getElementById('mNotes').value="";
-        renderScorers('m');
+        try {
+            const oppSelect = document.getElementById('mOpp');
+            const opp = oppSelect ? oppSelect.value : "";
+            
+            if(!opp) {
+                // Check if the dropdown was actually populated but empty (meaning no opponents exist)
+                if(oppSelect && oppSelect.options.length === 0) {
+                     return alert("You have no Opponents saved! Go to Admin > Squad & Staff to add opponents first.");
+                }
+                return alert("Please select an Opponent.");
+            }
+
+            let dVal = document.getElementById('mDate').value;
+            if(!dVal) dVal = new Date().toISOString().split('T')[0];
+
+            sessionQueue.push({
+                id: Date.now() + Math.random(), 
+                date: dVal,
+                team: activeContext, opp: opp, tourn: document.getElementById('mTourn').value,
+                our: parseInt(document.getElementById('mOur').value)||0, their: parseInt(document.getElementById('mTheir').value)||0,
+                coach: document.getElementById('mCoach').value,
+                scorers: Array.from(document.querySelectorAll('.m-sc-input')).map(s => s.value),
+                awards: Array.from(document.querySelectorAll('.m-aw-input')).filter(s => s.value).map(s => ({name: s.dataset.name, player: s.value})),
+                notes: document.getElementById('mNotes').value,
+                season: db.settings.currentSeason 
+            });
+            
+            renderQueue(); 
+            
+            // Reset inputs
+            document.getElementById('mOur').value = 0; 
+            document.getElementById('mTheir').value = 0; 
+            document.getElementById('mNotes').value = "";
+            renderScorers('m');
+            
+        } catch(e) {
+            console.error(e);
+            alert("Error adding to queue: " + e.message);
+        }
     }
+
     function renderQueue() {
-        const qDiv = document.getElementById('matchQueue'); const btn = document.getElementById('btnFinalize');
-        qDiv.innerHTML = sessionQueue.map((g, i) => `<div class="queue-item"><div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})<br><small>${formatDateNice(g.date)}</small></div><button class="btn-del" style="font-size:1rem;" onclick="sessionQueue.splice(${i},1); renderQueue()">✕</button></div>`).join('');
-        btn.classList.toggle('hidden', sessionQueue.length === 0);
+        const qDiv = document.getElementById('matchQueue'); 
+        const btn = document.getElementById('btnFinalize');
+        
+        if(!qDiv) return;
+
+        qDiv.innerHTML = sessionQueue.map((g, i) => `
+            <div class="queue-item">
+                <div>
+                    <strong>vs ${g.opp}</strong> (${g.our}-${g.their})<br>
+                    <small>${formatDateNice(g.date)}</small>
+                </div>
+                <button type="button" class="btn-del" style="font-size:1rem;" onclick="sessionQueue.splice(${i},1); renderQueue()">✕</button>
+            </div>
+        `).join('');
+        
+        if(btn) btn.classList.toggle('hidden', sessionQueue.length === 0);
     }
+    
     function saveSession() {
-        const batchId = Date.now(); sessionQueue.forEach(g => g.batchId = batchId);
-        db.history.push(...sessionQueue); sessionQueue = []; save(); renderQueue(); renderMainView(); alert("Session Saved!");
+        if(sessionQueue.length === 0) return;
+        const batchId = Date.now(); 
+        sessionQueue.forEach(g => g.batchId = batchId);
+        db.history.push(...sessionQueue); 
+        sessionQueue = []; 
+        save(); 
+        renderQueue(); 
+        renderMainView(); 
+        alert("Session Saved!");
     }
+    
+    // ... (Rest of logic remains consistent)
+
     function renderHistoryList(elementId, historyData) {
         const list = document.getElementById(elementId); list.innerHTML = '';
         const h = historyData.reverse();
