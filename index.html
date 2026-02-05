@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V29</title>
+    <title>Joey's Career Tracker V30</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -36,21 +36,81 @@
 
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; transition: background 0.3s, color 0.3s; }
 
-        /* NAVIGATION */
-        .navbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 15px; display: flex; gap: 10px; overflow-x: auto; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-items: center; }
-        .nav-item { padding: 8px 16px; border-radius: 25px; cursor: pointer; font-weight: 700; font-size: 0.9rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; }
+        /* NAVIGATION - OPTIMIZED FOR MOBILE */
+        .navbar { 
+            background: var(--card); 
+            border-bottom: 1px solid var(--border); 
+            padding: 10px 15px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            display: flex;
+            flex-wrap: wrap; /* Allows wrapping on mobile */
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* Default (Desktop) Layout: All in one line */
+        .nav-group-teams, .nav-group-utils {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            align-items: center;
+        }
+        
+        /* Utility group pushes to the right on desktop */
+        .nav-group-utils { margin-left: auto; }
+
+        .nav-item { 
+            padding: 8px 16px; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 0.9rem; 
+            white-space: nowrap; 
+            opacity: 0.6; 
+            transition: 0.2s; 
+            border: 2px solid transparent; 
+        }
         .nav-item.active { opacity: 1; background: var(--primary); color: #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transform: translateY(-1px); border-color: var(--primary); }
         
         .nav-item.career { border-color: #ffd700; color: #b8860b; background: transparent; }
         .nav-item.career.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
         .nav-item.tournaments { border-color: var(--tourn-color); color: var(--tourn-color); background: transparent; }
         .nav-item.tournaments.active { background: var(--tourn-color); color: #fff; border-color: transparent; }
-        .nav-item.admin { margin-left: auto; background: #e9ecef; color: #333; }
+        .nav-item.admin { background: #e9ecef; color: #333; }
         .nav-item.admin.active { background: #333; color: #fff; }
 
-        .season-display { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); background: var(--session-bg); padding: 8px 12px; border-radius: 20px; border: 1px solid var(--border); white-space: nowrap; display: flex; align-items: center; }
+        .season-display { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); background: var(--session-bg); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); white-space: nowrap; display: flex; align-items: center; height: 32px; box-sizing: border-box; }
 
         .icon-btn { margin-left: 5px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; min-width: 40px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text); transition: 0.2s; }
+
+        /* MOBILE OVERRIDES (< 600px) */
+        @media (max-width: 600px) {
+            .navbar { padding: 8px 10px; gap: 8px; justify-content: space-between; }
+            
+            /* Force distinct rows */
+            .nav-group-teams { 
+                width: 100%; 
+                order: 1; 
+                padding-bottom: 5px; 
+                border-bottom: 1px solid var(--border);
+                margin-bottom: 5px;
+                justify-content: flex-start; /* Left align teams */
+            }
+            
+            .nav-group-utils { 
+                width: 100%; 
+                order: 2; 
+                margin-left: 0;
+                justify-content: space-between; /* Spread utilities evenly */
+            }
+
+            .nav-item { font-size: 0.85rem; padding: 6px 12px; }
+            .season-display { font-size: 0.75rem; padding: 4px 8px; height: auto; }
+            .icon-btn { width: 36px; height: 36px; min-width: 36px; font-size: 1rem; }
+        }
 
         .container { max-width: 800px; margin: 25px auto; padding: 0 15px; }
 
@@ -305,7 +365,7 @@
         settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"] }
     };
 
-    let db = JSON.parse(localStorage.getItem('joey_v29')) || defaultDB;
+    let db = JSON.parse(localStorage.getItem('joey_v30')) || defaultDB;
     let currentView = Object.keys(db.teams)[0];
     let sessionQueue = [];
 
@@ -314,7 +374,7 @@
     db.history.forEach(m => { if(!m.season) m.season = "2025/26"; });
     // ---------------------------------------------
 
-    function save() { localStorage.setItem('joey_v29', JSON.stringify(db)); }
+    function save() { localStorage.setItem('joey_v30', JSON.stringify(db)); }
     
     function init() {
         applyTheme();
@@ -347,26 +407,40 @@
 
     function renderNav() {
         const nav = document.getElementById('navBar'); nav.innerHTML = '';
+        
+        // Container for Teams
+        const groupTeams = document.createElement('div');
+        groupTeams.className = 'nav-group-teams';
         Object.keys(db.teams).forEach(t => {
             if(!db.teams[t].active) return;
             const btn = document.createElement('div'); btn.className = `nav-item ${currentView === t ? 'active' : ''}`;
-            btn.innerText = t; btn.onclick = () => switchView(t); nav.appendChild(btn);
+            btn.innerText = t; btn.onclick = () => switchView(t); groupTeams.appendChild(btn);
         });
+        nav.appendChild(groupTeams);
+
+        // Container for Utils (Tournaments, Career, Admin, Season, Tools)
+        const groupUtils = document.createElement('div');
+        groupUtils.className = 'nav-group-utils';
+
         const tourn = document.createElement('div'); tourn.className = `nav-item tournaments ${currentView === 'Tournaments' ? 'active' : ''}`;
-        tourn.innerHTML = '🏆 Tournaments'; tourn.onclick = () => switchView('Tournaments'); nav.appendChild(tourn);
+        tourn.innerHTML = '🏆 Tournaments'; tourn.onclick = () => switchView('Tournaments'); groupUtils.appendChild(tourn);
+
         const career = document.createElement('div'); career.className = `nav-item career ${currentView === 'Career' ? 'active' : ''}`;
-        career.innerHTML = '🌟 Career'; career.onclick = () => switchView('Career'); nav.appendChild(career);
+        career.innerHTML = '🌟 Career'; career.onclick = () => switchView('Career'); groupUtils.appendChild(career);
+
         const admin = document.createElement('div'); admin.className = `nav-item admin ${currentView === 'Admin' ? 'active' : ''}`;
-        admin.innerHTML = '⚙️ Admin'; admin.onclick = () => switchView('Admin'); nav.appendChild(admin);
-        
+        admin.innerHTML = '⚙️ Admin'; admin.onclick = () => switchView('Admin'); groupUtils.appendChild(admin);
+
         // Season Display
         const seasonEl = document.createElement('div');
         seasonEl.className = 'season-display';
-        seasonEl.innerText = '📅 ' + db.settings.currentSeason;
-        nav.appendChild(seasonEl);
+        seasonEl.innerText = 'Season ' + db.settings.currentSeason;
+        groupUtils.appendChild(seasonEl);
 
-        const themeBtn = document.createElement('button'); themeBtn.className = 'icon-btn'; themeBtn.innerHTML = db.settings.theme === 'light' ? '🌙' : '☀️'; themeBtn.onclick = toggleTheme; nav.appendChild(themeBtn);
-        const guideBtn = document.createElement('button'); guideBtn.className = 'icon-btn'; guideBtn.innerHTML = '📖'; guideBtn.onclick = () => document.getElementById('guideModal').classList.remove('hidden'); nav.appendChild(guideBtn);
+        const themeBtn = document.createElement('button'); themeBtn.className = 'icon-btn'; themeBtn.innerHTML = db.settings.theme === 'light' ? '🌙' : '☀️'; themeBtn.onclick = toggleTheme; groupUtils.appendChild(themeBtn);
+        const guideBtn = document.createElement('button'); guideBtn.className = 'icon-btn'; guideBtn.innerHTML = '📖'; guideBtn.onclick = () => document.getElementById('guideModal').classList.remove('hidden'); groupUtils.appendChild(guideBtn);
+
+        nav.appendChild(groupUtils);
     }
 
     function switchView(viewName) {
@@ -533,7 +607,7 @@
     function admDelAw(t,i) { db.teams[t].awards.splice(i,1); save(); renderAdminDetails(); }
     function addTeam() { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n&&!db.teams[n]){ db.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; save(); renderAdmin(); renderNav(); }}
     function deleteTeam(n) { if(confirm(`Delete ${n}?`)) { delete db.teams[n]; save(); location.reload(); }}
-    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV29.json'; a.click(); }
+    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV30.json'; a.click(); }
     function importData(e) { const r=new FileReader(); r.onload=(ev)=>{try{let imp=JSON.parse(ev.target.result); if(imp.data&&!imp.teams){imp.teams=imp.data;delete imp.data;} if(imp.teams)Object.values(imp.teams).forEach(t=>{if(!t.tournaments)t.tournaments=[];if(!t.awards)t.awards=[];if(typeof t.active==='undefined')t.active=true;}); if(imp.history)imp.history.forEach(m=>{if(!m.batchId)m.batchId=m.id||Date.now();if(!m.scorers)m.scorers=[];if(!m.awards)m.awards=[];if(!m.season)m.season="2025/26";}); if(!imp.settings)imp.settings={theme:'light',currentSeason:"2025/26",seasons:["2025/26"]}; db=imp; save(); alert("Imported!"); location.reload();}catch(e){alert("Failed");}}; r.readAsText(e.target.files[0]); }
     function factoryReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); }}
 
