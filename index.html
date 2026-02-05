@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V23</title>
+    <title>Joey's Career Tracker V25</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -106,6 +106,7 @@
         .modal-box { background: var(--card); padding: 25px; border-radius: 16px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.5); border: 1px solid var(--border); }
 
         .hidden { display: none !important; }
+        .season-tag { font-size: 0.75rem; background: var(--primary); color: #fff; padding: 2px 6px; border-radius: 4px; opacity: 0.8; margin-left: 5px; }
     </style>
 </head>
 <body>
@@ -115,7 +116,10 @@
 <div class="container">
     <div id="viewMatchDay" class="hidden">
         <div class="card">
-            <div class="card-header">📊 <span id="teamStatTitle">Stats</span></div>
+            <div class="card-header">
+                <span>📊 <span id="teamStatTitle">Stats</span></span>
+                <span class="season-tag" id="mdSeasonDisplay"></span>
+            </div>
             <div class="stat-grid">
                 <div class="stat-item"><span>Games</span><strong id="st-p">0</strong></div>
                 <div class="stat-item"><span>Wins</span><strong id="st-w">0</strong></div>
@@ -126,7 +130,7 @@
 
         <div class="card" style="border-top: 4px solid var(--success);">
             <div class="card-header">⚽ Match Day Input</div>
-            <p style="font-size:0.85rem; opacity:0.7; margin-top:-15px; margin-bottom:20px;">Record games below. Add multiple games for tournaments.</p>
+            <p style="font-size:0.85rem; opacity:0.7; margin-top:-15px; margin-bottom:20px;">Record games for the <strong>Current Season</strong>.</p>
             <div class="form-group"><label>Competition:</label><select id="mTourn"><option value="League">League</option></select></div>
             <div class="form-row"><div><label>Opponent:</label><select id="mOpp"></select></div><div><label>Manager:</label><select id="mCoach"></select></div></div>
             <div class="form-row">
@@ -140,8 +144,8 @@
             <button id="btnFinalize" class="btn btn-save hidden" onclick="saveSession()">💾 Save Session</button>
         </div>
 
-        <div class="card"><div class="card-header">🏆 <span id="teamLeagueTitle">League Table</span></div><table id="teamLeagueTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody></tbody></table></div>
-        <div class="card"><div class="card-header">🕒 Match History</div><div id="teamHistoryList"></div></div>
+        <div class="card"><div class="card-header">🏆 League Table <small style="font-weight:normal; opacity:0.6; margin-left:5px;">(Current Season)</small></div><table id="teamLeagueTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody></tbody></table></div>
+        <div class="card"><div class="card-header">🕒 Match History <small style="font-weight:normal; opacity:0.6; margin-left:5px;">(Current Season)</small></div><div id="teamHistoryList"></div></div>
     </div>
 
     <div id="viewTournaments" class="hidden">
@@ -165,10 +169,7 @@
                 </div>
 
                 <h3 style="margin-top:25px; font-size:1rem; border-bottom:2px solid var(--border); padding-bottom:5px;">🏆 Mini-League Table</h3>
-                <table>
-                    <thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>
-                    <tbody id="tournLeagueBody"></tbody>
-                </table>
+                <table><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody id="tournLeagueBody"></tbody></table>
 
                 <h3 style="margin-top:25px; font-size:1rem; border-bottom:2px solid var(--border); padding-bottom:5px;">🕒 Match History</h3>
                 <div id="tournHistoryList"></div>
@@ -179,7 +180,12 @@
 
     <div id="viewCareer" class="hidden">
         <div class="card" style="border-color: #DAA520;">
-            <div class="card-header" style="color: #B8860B;">🌟 Career Overview</div>
+            <div class="card-header" style="color: #B8860B;">
+                <span>🌟 Career Overview</span>
+                <select id="careerSeasonFilter" onchange="renderCareer()" style="width:auto; padding:5px; font-size:0.9rem; border-color:#DAA520;">
+                    <option value="All Time">All Time</option>
+                </select>
+            </div>
             <div class="stat-grid">
                 <div class="stat-item"><span>Total Games</span><strong id="c-p">0</strong></div>
                 <div class="stat-item"><span>Total Wins</span><strong id="c-w">0</strong></div>
@@ -196,6 +202,16 @@
         <div class="card">
             <div class="card-header">🛠 Select Team to Edit</div>
             <select id="admTeamSelect" onchange="renderAdminDetails()"></select>
+        </div>
+
+        <div class="card" style="border-left: 5px solid #007bff;">
+            <div class="card-header">📅 Season Manager</div>
+            <div class="form-group">
+                <label>Current Season:</label>
+                <div style="font-size:1.2rem; font-weight:bold; margin-bottom:10px;" id="admCurrentSeasonDisplay"></div>
+            </div>
+            <button class="btn btn-save" onclick="document.getElementById('newSeasonModal').classList.remove('hidden')">🏁 Start New Season / Archive Old</button>
+            <p style="font-size:0.8rem; opacity:0.7; margin-top:10px;">Starting a new season archives the current one. You can view old seasons in the Career tab.</p>
         </div>
 
         <div class="card">
@@ -221,24 +237,25 @@
     </div>
 </div>
 
-<div id="guideModal" class="modal-overlay hidden"><div class="modal-box"><h2>📖 User Guide</h2><p>Welcome to V23!</p><button class="btn btn-add" onclick="document.getElementById('guideModal').classList.add('hidden')">Close</button></div></div>
+<div id="guideModal" class="modal-overlay hidden"><div class="modal-box"><h2>📖 User Guide</h2><p><strong>Archives:</strong> To view past seasons, go to the <strong>Career Tab</strong> and change the dropdown from "All Time" to a specific year.</p><button class="btn btn-add" onclick="document.getElementById('guideModal').classList.add('hidden')">Close</button></div></div>
 
-<div id="addTournModal" class="modal-overlay hidden">
+<div id="newSeasonModal" class="modal-overlay hidden">
     <div class="modal-box">
-        <h3>🏆 Create Tournament</h3>
+        <h3>🏁 Start New Season</h3>
+        <p>This will archive "<strong><span id="nsCurrent"></span></strong>".</p>
         <div class="form-group">
-            <label>For Which Team?</label>
-            <select id="newTournTeam"></select>
-        </div>
-        <div class="form-group">
-            <label>Tournament Name</label>
-            <input type="text" id="newTournNameModal">
+            <label>New Season Name (e.g. 2026/27)</label>
+            <input type="text" id="newSeasonNameInput" placeholder="YYYY/YY">
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-            <button class="btn btn-save" onclick="createTournamentFromHub()">Create</button>
-            <button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button>
+            <button class="btn btn-save" onclick="startNewSeason()">Start</button>
+            <button class="btn" onclick="document.getElementById('newSeasonModal').classList.add('hidden')">Cancel</button>
         </div>
     </div>
+</div>
+
+<div id="addTournModal" class="modal-overlay hidden">
+    <div class="modal-box"><h3>🏆 Create Tournament</h3><div class="form-group"><label>For Which Team?</label><select id="newTournTeam"></select></div><div class="form-group"><label>Tournament Name</label><input type="text" id="newTournNameModal"></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><button class="btn btn-save" onclick="createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
 </div>
 
 <div id="editModal" class="modal-overlay hidden"><div class="modal-box"><h3>✏️ Edit Match</h3><input type="hidden" id="editId"><div class="form-group"><label>Date</label><input type="text" id="eDate"></div><div class="form-group"><label>Comp</label><select id="eTourn"></select></div><div class="form-row"><div><label>Opp</label><select id="eOpp"></select></div><div><label>Coach</label><select id="eCoach"></select></div></div><div class="form-row"><div><label>Us</label><input type="number" id="eOur" min="0" oninput="validity.valid||(value='0'); renderScorers('e')"></div><div><label>Them</label><input type="number" id="eTheir" min="0" oninput="validity.valid||(value='0')"></div></div><div id="eScorerList" class="form-group"></div><div id="eAwardList" class="form-group"></div><div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;"><button class="btn btn-save" onclick="saveEditedMatch()">Save</button><button class="btn" onclick="closeEditModal()">Cancel</button></div></div></div>
@@ -257,14 +274,20 @@
             "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: ["Swansea"], coaches: ["Coach A"], awards: [{name:"TOTW", max:3}], tournaments: [], active: true },
             "Dunvant": { color: "#fdd835", players: ["Joey"], opps: ["Mumbles"], coaches: ["Coach B"], awards: [{name:"MOTM", max:1}], tournaments: [], active: true }
         },
-        history: [], settings: { theme: 'light' }
+        history: [], 
+        settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"] }
     };
 
-    let db = JSON.parse(localStorage.getItem('joey_v23')) || defaultDB;
+    let db = JSON.parse(localStorage.getItem('joey_v25')) || defaultDB;
     let currentView = Object.keys(db.teams)[0];
     let sessionQueue = [];
 
-    function save() { localStorage.setItem('joey_v23', JSON.stringify(db)); }
+    // --- MIGRATION: Ensure Season Data Exists ---
+    if(!db.settings.currentSeason) { db.settings.currentSeason = "2025/26"; db.settings.seasons = ["2025/26"]; }
+    db.history.forEach(m => { if(!m.season) m.season = "2025/26"; });
+    // ---------------------------------------------
+
+    function save() { localStorage.setItem('joey_v25', JSON.stringify(db)); }
     
     function init() {
         applyTheme();
@@ -300,7 +323,8 @@
         if(viewName === 'Career') {
             document.getElementById('viewCareer').classList.remove('hidden'); renderCareer();
         } else if(viewName === 'Tournaments') {
-            document.getElementById('viewTournaments').classList.remove('hidden'); renderTournamentView();
+            document.getElementById('viewTournaments').classList.remove('hidden'); 
+            renderTournamentView();
         } else if (viewName === 'Admin') {
             document.getElementById('viewAdmin').classList.remove('hidden'); 
             document.documentElement.style.setProperty('--primary', '#555'); 
@@ -309,43 +333,40 @@
             document.getElementById('viewMatchDay').classList.remove('hidden');
             document.documentElement.style.setProperty('--primary', db.teams[viewName].color);
             document.getElementById('teamStatTitle').innerText = viewName + " Stats";
-            document.getElementById('teamLeagueTitle').innerText = viewName + " Table";
-            renderMatchDayInputs(); renderTeamStats(); renderHistoryList('teamHistoryList', db.history.filter(m => m.team === viewName)); renderTeamLeague();
+            document.getElementById('mdSeasonDisplay').innerText = db.settings.currentSeason;
+            renderMatchDayInputs(); renderTeamStats(); renderHistoryList('teamHistoryList', db.history.filter(m => m.team === viewName && m.season === db.settings.currentSeason)); renderTeamLeague();
         }
     }
 
-    // --- SMART IMPORT ---
-    function importData(e) {
-        const r = new FileReader();
-        r.onload = (ev) => {
-            try {
-                let imported = JSON.parse(ev.target.result);
-                if(imported.data && !imported.teams) { imported.teams = imported.data; delete imported.data; }
-                if(imported.teams) Object.values(imported.teams).forEach(t => { if(!t.tournaments) t.tournaments=[]; if(!t.awards) t.awards=[]; if(typeof t.active==='undefined') t.active=true; });
-                if(imported.history) imported.history.forEach(m => { if(!m.batchId) m.batchId=m.id||Date.now(); if(!m.scorers) m.scorers=[]; if(!m.awards) m.awards=[]; });
-                if(!imported.settings) imported.settings = { theme: 'light' };
-                db = imported; save(); alert("Import Successful!"); location.reload();
-            } catch (err) { alert("Import Failed"); }
-        };
-        r.readAsText(e.target.files[0]);
+    // --- SEASON MANAGER ---
+    function startNewSeason() {
+        const newName = document.getElementById('newSeasonNameInput').value.trim();
+        if(newName) {
+            db.settings.currentSeason = newName;
+            if(!db.settings.seasons.includes(newName)) db.settings.seasons.push(newName);
+            save();
+            alert("New Season Started: " + newName);
+            document.getElementById('newSeasonModal').classList.add('hidden');
+            renderAdmin(); // Refresh UI
+        }
     }
 
-    // --- TOURNAMENT HUB LOGIC ---
+    // --- TOURNAMENT HUB LOGIC (Filtered by Season) ---
     function renderTournamentView() {
+        renderArchiveList();
         const sel = document.getElementById('tournSelector');
-        // Populate Dropdown if empty
         if(sel.options.length === 0 || sel.innerHTML === "") {
             sel.innerHTML = '<option value="">-- Select Active Tournament --</option>';
             Object.keys(db.teams).forEach(t => {
                 if(db.teams[t].tournaments) {
                     db.teams[t].tournaments.forEach(tr => {
+                        // Only show tournaments that have matches in current season OR are newly active? 
+                        // Simplified: Show all active tournaments, but filter stats by season
                         if(tr.active) sel.add(new Option(`${tr.name} (${t})`, `${t}|${tr.name}`));
                     });
                 }
             });
-            // Also populate Team Select for Modal
-            const teamSel = document.getElementById('newTournTeam');
-            teamSel.innerHTML = "";
+            const teamSel = document.getElementById('newTournTeam'); teamSel.innerHTML = "";
             Object.keys(db.teams).forEach(t => teamSel.add(new Option(t,t)));
         }
         
@@ -355,22 +376,20 @@
         const [teamName, tournName] = val.split('|');
         document.getElementById('tournStatsArea').classList.remove('hidden');
 
-        // Filter Data
-        const h = db.history.filter(m => m.tourn === tournName && m.team === teamName);
+        // FILTER BY SEASON + TOURNAMENT
+        const h = db.history.filter(m => m.tourn === tournName && m.team === teamName && m.season === db.settings.currentSeason);
         
         document.getElementById('tr-p').innerText = h.length;
         document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length;
         let g=0, a=0; h.forEach(m => { g+=m.scorers.filter(p=>p==="Joey").length; a+=m.awards.filter(x=>x.player==="Joey").length; });
         document.getElementById('tr-g').innerText = g; document.getElementById('tr-a').innerText = a;
 
-        // Render Mini-League
         const data = calcLeague(h);
         document.getElementById('tournLeagueBody').innerHTML = data.map((t, i) => `
             <tr class="${t.name === teamName ? 'pos-1' : ''}"><td class="t-left">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf - t.ga}</td><td><b>${t.pts}</b></td></tr>
         `).join('');
 
         renderHistoryList('tournHistoryList', h);
-        renderArchiveList();
     }
     
     function createTournamentFromHub() {
@@ -381,21 +400,16 @@
             db.teams[t].tournaments.push({name:n, active:true});
             save();
             document.getElementById('addTournModal').classList.add('hidden');
-            // Refresh selector
             document.getElementById('tournSelector').innerHTML = "";
             renderTournamentView();
         }
     }
-
     function openEditActiveTourn() {
-        const val = document.getElementById('tournSelector').value;
-        if(!val) return;
+        const val = document.getElementById('tournSelector').value; if(!val) return;
         const [teamName, tournName] = val.split('|');
-        // Find index
         const idx = db.teams[teamName].tournaments.findIndex(tr => tr.name === tournName);
         if(idx !== -1) editTourn(teamName, idx);
     }
-    
     function renderArchiveList() {
         const ul = document.getElementById('tournArchiveList'); ul.innerHTML = "";
         Object.keys(db.teams).forEach(t => { if(db.teams[t].tournaments) { db.teams[t].tournaments.forEach((tr, i) => { if(!tr.active) ul.innerHTML += `<li><span>${tr.name} (${t})</span><div><button class="btn-edit" onclick="editTourn('${t}', ${i})">✎</button></div></li>`; }); }});
@@ -403,15 +417,15 @@
 
     // --- ADMIN RENDERERS ---
     function renderAdmin() {
+        document.getElementById('admCurrentSeasonDisplay').innerText = db.settings.currentSeason;
+        document.getElementById('nsCurrent').innerText = db.settings.currentSeason; // For Modal
+
         const tSel = document.getElementById('admTeamSelect'); 
         const cur = tSel.value || Object.keys(db.teams)[0];
-        tSel.innerHTML = ''; 
-        Object.keys(db.teams).forEach(t => tSel.add(new Option(t,t))); 
-        tSel.value = cur;
+        tSel.innerHTML = ''; Object.keys(db.teams).forEach(t => tSel.add(new Option(t,t))); tSel.value = cur;
         renderAdminDetails();
         document.getElementById('admTeamList').innerHTML = Object.keys(db.teams).map(t => `<li><span style="display:flex; align-items:center; gap:10px;"><span style="width:15px; height:15px; border-radius:50%; background:${db.teams[t].color}; border:1px solid #ccc;"></span> ${t}</span><div><button class="btn-edit" onclick="openEditTeam('${t}')">✎</button><button class="btn-del" onclick="deleteTeam('${t}')">🗑</button></div></li>`).join('');
     }
-
     function renderAdminDetails() {
         const tn = document.getElementById('admTeamSelect').value; const t = db.teams[tn]; if(!t) return;
         document.documentElement.style.setProperty('--primary', t.color);
@@ -420,68 +434,27 @@
         document.getElementById('admAwardList').innerHTML = t.awards.map((a,i) => `<li><span>${a.name} (Max: ${a.max})</span><div><button class="btn-edit" onclick="openEditAward('${tn}',${i})">✎</button><button class="btn-del" onclick="admDelAw('${tn}',${i})">🗑</button></div></li>`).join('');
     }
 
-    // --- EDIT MODAL FUNCS ---
-    function openEditSimple(team, type, idx) {
-        document.getElementById('esTeam').value = team; document.getElementById('esType').value = type; document.getElementById('esIdx').value = idx;
-        document.getElementById('esVal').value = db.teams[team][type][idx];
-        document.getElementById('editSimpleModal').classList.remove('hidden');
-    }
-    function saveEditSimple() {
-        const t = document.getElementById('esTeam').value, type = document.getElementById('esType').value, idx = document.getElementById('esIdx').value, val = document.getElementById('esVal').value;
-        if(val) { db.teams[t][type][idx] = val; save(); document.getElementById('editSimpleModal').classList.add('hidden'); renderAdminDetails(); }
-    }
-    function openEditAward(team, idx) {
-        const aw = db.teams[team].awards[idx];
-        document.getElementById('eaTeam').value = team; document.getElementById('eaIdx').value = idx; document.getElementById('eaName').value = aw.name; document.getElementById('eaMax').value = aw.max;
-        document.getElementById('editAwardModal').classList.remove('hidden');
-    }
-    function saveEditAward() {
-        const t = document.getElementById('eaTeam').value, idx = document.getElementById('eaIdx').value, n = document.getElementById('eaName').value, m = parseInt(document.getElementById('eaMax').value) || 1;
-        if(n) { db.teams[t].awards[idx] = { name: n, max: m }; save(); document.getElementById('editAwardModal').classList.add('hidden'); renderAdminDetails(); }
-    }
-    function openEditTeam(name) {
-        document.getElementById('etOldName').value = name; document.getElementById('etNewName').value = name; document.getElementById('etNewColor').value = db.teams[name].color;
-        document.getElementById('editTeamModal').classList.remove('hidden');
-    }
-    function saveEditTeam() {
-        const oldN = document.getElementById('etOldName').value, newN = document.getElementById('etNewName').value, newC = document.getElementById('etNewColor').value;
-        if(!newN) return;
-        db.teams[oldN].color = newC;
-        if(oldN !== newN) {
-            if(db.teams[newN]) return alert("Team name already exists!");
-            db.teams[newN] = JSON.parse(JSON.stringify(db.teams[oldN])); delete db.teams[oldN];
-            db.history.forEach(m => { if(m.team === oldN) m.team = newN; });
-            if(currentView === oldN) currentView = newN;
-        }
-        save(); document.getElementById('editTeamModal').classList.add('hidden'); renderAdmin(); renderNav(); renderAdminDetails();
-    }
-
-    // --- GENERIC FUNCS ---
-    function editTourn(team, idx) {
-        const tr = db.teams[team].tournaments[idx];
-        document.getElementById('etTeam').value = team; document.getElementById('etIdx').value = idx;
-        document.getElementById('etName').value = tr.name; document.getElementById('etStatus').value = tr.active;
-        document.getElementById('editTournModal').classList.remove('hidden');
-    }
-    function saveEditedTourn() {
-        const team = document.getElementById('etTeam').value, idx = document.getElementById('etIdx').value, oldName = db.teams[team].tournaments[idx].name, newName = document.getElementById('etName').value, active = document.getElementById('etStatus').value === 'true';
-        db.teams[team].tournaments[idx] = { name: newName, active: active };
-        if(oldName !== newName) db.history.forEach(m => { if(m.tourn === oldName && m.team === team) m.tourn = newName; });
-        save(); document.getElementById('editTournModal').classList.add('hidden'); 
-        // Refresh views
-        document.getElementById('tournSelector').innerHTML = ""; // Force refresh
-        renderTournamentView(); renderAdminDetails();
-    }
-    function adminAddItem(k, id) { const t = document.getElementById('admTeamSelect').value, v = document.getElementById(id).value.trim(); if(v) { db.teams[t][k].push(v); document.getElementById(id).value=""; save(); renderAdminDetails(); }}
+    // --- GENERIC / EDIT FUNCS (unchanged logic mostly) ---
+    function openEditSimple(team, type, idx) { document.getElementById('esTeam').value = team; document.getElementById('esType').value = type; document.getElementById('esIdx').value = idx; document.getElementById('esVal').value = db.teams[team][type][idx]; document.getElementById('editSimpleModal').classList.remove('hidden'); }
+    function saveEditSimple() { const t=document.getElementById('esTeam').value, type=document.getElementById('esType').value, idx=document.getElementById('esIdx').value, val=document.getElementById('esVal').value; if(val){ db.teams[t][type][idx]=val; save(); document.getElementById('editSimpleModal').classList.add('hidden'); renderAdminDetails(); } }
+    function openEditAward(team, idx) { const aw=db.teams[team].awards[idx]; document.getElementById('eaTeam').value=team; document.getElementById('eaIdx').value=idx; document.getElementById('eaName').value=aw.name; document.getElementById('eaMax').value=aw.max; document.getElementById('editAwardModal').classList.remove('hidden'); }
+    function saveEditAward() { const t=document.getElementById('eaTeam').value, idx=document.getElementById('eaIdx').value, n=document.getElementById('eaName').value, m=parseInt(document.getElementById('eaMax').value)||1; if(n){ db.teams[t].awards[idx]={name:n, max:m}; save(); document.getElementById('editAwardModal').classList.add('hidden'); renderAdminDetails(); } }
+    function openEditTeam(name) { document.getElementById('etOldName').value=name; document.getElementById('etNewName').value=name; document.getElementById('etNewColor').value=db.teams[name].color; document.getElementById('editTeamModal').classList.remove('hidden'); }
+    function saveEditTeam() { const oldN=document.getElementById('etOldName').value, newN=document.getElementById('etNewName').value, newC=document.getElementById('etNewColor').value; if(!newN)return; db.teams[oldN].color=newC; if(oldN!==newN){ if(db.teams[newN]) return alert("Name exists!"); db.teams[newN]=JSON.parse(JSON.stringify(db.teams[oldN])); delete db.teams[oldN]; db.history.forEach(m=>{if(m.team===oldN)m.team=newN}); if(currentView===oldN)currentView=newN; } save(); document.getElementById('editTeamModal').classList.add('hidden'); renderAdmin(); renderNav(); renderAdminDetails(); }
+    function editTourn(team, idx) { const tr=db.teams[team].tournaments[idx]; document.getElementById('etTeam').value=team; document.getElementById('etIdx').value=idx; document.getElementById('etName').value=tr.name; document.getElementById('etStatus').value=tr.active; document.getElementById('editTournModal').classList.remove('hidden'); }
+    function saveEditedTourn() { const team=document.getElementById('etTeam').value, idx=document.getElementById('etIdx').value, oldName=db.teams[team].tournaments[idx].name, newName=document.getElementById('etName').value, active=document.getElementById('etStatus').value==='true'; db.teams[team].tournaments[idx]={name:newName, active:active}; if(oldName!==newName) db.history.forEach(m=>{if(m.tourn===oldName&&m.team===team)m.tourn=newName}); save(); document.getElementById('editTournModal').classList.add('hidden'); document.getElementById('tournSelector').innerHTML=""; renderTournamentView(); }
+    function adminAddItem(k, id) { const t=document.getElementById('admTeamSelect').value, v=document.getElementById('id').value.trim(); if(v){ db.teams[t][k].push(v); document.getElementById('id').value=""; save(); renderAdminDetails(); }} /* Bug fix in id reference */
+    function adminAddItem(k, id) { const t=document.getElementById('admTeamSelect').value, v=document.getElementById(id).value.trim(); if(v){ db.teams[t][k].push(v); document.getElementById(id).value=""; save(); renderAdminDetails(); }}
     function admDel(t,k,i) { db.teams[t][k].splice(i,1); save(); renderAdminDetails(); }
     function addAwardConfig() { const t=document.getElementById('admTeamSelect').value, n=document.getElementById('newAwardName').value, m=document.getElementById('newAwardMax').value; if(n){ db.teams[t].awards.push({name:n, max:parseInt(m)||1}); document.getElementById('newAwardName').value=""; save(); renderAdminDetails(); }}
     function admDelAw(t,i) { db.teams[t].awards.splice(i,1); save(); renderAdminDetails(); }
-    function addTeam() { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n && !db.teams[n]) { db.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; save(); renderAdmin(); renderNav(); }}
+    function addTeam() { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n&&!db.teams[n]){ db.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; save(); renderAdmin(); renderNav(); }}
     function deleteTeam(n) { if(confirm(`Delete ${n}?`)) { delete db.teams[n]; save(); location.reload(); }}
-    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV23.json'; a.click(); }
+    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV25.json'; a.click(); }
+    function importData(e) { const r=new FileReader(); r.onload=(ev)=>{try{let imp=JSON.parse(ev.target.result); if(imp.data&&!imp.teams){imp.teams=imp.data;delete imp.data;} if(imp.teams)Object.values(imp.teams).forEach(t=>{if(!t.tournaments)t.tournaments=[];if(!t.awards)t.awards=[];if(typeof t.active==='undefined')t.active=true;}); if(imp.history)imp.history.forEach(m=>{if(!m.batchId)m.batchId=m.id||Date.now();if(!m.scorers)m.scorers=[];if(!m.awards)m.awards=[];if(!m.season)m.season="2025/26";}); if(!imp.settings)imp.settings={theme:'light',currentSeason:"2025/26",seasons:["2025/26"]}; db=imp; save(); alert("Imported!"); location.reload();}catch(e){alert("Failed");}}; r.readAsText(e.target.files[0]); }
     function factoryReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); }}
 
-    // --- STANDARD APP LOGIC ---
+    // --- STANDARD APP LOGIC (Filtered by currentSeason for Match Day) ---
     function renderMatchDayInputs() {
         const t = db.teams[currentView];
         const fill = (id, arr) => { const el = document.getElementById(id); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); };
@@ -519,7 +492,8 @@
             our: parseInt(document.getElementById('mOur').value)||0, their: parseInt(document.getElementById('mTheir').value)||0,
             coach: document.getElementById('mCoach').value,
             scorers: Array.from(document.querySelectorAll('.m-sc-input')).map(s => s.value),
-            awards: Array.from(document.querySelectorAll('.m-aw-input')).filter(s => s.value).map(s => ({name: s.dataset.name, player: s.value}))
+            awards: Array.from(document.querySelectorAll('.m-aw-input')).filter(s => s.value).map(s => ({name: s.dataset.name, player: s.value})),
+            season: db.settings.currentSeason // Tag with current season
         });
         renderQueue(); document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; renderScorers('m');
     }
@@ -579,7 +553,7 @@
         }; save(); closeEditModal(); updateAll();
     }
     function deleteMatch(id) { if(confirm("Delete match?")) { db.history = db.history.filter(m => m.id != id); save(); updateAll(); } }
-    function updateAll() { renderTeamStats(); renderHistoryList('teamHistoryList', db.history.filter(m => m.team === currentView)); renderTeamLeague(); }
+    function updateAll() { renderTeamStats(); renderHistoryList('teamHistoryList', db.history.filter(m => m.team === currentView && m.season === db.settings.currentSeason)); renderTeamLeague(); }
     function calcLeague(matches) {
         let stats = {};
         matches.forEach(m => {
@@ -592,23 +566,34 @@
         return Object.values(stats).sort((a,b) => (b.pts - a.pts) || ((b.gf-b.ga)-(a.gf-a.ga)) || (b.gf-a.gf) || a.name.localeCompare(b.name));
     }
     function renderTeamLeague() {
-        const matches = db.history.filter(m => m.team === currentView);
+        const matches = db.history.filter(m => m.team === currentView && m.season === db.settings.currentSeason);
         const data = calcLeague(matches);
         document.querySelector('#teamLeagueTable tbody').innerHTML = data.map((t, i) => `<tr class="${t.name === currentView ? 'pos-1' : ''}"><td class="t-left">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf - t.ga}</td><td><b>${t.pts}</b></td></tr>`).join('');
     }
+    
+    // --- CAREER RENDER (With Season Dropdown) ---
     function renderCareer() {
-        const h = db.history;
+        const sel = document.getElementById('careerSeasonFilter');
+        // Populate if needed
+        if(sel.options.length <= 1) {
+            db.settings.seasons.forEach(s => sel.add(new Option(s, s)));
+        }
+        const filter = sel.value;
+        let h = db.history;
+        if(filter !== 'All Time') h = h.filter(m => m.season === filter);
+
         document.getElementById('c-p').innerText = h.length;
         document.getElementById('c-w').innerText = h.filter(m => m.our > m.their).length;
         document.getElementById('c-g').innerText = h.reduce((acc, m) => acc + m.scorers.filter(p => p === "Joey").length, 0);
         document.getElementById('c-a').innerText = h.reduce((acc, m) => acc + m.awards.filter(a => a.player === "Joey").length, 0);
+        
         const myTeams = Object.keys(db.teams);
         const allStats = calcLeague(h);
         const filteredStats = allStats.filter(t => myTeams.includes(t.name));
         document.querySelector('#masterTable tbody').innerHTML = filteredStats.map((t, i) => `<tr class="${i===0 ? 'pos-1' : ''}"><td class="t-left">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf - t.ga}</td><td>${t.gf}</td><td><b>${t.pts}</b></td></tr>`).join('');
     }
     function renderTeamStats() {
-        const h = db.history.filter(m => m.team === currentView);
+        const h = db.history.filter(m => m.team === currentView && m.season === db.settings.currentSeason);
         document.getElementById('st-p').innerText = h.length;
         document.getElementById('st-w').innerText = h.filter(m => m.our > m.their).length;
         let g=0, a=0; h.forEach(m => { g+=m.scorers.filter(p=>p==="Joey").length; a+=m.awards.filter(x=>x.player==="Joey").length; });
