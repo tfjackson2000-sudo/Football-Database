@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V16</title>
+    <title>Joey's Career Tracker V17</title>
     <style>
         :root { 
             --bg: #f4f7f6; --card: #ffffff; --text: #333; --border: #ddd; 
             --primary: #333; --accent: #ffd700; --danger: #dc3545; --success: #28a745;
+            --session-bg: #f8f9fa;
         }
         [data-theme="dark"] { 
             --bg: #121212; --card: #1e1e1e; --text: #e0e0e0; --border: #333; 
-            --primary: #bb86fc; 
+            --primary: #bb86fc; --session-bg: #2d2d2d;
         }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 60px; transition: 0.3s; }
         
@@ -23,7 +24,6 @@
         .nav-item.career.active { background: linear-gradient(135deg, #FFD700, #DAA520); color: #000; border: none; }
         .nav-item.admin { margin-left: auto; background: #e9ecef; color: #333; }
         
-        /* DARK MODE BUTTON */
         .theme-btn { background: none; border: 1px solid var(--border); border-radius: 50%; width: 35px; height: 35px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text); }
 
         .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
@@ -45,36 +45,44 @@
         .t-left { text-align: left; font-weight: 600; }
         .pos-1 { border-left: 3px solid #FFD700; background: rgba(255,215,0,0.05); }
 
+        /* SESSION GROUPING STYLES */
+        .session-card { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 15px; overflow: hidden; }
+        .session-header { background: var(--session-bg); padding: 8px 12px; font-size: 0.85rem; font-weight: bold; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .match-row { padding: 10px 12px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .match-row:last-child { border-bottom: none; }
+        .match-info { flex: 1; }
+        .match-score { font-weight: bold; margin: 0 10px; min-width: 40px; text-align: center; }
+        
+        .result-w { color: var(--success); }
+        .result-l { color: var(--danger); }
+        .result-d { color: #f0ad4e; }
+
         /* FORMS */
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         .form-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 5px; opacity: 0.8; }
         select, input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 1rem; box-sizing: border-box; background: var(--card); color: var(--text); }
         
-        /* LISTS (Admin) */
         .admin-list { list-style: none; padding: 0; margin-top: 10px; }
         .admin-list li { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid var(--border); align-items: center; }
         
-        /* BUTTONS */
         .btn { width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: 0.2s; }
         .btn-add { background: var(--success); color: white; margin-bottom: 10px; }
         .btn-save { background: var(--primary); color: white; }
         .btn-del { background: none; color: var(--danger); cursor: pointer; font-size: 1.2rem; }
 
-        /* SESSION QUEUE */
         .queue-item { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 10px; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
-        
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="navbar" id="navBar">
-    </div>
+<div class="navbar" id="navBar"></div>
 
 <div class="container">
 
     <div id="viewMatchDay" class="hidden">
+        
         <div class="card">
             <div class="card-header">📊 <span id="teamStatTitle">Stats</span></div>
             <div class="stat-grid">
@@ -87,38 +95,36 @@
 
         <div class="card" style="border-top: 4px solid var(--success);">
             <div class="card-header">⚽ Match Day Input</div>
-            <p style="font-size:0.8rem; opacity:0.7; margin-top:-10px; margin-bottom:15px;">Add games to the queue, then click "Save Session".</p>
+            <p style="font-size:0.8rem; opacity:0.7; margin-top:-10px; margin-bottom:15px;">Add games to queue, then click "Save Session".</p>
             
-            <div class="form-group">
-                <label>Competition:</label>
-                <select id="mTourn"><option value="League">League</option></select>
-            </div>
-            
+            <div class="form-group"><label>Competition:</label><select id="mTourn"><option value="League">League</option></select></div>
             <div class="form-row">
                 <div><label>Opponent:</label><select id="mOpp"></select></div>
                 <div><label>Manager:</label><select id="mCoach"></select></div>
             </div>
-
             <div class="form-row">
                 <div><label>Us:</label><input type="number" id="mOur" value="0" oninput="renderScorers()"></div>
                 <div><label>Them:</label><input type="number" id="mTheir" value="0"></div>
             </div>
-
             <div id="mScorerList" class="form-group"></div>
             <div id="mAwardList" class="form-group"></div>
 
-            <button class="btn btn-add" onclick="addToQueue()">+ Add Game to Weekend Queue</button>
-            
+            <button class="btn btn-add" onclick="addToQueue()">+ Add Game to Queue</button>
             <div id="matchQueue" style="margin-top:15px; border-top:1px solid var(--border); padding-top:10px;"></div>
-            <button id="btnFinalize" class="btn btn-save hidden" onclick="saveSession()">💾 Save Weekend Session</button>
+            <button id="btnFinalize" class="btn btn-save hidden" onclick="saveSession()">💾 Save Session</button>
         </div>
 
         <div class="card">
-            <div class="card-header">🕒 Match History (This Team)</div>
-            <table id="teamHistoryTable">
-                <thead><tr><th class="t-left">Opponent</th><th>Result</th><th>Details</th><th>Act</th></tr></thead>
+            <div class="card-header">🏆 <span id="teamLeagueTitle">League Table</span></div>
+            <table id="teamLeagueTable">
+                <thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead>
                 <tbody></tbody>
             </table>
+        </div>
+
+        <div class="card">
+            <div class="card-header">🕒 Match History</div>
+            <div id="teamHistoryList"></div>
         </div>
     </div>
 
@@ -136,13 +142,7 @@
         <div class="card">
             <div class="card-header">🏆 Master League Table</div>
             <table id="masterTable">
-                <thead>
-                    <tr>
-                        <th class="t-left">Team</th>
-                        <th>P</th><th>W</th><th>D</th><th>L</th>
-                        <th>GD</th><th>GF</th><th>Pts</th>
-                    </tr>
-                </thead>
+                <thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead>
                 <tbody></tbody>
             </table>
             <p style="font-size:0.7rem; text-align:center; margin-top:10px; opacity:0.6;">3 pts Win / 1 pt Draw / 0 pts Loss</p>
@@ -151,75 +151,44 @@
 
     <div id="viewAdmin" class="hidden">
         <h2>⚙️ Admin & Settings</h2>
-
+        
         <div class="card" style="border-left: 5px solid var(--primary);">
             <div class="card-header">🛠 Edit Team Data</div>
-            <div class="form-group">
-                <label>Select Team to Manage:</label>
-                <select id="admTeamSelect" onchange="renderAdminDetails()"></select>
-            </div>
+            <div class="form-group"><label>Select Team:</label><select id="admTeamSelect" onchange="renderAdminDetails()"></select></div>
         </div>
 
         <div class="card">
             <div class="card-header">🏃‍♂️ Squad & Staff</div>
-            
             <div class="form-group">
-                <label>Manage Players:</label>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="admNewPlayer" placeholder="Add Player Name">
-                    <button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('players', 'admNewPlayer')">Add</button>
-                </div>
+                <label>Players:</label><div style="display:flex; gap:5px;"><input type="text" id="admNewPlayer" placeholder="Name"><button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('players', 'admNewPlayer')">Add</button></div>
                 <ul id="admPlayerList" class="admin-list"></ul>
             </div>
-
             <div class="form-group" style="margin-top:20px; border-top:1px solid var(--border); padding-top:10px;">
-                <label>Manage Coaches:</label>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="admNewCoach" placeholder="Add Coach Name">
-                    <button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('coaches', 'admNewCoach')">Add</button>
-                </div>
+                <label>Coaches:</label><div style="display:flex; gap:5px;"><input type="text" id="admNewCoach" placeholder="Name"><button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('coaches', 'admNewCoach')">Add</button></div>
                 <ul id="admCoachList" class="admin-list"></ul>
             </div>
-
             <div class="form-group" style="margin-top:20px; border-top:1px solid var(--border); padding-top:10px;">
-                <label>Manage Opponents:</label>
-                <div style="display:flex; gap:5px;">
-                    <input type="text" id="admNewOpp" placeholder="Add Opponent Name">
-                    <button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('opps', 'admNewOpp')">Add</button>
-                </div>
+                <label>Opponents:</label><div style="display:flex; gap:5px;"><input type="text" id="admNewOpp" placeholder="Name"><button class="btn btn-add" style="width:auto; margin:0;" onclick="adminAddItem('opps', 'admNewOpp')">Add</button></div>
                 <ul id="admOppList" class="admin-list"></ul>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header">🏅 Configure Awards</div>
-            <label>Create Award (e.g. MOTM):</label>
-            <div style="display:flex; gap:5px;">
-                <input type="text" id="newAwardName" placeholder="Name">
-                <input type="number" id="newAwardMax" placeholder="Qty" style="width:60px;" value="1">
-                <button class="btn btn-save" style="width:auto;" onclick="addAwardConfig()">Add</button>
-            </div>
+            <div class="card-header">🏅 Awards</div>
+            <div style="display:flex; gap:5px;"><input type="text" id="newAwardName" placeholder="Name"><input type="number" id="newAwardMax" placeholder="Qty" style="width:60px;" value="1"><button class="btn btn-save" style="width:auto;" onclick="addAwardConfig()">Add</button></div>
             <ul id="admAwardList" class="admin-list"></ul>
         </div>
 
         <div class="card">
             <div class="card-header">🌍 Global Settings</div>
-            
-            <label>Add New Club/Team:</label>
-            <div style="display:flex; gap:5px; margin-bottom:10px;">
-                <input type="text" id="newTeamName" placeholder="New Club Name">
-                <input type="color" id="newTeamColor" value="#000000" style="width:50px; padding:2px; height:46px;">
-                <button class="btn btn-add" style="width:auto; margin:0;" onclick="addTeam()">Add</button>
-            </div>
+            <label>Add Club:</label><div style="display:flex; gap:5px; margin-bottom:10px;"><input type="text" id="newTeamName" placeholder="Name"><input type="color" id="newTeamColor" value="#000000" style="width:50px; padding:2px; height:46px;"><button class="btn btn-add" style="width:auto; margin:0;" onclick="addTeam()">Add</button></div>
             <div id="admTeamList" class="admin-list"></div>
-
             <hr style="border:0; border-top:1px solid var(--border); margin:20px 0;">
-            
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button class="btn btn-save" onclick="exportData()">Export Backup</button>
-                <button class="btn" style="background:#6c757d; color:white;" onclick="document.getElementById('importFile').click()">Import Backup</button>
+                <button class="btn btn-save" onclick="exportData()">Export</button>
+                <button class="btn" style="background:#6c757d; color:white;" onclick="document.getElementById('importFile').click()">Import</button>
                 <input type="file" id="importFile" class="hidden" onchange="importData(event)">
-                <button class="btn btn-del" style="grid-column:span 2; border:1px solid red; margin-top:10px;" onclick="factoryReset()">Factory Reset App</button>
+                <button class="btn btn-del" style="grid-column:span 2; border:1px solid red; margin-top:10px;" onclick="factoryReset()">Factory Reset</button>
             </div>
         </div>
     </div>
@@ -227,154 +196,89 @@
 </div>
 
 <script>
-    // --- DATA STORE ---
     const defaultDB = {
         teams: {
             "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: ["Swansea"], coaches: ["Coach A"], awards: [{name:"TOTW", max:3}], active: true },
             "Dunvant": { color: "#fdd835", players: ["Joey"], opps: ["Mumbles"], coaches: ["Coach B"], awards: [{name:"MOTM", max:1}], active: true }
         },
-        history: [],
+        history: [], // { id, batchId, date, team, opp, tourn, our, their, scorers, awards }
         settings: { theme: 'light' }
     };
 
-    let db = JSON.parse(localStorage.getItem('joey_v16')) || defaultDB;
+    let db = JSON.parse(localStorage.getItem('joey_v17')) || defaultDB;
     let currentView = Object.keys(db.teams)[0];
     let sessionQueue = [];
 
-    // --- CORE FUNCTIONS ---
-    function save() { localStorage.setItem('joey_v16', JSON.stringify(db)); }
+    function save() { localStorage.setItem('joey_v17', JSON.stringify(db)); }
     
     function init() {
         applyTheme();
         renderNav();
-        // If current view is invalid (deleted team), reset
-        if(currentView !== 'Career' && currentView !== 'Admin' && !db.teams[currentView]) {
-            currentView = Object.keys(db.teams)[0];
-        }
+        if(currentView !== 'Career' && currentView !== 'Admin' && !db.teams[currentView]) currentView = Object.keys(db.teams)[0];
         switchView(currentView);
     }
 
-    function toggleTheme() {
-        db.settings.theme = db.settings.theme === 'light' ? 'dark' : 'light';
-        save();
-        applyTheme();
-    }
-
-    function applyTheme() {
-        document.body.setAttribute('data-theme', db.settings.theme);
-    }
+    function toggleTheme() { db.settings.theme = db.settings.theme === 'light' ? 'dark' : 'light'; save(); applyTheme(); }
+    function applyTheme() { document.body.setAttribute('data-theme', db.settings.theme); }
 
     function renderNav() {
-        const nav = document.getElementById('navBar');
-        nav.innerHTML = '';
-        
-        // Team Tabs
+        const nav = document.getElementById('navBar'); nav.innerHTML = '';
         Object.keys(db.teams).forEach(t => {
             if(!db.teams[t].active) return;
-            const btn = document.createElement('div');
-            btn.className = `nav-item ${currentView === t ? 'active' : ''}`;
-            btn.innerText = t;
-            btn.onclick = () => switchView(t);
-            nav.appendChild(btn);
+            const btn = document.createElement('div'); btn.className = `nav-item ${currentView === t ? 'active' : ''}`;
+            btn.innerText = t; btn.onclick = () => switchView(t); nav.appendChild(btn);
         });
+        const career = document.createElement('div'); career.className = `nav-item career ${currentView === 'Career' ? 'active' : ''}`;
+        career.innerHTML = '🌟 Career'; career.onclick = () => switchView('Career'); nav.appendChild(career);
+        
+        const themeBtn = document.createElement('button'); themeBtn.className = 'theme-btn'; themeBtn.style.marginLeft = 'auto';
+        themeBtn.innerHTML = '🌓'; themeBtn.onclick = toggleTheme; nav.appendChild(themeBtn);
 
-        // Career Tab
-        const career = document.createElement('div');
-        career.className = `nav-item career ${currentView === 'Career' ? 'active' : ''}`;
-        career.innerHTML = '🌟 Career';
-        career.onclick = () => switchView('Career');
-        nav.appendChild(career);
-
-        // Dark Mode Toggle
-        const themeBtn = document.createElement('button');
-        themeBtn.className = 'theme-btn';
-        themeBtn.style.marginLeft = 'auto';
-        themeBtn.innerHTML = '🌓';
-        themeBtn.onclick = toggleTheme;
-        nav.appendChild(themeBtn);
-
-        // Admin Tab
-        const admin = document.createElement('div');
-        admin.className = `nav-item admin ${currentView === 'Admin' ? 'active' : ''}`;
-        admin.innerHTML = '⚙️';
-        admin.onclick = () => switchView('Admin');
-        nav.appendChild(admin);
+        const admin = document.createElement('div'); admin.className = `nav-item admin ${currentView === 'Admin' ? 'active' : ''}`;
+        admin.innerHTML = '⚙️'; admin.onclick = () => switchView('Admin'); nav.appendChild(admin);
     }
 
     function switchView(viewName) {
-        currentView = viewName;
-        renderNav();
-        
-        // Hide all views
+        currentView = viewName; renderNav();
         ['viewMatchDay', 'viewCareer', 'viewAdmin'].forEach(id => document.getElementById(id).classList.add('hidden'));
 
         if(viewName === 'Career') {
-            document.getElementById('viewCareer').classList.remove('hidden');
-            renderCareer();
+            document.getElementById('viewCareer').classList.remove('hidden'); renderCareer();
         } else if (viewName === 'Admin') {
-            document.getElementById('viewAdmin').classList.remove('hidden');
-            renderAdmin();
+            document.getElementById('viewAdmin').classList.remove('hidden'); renderAdmin();
         } else {
-            // Team View
             document.getElementById('viewMatchDay').classList.remove('hidden');
             document.documentElement.style.setProperty('--primary', db.teams[viewName].color);
-            renderMatchDayInputs();
-            renderTeamStats();
-            renderTeamHistory();
+            document.getElementById('teamStatTitle').innerText = viewName + " Stats";
+            document.getElementById('teamLeagueTitle').innerText = viewName + " League";
+            renderMatchDayInputs(); renderTeamStats(); renderTeamHistory(); renderTeamLeague();
         }
     }
 
-    // --- MATCH DAY LOGIC ---
+    // --- INPUTS ---
     function renderMatchDayInputs() {
         const t = db.teams[currentView];
-        
-        const fill = (id, arr) => {
-            const el = document.getElementById(id);
-            el.innerHTML = ""; 
-            arr.forEach(x => el.add(new Option(x,x)));
-        };
-        fill('mOpp', t.opps);
-        fill('mCoach', t.coaches);
-        
-        renderScorers(); 
+        const fill = (id, arr) => { const el = document.getElementById(id); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); };
+        fill('mOpp', t.opps); fill('mCoach', t.coaches); renderScorers();
     }
 
     function renderScorers() {
         const count = parseInt(document.getElementById('mOur').value) || 0;
-        const div = document.getElementById('mScorerList');
-        div.innerHTML = count > 0 ? '<label>Goal Scorers:</label>' : '';
+        const div = document.getElementById('mScorerList'); div.innerHTML = count > 0 ? '<label>Goal Scorers:</label>' : '';
         const players = db.teams[currentView].players;
-        
         for(let i=0; i<count; i++) {
-            const sel = document.createElement('select');
-            sel.className = 'sc-input';
-            sel.style.marginBottom = '5px';
-            players.forEach(p => sel.add(new Option(p,p)));
-            div.appendChild(sel);
+            const sel = document.createElement('select'); sel.className = 'sc-input'; sel.style.marginBottom = '5px';
+            players.forEach(p => sel.add(new Option(p,p))); div.appendChild(sel);
         }
-
-        // Render Awards based on Config
-        const awDiv = document.getElementById('mAwardList');
-        awDiv.innerHTML = '';
+        const awDiv = document.getElementById('mAwardList'); awDiv.innerHTML = '';
         const awards = db.teams[currentView].awards || [];
-        
         if(awards.length > 0) awDiv.innerHTML = '<label>Awards:</label>';
-        
         awards.forEach(aw => {
-            const wrapper = document.createElement('div');
-            wrapper.style.background = 'rgba(0,0,0,0.03)';
-            wrapper.style.padding = '5px';
-            wrapper.style.marginBottom = '5px';
+            const wrapper = document.createElement('div'); wrapper.style.background = 'rgba(0,0,0,0.03)'; wrapper.style.padding = '5px'; wrapper.style.marginBottom = '5px';
             wrapper.innerHTML = `<small><strong>${aw.name}</strong> (Pick up to ${aw.max})</small>`;
-            
             for(let k=0; k<aw.max; k++) {
-                const s = document.createElement('select');
-                s.className = 'aw-input';
-                s.dataset.name = aw.name;
-                s.add(new Option("- Select Winner -", ""));
-                players.forEach(p => s.add(new Option(p,p)));
-                s.style.marginTop = '2px';
-                wrapper.appendChild(s);
+                const s = document.createElement('select'); s.className = 'aw-input'; s.dataset.name = aw.name;
+                s.add(new Option("- Select Winner -", "")); players.forEach(p => s.add(new Option(p,p))); s.style.marginTop = '2px'; wrapper.appendChild(s);
             }
             awDiv.appendChild(wrapper);
         });
@@ -383,109 +287,101 @@
     function addToQueue() {
         const opp = document.getElementById('mOpp').value;
         if(!opp) return alert("Select an opponent (Add in Admin if empty)");
-        
-        const game = {
-            id: Date.now() + Math.random(),
-            date: new Date().toLocaleDateString(),
-            team: currentView,
-            opp: opp,
-            tourn: document.getElementById('mTourn').value,
-            our: parseInt(document.getElementById('mOur').value) || 0,
-            their: parseInt(document.getElementById('mTheir').value) || 0,
+        sessionQueue.push({
+            id: Date.now() + Math.random(), date: new Date().toLocaleDateString(),
+            team: currentView, opp: opp, tourn: document.getElementById('mTourn').value,
+            our: parseInt(document.getElementById('mOur').value)||0, their: parseInt(document.getElementById('mTheir').value)||0,
             coach: document.getElementById('mCoach').value,
             scorers: Array.from(document.querySelectorAll('.sc-input')).map(s => s.value),
             awards: Array.from(document.querySelectorAll('.aw-input')).filter(s => s.value).map(s => ({name: s.dataset.name, player: s.value}))
-        };
-        
-        sessionQueue.push(game);
-        renderQueue();
-        
-        // Reset Inputs
-        document.getElementById('mOur').value = 0;
-        document.getElementById('mTheir').value = 0;
-        renderScorers();
+        });
+        renderQueue(); document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; renderScorers();
     }
 
     function renderQueue() {
-        const qDiv = document.getElementById('matchQueue');
-        const btn = document.getElementById('btnFinalize');
-        
-        qDiv.innerHTML = sessionQueue.map((g, i) => `
-            <div class="queue-item">
-                <div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div>
-                <button class="btn-del" style="font-size:1rem;" onclick="removeFromQueue(${i})">✕</button>
-            </div>
-        `).join('');
-        
-        if(sessionQueue.length > 0) btn.classList.remove('hidden');
-        else btn.classList.add('hidden');
+        const qDiv = document.getElementById('matchQueue'); const btn = document.getElementById('btnFinalize');
+        qDiv.innerHTML = sessionQueue.map((g, i) => `<div class="queue-item"><div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div><button class="btn-del" style="font-size:1rem;" onclick="sessionQueue.splice(${i},1); renderQueue()">✕</button></div>`).join('');
+        btn.classList.toggle('hidden', sessionQueue.length === 0);
     }
 
-    function removeFromQueue(i) { sessionQueue.splice(i,1); renderQueue(); }
-
     function saveSession() {
-        db.history.push(...sessionQueue);
-        sessionQueue = [];
-        save();
-        renderQueue();
-        renderTeamStats();
-        renderTeamHistory();
+        const batchId = Date.now(); // Group ID
+        sessionQueue.forEach(g => g.batchId = batchId);
+        db.history.push(...sessionQueue); sessionQueue = []; save(); renderQueue(); renderTeamStats(); renderTeamHistory(); renderTeamLeague();
         alert("Session Saved!");
     }
 
-    // --- STATS & HISTORY ---
-    function renderTeamStats() {
-        const h = db.history.filter(m => m.team === currentView);
-        document.getElementById('st-p').innerText = h.length;
-        document.getElementById('st-w').innerText = h.filter(m => m.our > m.their).length;
-        
-        let goals = 0;
-        let awards = 0;
-        h.forEach(m => {
-            goals += m.scorers.filter(p => p === "Joey").length;
-            awards += m.awards.filter(a => a.player === "Joey").length;
-        });
-        document.getElementById('st-g').innerText = goals;
-        document.getElementById('st-a').innerText = awards;
-    }
-
+    // --- HISTORY GROUPING ---
     function renderTeamHistory() {
-        const tbody = document.querySelector('#teamHistoryTable tbody');
-        tbody.innerHTML = '';
+        const list = document.getElementById('teamHistoryList'); list.innerHTML = '';
         const h = db.history.filter(m => m.team === currentView).reverse();
         
+        // Group by batchId
+        const groups = {};
         h.forEach(m => {
-            const tr = document.createElement('tr');
+            const bid = m.batchId || m.id; // Fallback for old data
+            if(!groups[bid]) groups[bid] = [];
+            groups[bid].push(m);
+        });
+
+        // Render Groups
+        Object.values(groups).forEach(group => {
+            const date = group[0].date;
+            const container = document.createElement('div'); container.className = 'session-card';
             
-            let res = "D";
-            let col = "#ffc107";
-            if(m.our > m.their) { res = "W"; col = "#28a745"; }
-            else if(m.our < m.their) { res = "L"; col = "#dc3545"; }
-
-            let details = "";
-            if(m.scorers.length) details += `⚽ ${m.scorers.join(', ')}<br>`;
-            if(m.awards.length) details += `🏅 ${m.awards.map(a => a.player).join(', ')}`;
-
-            tr.innerHTML = `
-                <td class="t-left">${m.opp}<br><small style="opacity:0.6">${m.date}</small></td>
-                <td style="color:${col}; font-weight:bold;">${res} ${m.our}-${m.their}</td>
-                <td style="font-size:0.8rem;">${details}</td>
-                <td><button class="btn-del" onclick="deleteMatch('${m.id}')">🗑</button></td>
-            `;
-            tbody.appendChild(tr);
+            let header = `<div class="session-header"><span>📅 ${date}</span><small>${group.length} Game(s)</small></div>`;
+            let rows = group.map(m => {
+                let resClass = m.our > m.their ? 'result-w' : (m.our < m.their ? 'result-l' : 'result-d');
+                let details = "";
+                if(m.scorers.length) details += `<br><small>⚽ ${m.scorers.join(', ')}</small>`;
+                if(m.awards.length) details += `<br><small>🏅 ${m.awards.map(a=>a.player).join(', ')}</small>`;
+                
+                return `
+                    <div class="match-row">
+                        <div class="match-info">
+                            <strong>vs ${m.opp}</strong> <span style="font-size:0.8rem; opacity:0.6">${m.tourn}</span>
+                            ${details}
+                        </div>
+                        <div class="match-score ${resClass}">${m.our}-${m.their}</div>
+                        <button class="btn-del" onclick="deleteMatch('${m.id}')">🗑</button>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = header + rows;
+            list.appendChild(container);
         });
     }
 
-    function deleteMatch(id) {
-        if(confirm("Delete this match?")) {
-            db.history = db.history.filter(m => m.id != id); 
-            save();
-            renderTeamStats();
-            renderTeamHistory();
-        }
+    function deleteMatch(id) { if(confirm("Delete this match?")) { db.history = db.history.filter(m => m.id != id); save(); renderTeamStats(); renderTeamHistory(); renderTeamLeague(); } }
+
+    // --- LEAGUE TABLES ---
+    function calcLeague(matches) {
+        let stats = {};
+        matches.forEach(m => {
+            const update = (name, gf, ga) => {
+                if(!stats[name]) stats[name] = { name, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 };
+                const s = stats[name]; s.p++; s.gf += gf; s.ga += ga;
+                if(gf > ga) { s.w++; s.pts += 3; } else if(gf < ga) { s.l++; s.pts += 0; } else { s.d++; s.pts += 1; }
+            };
+            update(m.team, m.our, m.their);
+            update(m.opp, m.their, m.our);
+        });
+        return Object.values(stats).sort((a,b) => (b.pts - a.pts) || ((b.gf-b.ga)-(a.gf-a.ga)) || (b.gf-a.gf) || a.name.localeCompare(b.name));
     }
 
-    // --- CAREER / LEAGUE TABLE ---
+    function renderTeamLeague() {
+        // Filter only matches involving current team
+        const matches = db.history.filter(m => m.team === currentView);
+        const data = calcLeague(matches);
+        const tbody = document.querySelector('#teamLeagueTable tbody');
+        tbody.innerHTML = data.map((t, i) => `
+            <tr class="${t.name === currentView ? 'pos-1' : ''}">
+                <td class="t-left">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf - t.ga}</td><td><b>${t.pts}</b></td>
+            </tr>
+        `).join('');
+    }
+
     function renderCareer() {
         const h = db.history;
         document.getElementById('c-p').innerText = h.length;
@@ -493,153 +389,44 @@
         document.getElementById('c-g').innerText = h.reduce((acc, m) => acc + m.scorers.filter(p => p === "Joey").length, 0);
         document.getElementById('c-a').innerText = h.reduce((acc, m) => acc + m.awards.filter(a => a.player === "Joey").length, 0);
 
-        let stats = {};
-        h.forEach(m => {
-            const update = (name, gf, ga) => {
-                if(!stats[name]) stats[name] = { name, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 };
-                const s = stats[name];
-                s.p++; s.gf += gf; s.ga += ga;
-                if(gf > ga) { s.w++; s.pts += 3; }
-                else if(gf < ga) { s.l++; s.pts += 0; } 
-                else { s.d++; s.pts += 1; } 
-            };
-            update(m.team, m.our, m.their);
-            update(m.opp, m.their, m.our);
-        });
-
-        const sorted = Object.values(stats).sort((a,b) => {
-            if(b.pts !== a.pts) return b.pts - a.pts;
-            const gdA = a.gf - a.ga; const gdB = b.gf - b.ga;
-            if(gdB !== gdA) return gdB - gdA;
-            if(b.gf !== a.gf) return b.gf - a.gf;
-            return a.name.localeCompare(b.name);
-        });
-
-        const tbody = document.querySelector('#masterTable tbody');
-        tbody.innerHTML = sorted.map((t, i) => `
-            <tr class="${i===0 ? 'pos-1' : ''}">
-                <td class="t-left">${i+1}. ${t.name}</td>
-                <td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td>
-                <td>${t.gf - t.ga}</td><td>${t.gf}</td><td><b>${t.pts}</b></td>
-            </tr>
+        const data = calcLeague(h);
+        document.querySelector('#masterTable tbody').innerHTML = data.map((t, i) => `
+            <tr class="${i===0 ? 'pos-1' : ''}"><td class="t-left">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf - t.ga}</td><td>${t.gf}</td><td><b>${t.pts}</b></td></tr>
         `).join('');
+    }
+
+    function renderTeamStats() {
+        const h = db.history.filter(m => m.team === currentView);
+        document.getElementById('st-p').innerText = h.length;
+        document.getElementById('st-w').innerText = h.filter(m => m.our > m.their).length;
+        let g=0, a=0; h.forEach(m => { g+=m.scorers.filter(p=>p==="Joey").length; a+=m.awards.filter(x=>x.player==="Joey").length; });
+        document.getElementById('st-g').innerText = g; document.getElementById('st-a').innerText = a;
     }
 
     // --- ADMIN ---
     function renderAdmin() {
-        // 1. Team Selector
-        const tSel = document.getElementById('admTeamSelect');
-        const currentSelection = tSel.value || Object.keys(db.teams)[0];
-        tSel.innerHTML = '';
-        Object.keys(db.teams).forEach(t => tSel.add(new Option(t,t)));
-        tSel.value = currentSelection;
-        
-        renderAdminDetails(); // Render Sub-lists based on selection
-
-        // 2. Global Team List
-        document.getElementById('admTeamList').innerHTML = Object.keys(db.teams).map(t => `
-            <div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid var(--border); align-items:center;">
-                <span><span style="color:${db.teams[t].color}">●</span> ${t}</span>
-                <button class="btn-del" onclick="deleteTeam('${t}')">🗑</button>
-            </div>
-        `).join('');
+        const tSel = document.getElementById('admTeamSelect'); const cur = tSel.value || Object.keys(db.teams)[0];
+        tSel.innerHTML = ''; Object.keys(db.teams).forEach(t => tSel.add(new Option(t,t))); tSel.value = cur;
+        renderAdminDetails();
+        document.getElementById('admTeamList').innerHTML = Object.keys(db.teams).map(t => `<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border);align-items:center;"><span><span style="color:${db.teams[t].color}">●</span> ${t}</span><button class="btn-del" onclick="deleteTeam('${t}')">🗑</button></div>`).join('');
     }
 
     function renderAdminDetails() {
-        const teamName = document.getElementById('admTeamSelect').value;
-        const team = db.teams[teamName];
-        if(!team) return;
-
-        // Render Lists (Players, Coaches, Opps)
-        const renderList = (id, dataArr, type) => {
-            document.getElementById(id).innerHTML = dataArr.map((item, i) => `
-                <li>
-                    <span>${item}</span>
-                    <button class="btn-del" onclick="adminDeleteItem('${teamName}', '${type}', ${i})">🗑</button>
-                </li>
-            `).join('');
-        };
-
-        renderList('admPlayerList', team.players, 'players');
-        renderList('admCoachList', team.coaches, 'coaches');
-        renderList('admOppList', team.opps, 'opps');
-
-        // Render Awards
-        document.getElementById('admAwardList').innerHTML = team.awards.map((aw, i) => `
-            <li>
-                <span>${aw.name} (Max: ${aw.max})</span>
-                <button class="btn-del" onclick="adminDeleteAward('${teamName}', ${i})">🗑</button>
-            </li>
-        `).join('');
+        const tn = document.getElementById('admTeamSelect').value; const t = db.teams[tn]; if(!t) return;
+        const list = (id, arr, k) => document.getElementById(id).innerHTML = arr.map((x,i) => `<li><span>${x}</span><button class="btn-del" onclick="admDel('${tn}','${k}',${i})">🗑</button></li>`).join('');
+        list('admPlayerList', t.players, 'players'); list('admCoachList', t.coaches, 'coaches'); list('admOppList', t.opps, 'opps');
+        document.getElementById('admAwardList').innerHTML = t.awards.map((a,i) => `<li><span>${a.name} (${a.max})</span><button class="btn-del" onclick="admDelAw('${tn}',${i})">🗑</button></li>`).join('');
     }
 
-    // Admin Action: Add Item (Player/Coach/Opp)
-    function adminAddItem(type, inputId) {
-        const teamName = document.getElementById('admTeamSelect').value;
-        const input = document.getElementById(inputId);
-        const val = input.value.trim();
-        if(val) {
-            db.teams[teamName][type].push(val);
-            input.value = "";
-            save(); renderAdminDetails();
-        }
-    }
-
-    // Admin Action: Delete Item
-    function adminDeleteItem(teamName, type, index) {
-        db.teams[teamName][type].splice(index, 1);
-        save(); renderAdminDetails();
-    }
-
-    // Admin Action: Add Award
-    function addAwardConfig() {
-        const teamName = document.getElementById('admTeamSelect').value;
-        const n = document.getElementById('newAwardName').value;
-        const m = document.getElementById('newAwardMax').value;
-        if(n) {
-            db.teams[teamName].awards.push({name: n, max: parseInt(m)||1});
-            document.getElementById('newAwardName').value = "";
-            save(); renderAdminDetails();
-        }
-    }
-
-    function adminDeleteAward(teamName, index) {
-        db.teams[teamName].awards.splice(index, 1);
-        save(); renderAdminDetails();
-    }
-
-    // Admin Action: Add Team
-    function addTeam() {
-        const n = document.getElementById('newTeamName').value;
-        const c = document.getElementById('newTeamColor').value;
-        if(n && !db.teams[n]) {
-            db.teams[n] = { color: c, players: ["Joey"], opps: [], coaches: [], awards: [], active: true };
-            save(); renderAdmin(); renderNav();
-        }
-    }
-
-    function deleteTeam(n) {
-        if(confirm(`Delete ${n}?`)) {
-            delete db.teams[n];
-            save(); location.reload();
-        }
-    }
-
-    function exportData() {
-        const blob = new Blob([JSON.stringify(db)], {type: 'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob); a.download = 'JoeyTracker_V16_Backup.json'; a.click();
-    }
-
-    function importData(e) {
-        const r = new FileReader();
-        r.onload = (ev) => { db = JSON.parse(ev.target.result); save(); location.reload(); };
-        r.readAsText(e.target.files[0]);
-    }
-    
-    function factoryReset() {
-        if(confirm("Are you sure? This deletes EVERYTHING.")) { localStorage.clear(); location.reload(); }
-    }
+    function adminAddItem(k, id) { const t = document.getElementById('admTeamSelect').value, v = document.getElementById(id).value.trim(); if(v) { db.teams[t][k].push(v); document.getElementById(id).value=""; save(); renderAdminDetails(); }}
+    function admDel(t,k,i) { db.teams[t][k].splice(i,1); save(); renderAdminDetails(); }
+    function addAwardConfig() { const t=document.getElementById('admTeamSelect').value, n=document.getElementById('newAwardName').value, m=document.getElementById('newAwardMax').value; if(n){ db.teams[t].awards.push({name:n, max:parseInt(m)||1}); document.getElementById('newAwardName').value=""; save(); renderAdminDetails(); }}
+    function admDelAw(t,i) { db.teams[t].awards.splice(i,1); save(); renderAdminDetails(); }
+    function addTeam() { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n && !db.teams[n]) { db.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], active:true}; save(); renderAdmin(); renderNav(); }}
+    function deleteTeam(n) { if(confirm(`Delete ${n}?`)) { delete db.teams[n]; save(); location.reload(); }}
+    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV17.json'; a.click(); }
+    function importData(e) { const r=new FileReader(); r.onload=(ev)=>{db=JSON.parse(ev.target.result); save(); location.reload();}; r.readAsText(e.target.files[0]); }
+    function factoryReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); }}
 
     init();
 </script>
