@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V31</title>
+    <title>Joey's Career Tracker V33</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -60,7 +60,7 @@
         /* BOTTOM TIER: TABS (Stats, Tournaments) */
         .nav-secondary {
             display: flex;
-            padding: 0 15px; /* Height controlled by items */
+            padding: 0 15px;
             background: var(--session-bg);
             gap: 20px;
             overflow-x: auto;
@@ -86,14 +86,12 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* Specific Colors for Top Nav */
         .nav-btn.career { border-color: #ffd700; color: #b8860b; background: transparent; }
         .nav-btn.career.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
         
         .nav-btn.admin { background: #e9ecef; color: #333; margin-left: auto;}
         .nav-btn.admin.active { background: #333; color: #fff; }
 
-        /* Secondary Tab Styling */
         .tab-btn {
             padding: 12px 5px;
             cursor: pointer;
@@ -128,8 +126,19 @@
         /* CARDS & GENERAL UI */
         .card { background: var(--card); border-radius: 16px; padding: 20px; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; transition: border-color 0.3s; }
         .card::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 6px; background: var(--primary); opacity: 0.8; transition: background 0.3s; }
+        
+        /* COLLAPSIBLE HEADERS */
+        details > summary { list-style: none; cursor: pointer; outline: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        details > summary::after { content: ' ▼'; float: right; font-size: 0.8em; opacity: 0.5; transition: 0.2s transform; }
+        details[open] > summary::after { transform: rotate(180deg); }
+        
         .card-header { font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:center; color: var(--text); }
         
+        /* Reduce margin when using details/summary so content isn't too far down */
+        details[open] .card-header { margin-bottom: 20px; }
+        details:not([open]) .card-header { margin-bottom: 0; }
+
         /* STATS GRID */
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
         .stat-item { background: var(--bg); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
@@ -208,31 +217,38 @@
         </div>
 
         <div class="card" style="border-top: 4px solid var(--success);">
-            <div class="card-header">⚽ Match Day Input</div>
-            
-            <div class="form-group"><label>Date:</label><input type="date" id="mDate"></div>
-            
-            <div class="form-group"><label>Competition:</label><select id="mTourn"><option value="League">League</option></select></div>
-            <div class="form-row"><div><label>Opponent:</label><select id="mOpp"></select></div><div><label>Manager:</label><select id="mCoach"></select></div></div>
-            <div class="form-row">
-                <div><label>Us:</label><input type="number" id="mOur" value="0" min="0" oninput="validity.valid||(value='0'); renderScorers('m')"></div>
-                <div><label>Them:</label><input type="number" id="mTheir" value="0" min="0" oninput="validity.valid||(value='0')"></div>
-            </div>
-            <div id="mScorerList" class="form-group"></div>
-            <div id="mAwardList" class="form-group"></div>
-            
-            <div class="form-group">
-                <label>Notes (Optional):</label>
-                <textarea id="mNotes" rows="2" placeholder="Formations, key moments, tactical notes..."></textarea>
-            </div>
-
-            <button class="btn btn-add" onclick="addToQueue()">+ Add Game to Queue</button>
-            <div id="matchQueue" style="margin-top:15px; border-top:1px solid var(--border); padding-top:15px;"></div>
-            <button id="btnFinalize" class="btn btn-save hidden" onclick="saveSession()">💾 Save Session</button>
+            <details>
+                <summary class="card-header">⚽ Match Day Input</summary>
+                
+                <div class="form-group"><label>Date:</label><input type="date" id="mDate"></div>
+                <div class="form-group"><label>Competition:</label><select id="mTourn"><option value="League">League</option></select></div>
+                <div class="form-row"><div><label>Opponent:</label><select id="mOpp"></select></div><div><label>Manager:</label><select id="mCoach"></select></div></div>
+                <div class="form-row">
+                    <div><label>Us:</label><input type="number" id="mOur" value="0" min="0" oninput="validity.valid||(value='0'); renderScorers('m')"></div>
+                    <div><label>Them:</label><input type="number" id="mTheir" value="0" min="0" oninput="validity.valid||(value='0')"></div>
+                </div>
+                <div id="mScorerList" class="form-group"></div>
+                <div id="mAwardList" class="form-group"></div>
+                <div class="form-group"><label>Notes (Optional):</label><textarea id="mNotes" rows="2" placeholder="Formations, key moments, tactical notes..."></textarea></div>
+                <button class="btn btn-add" onclick="addToQueue()">+ Add Game to Queue</button>
+                <div id="matchQueue" style="margin-top:15px; border-top:1px solid var(--border); padding-top:15px;"></div>
+                <button id="btnFinalize" class="btn btn-save hidden" onclick="saveSession()">💾 Save Session</button>
+            </details>
         </div>
 
-        <div class="card"><div class="card-header">🏆 League Table <small style="font-weight:normal; opacity:0.6; margin-left:5px;">(Current Season)</small></div><table id="teamLeagueTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody></tbody></table></div>
-        <div class="card"><div class="card-header">🕒 Match History <small style="font-weight:normal; opacity:0.6; margin-left:5px;">(Current Season)</small></div><div id="teamHistoryList"></div></div>
+        <div class="card">
+            <details open>
+                <summary class="card-header">🏆 League Table <small style="font-weight:normal; opacity:0.6; margin-left:5px;">(Current Season)</small></summary>
+                <table id="teamLeagueTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody></tbody></table>
+            </details>
+        </div>
+
+        <div class="card">
+            <details>
+                <summary class="card-header">🕒 Match History <small style="font-weight:normal; opacity:0.6; margin-left:5px;">(Current Season)</small></summary>
+                <div id="teamHistoryList"></div>
+            </details>
+        </div>
     </div>
 
     <div id="viewTournaments" class="hidden">
@@ -387,22 +403,21 @@
         settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"] }
     };
 
-    let db = JSON.parse(localStorage.getItem('joey_v31')) || defaultDB;
+    let db = JSON.parse(localStorage.getItem('joey_v33')) || defaultDB;
     
     // NAVIGATION STATE
-    let activeContext = Object.keys(db.teams)[0]; // The Team Name OR "Career" OR "Admin"
-    let activeSubTab = "Stats"; // "Stats" or "Tournaments" (Only valid if context is a team)
+    let activeContext = Object.keys(db.teams)[0]; 
+    let activeSubTab = "Stats"; 
 
     // --- MIGRATION: Ensure Season Data Exists ---
     if(!db.settings.currentSeason) { db.settings.currentSeason = "2025/26"; db.settings.seasons = ["2025/26"]; }
     db.history.forEach(m => { if(!m.season) m.season = "2025/26"; });
     // ---------------------------------------------
 
-    function save() { localStorage.setItem('joey_v31', JSON.stringify(db)); }
+    function save() { localStorage.setItem('joey_v33', JSON.stringify(db)); }
     
     function init() {
         applyTheme();
-        // Check if activeContext still exists
         if(activeContext !== 'Career' && activeContext !== 'Admin' && !db.teams[activeContext]) {
              activeContext = Object.keys(db.teams)[0] || 'Career';
         }
@@ -426,7 +441,6 @@
     // --- NEW NAVIGATION LOGIC ---
     function switchContext(ctx) {
         activeContext = ctx;
-        // Reset subtab to default Stats when switching teams
         if(ctx !== 'Career' && ctx !== 'Admin') activeSubTab = "Stats";
         renderNav();
         renderMainView();
@@ -442,7 +456,6 @@
         const prim = document.getElementById('navPrimary'); prim.innerHTML = '';
         const sec = document.getElementById('navSecondary');
         
-        // 1. Render Teams
         Object.keys(db.teams).forEach(t => {
             if(!db.teams[t].active) return;
             const btn = document.createElement('div'); 
@@ -452,31 +465,26 @@
             prim.appendChild(btn);
         });
 
-        // 2. Render Career
         const career = document.createElement('div'); 
         career.className = `nav-btn career ${activeContext === 'Career' ? 'active' : ''}`;
         career.innerHTML = '🌟 Career'; 
         career.onclick = () => switchContext('Career'); 
         prim.appendChild(career);
 
-        // 3. Render Admin
         const admin = document.createElement('div'); 
         admin.className = `nav-btn admin ${activeContext === 'Admin' ? 'active' : ''}`;
         admin.innerHTML = '⚙️ Admin'; 
         admin.onclick = () => switchContext('Admin'); 
         prim.appendChild(admin);
 
-        // 4. Render Season Display
         const seasonEl = document.createElement('div');
         seasonEl.className = 'season-label';
         seasonEl.innerText = 'Season ' + db.settings.currentSeason;
         prim.appendChild(seasonEl);
 
-        // 5. Utility Icons
         const themeBtn = document.createElement('button'); themeBtn.className = 'icon-btn'; themeBtn.innerHTML = db.settings.theme === 'light' ? '🌙' : '☀️'; themeBtn.onclick = toggleTheme; prim.appendChild(themeBtn);
         const guideBtn = document.createElement('button'); guideBtn.className = 'icon-btn'; guideBtn.innerHTML = '📖'; guideBtn.onclick = () => document.getElementById('guideModal').classList.remove('hidden'); prim.appendChild(guideBtn);
 
-        // SECONDARY NAV LOGIC
         if (activeContext === 'Career' || activeContext === 'Admin') {
             sec.classList.add('hidden');
         } else {
@@ -489,7 +497,6 @@
     function renderMainView() {
         ['viewMatchDay', 'viewCareer', 'viewAdmin', 'viewTournaments'].forEach(id => document.getElementById(id).classList.add('hidden'));
         
-        // Set Color Theme based on active context
         if(activeContext !== 'Career' && activeContext !== 'Admin') {
             document.documentElement.style.setProperty('--primary', db.teams[activeContext].color);
         } else {
@@ -503,7 +510,6 @@
             document.getElementById('viewAdmin').classList.remove('hidden');
             renderAdmin();
         } else {
-            // It's a team. Check Sub Tab.
             if (activeSubTab === 'Stats') {
                 document.getElementById('viewMatchDay').classList.remove('hidden');
                 document.getElementById('teamStatTitle').innerText = activeContext + " Stats";
@@ -537,7 +543,7 @@
             db.settings.currentSeason = val;
             save();
             renderNav(); 
-            renderMainView(); // Refresh data
+            renderMainView();
         }
     }
 
@@ -556,52 +562,35 @@
         alert("Season deleted.");
     }
 
-    // --- TOURNAMENT HUB LOGIC (Context Aware) ---
+    // --- TOURNAMENT HUB LOGIC ---
     function renderTournamentView() {
-        const teamName = activeContext; // We know the team from context
+        const teamName = activeContext; 
         document.getElementById('tournContextTeamName').innerText = teamName;
         renderArchiveList();
-
-        // Populate Selector ONLY with this team's tournaments
         const sel = document.getElementById('tournSelector');
-        
-        // We only rebuild if it's empty or context changed (simplified: rebuild always for safety)
         sel.innerHTML = '<option value="">-- Select Active Tournament --</option>';
         if(db.teams[teamName].tournaments) {
             db.teams[teamName].tournaments.forEach(tr => {
                 if(tr.active) sel.add(new Option(tr.name, tr.name));
             });
         }
-        
-        // Attempt to preserve value if possible, or select first if not selected
-        if(sel.options.length > 1 && !sel.value) {
-           // sel.selectedIndex = 1; // Optional auto-select
-        }
-
         const val = sel.value;
         if(!val) { document.getElementById('tournStatsArea').classList.add('hidden'); return; }
-        
         const tournName = val;
         document.getElementById('tournStatsArea').classList.remove('hidden');
-
-        // FILTER BY SEASON + TOURNAMENT + TEAM
         const h = db.history.filter(m => m.tourn === tournName && m.team === teamName && m.season === db.settings.currentSeason);
-        
         document.getElementById('tr-p').innerText = h.length;
         document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length;
         let g=0, a=0; h.forEach(m => { g+=m.scorers.filter(p=>p==="Joey").length; a+=m.awards.filter(x=>x.player==="Joey").length; });
         document.getElementById('tr-g').innerText = g; document.getElementById('tr-a').innerText = a;
-
         const data = calcLeague(h);
         document.getElementById('tournLeagueBody').innerHTML = data.map((t, i) => `
             <tr class="${t.name === teamName ? 'pos-1' : ''}"><td class="t-left">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf - t.ga}</td><td><b>${t.pts}</b></td></tr>
         `).join('');
-
         renderHistoryList('tournHistoryList', h);
     }
     
     function createTournamentFromHub() {
-        // Context aware creation
         const t = activeContext; 
         const n = document.getElementById('newTournNameModal').value.trim();
         if(n) {
@@ -613,7 +602,6 @@
         }
     }
     
-    // Update Modal Opener to show context
     const openTournModalBtn = document.querySelector('#viewTournaments .btn-outline');
     if(openTournModalBtn) {
         openTournModalBtn.onclick = () => {
@@ -645,7 +633,6 @@
         admSes.innerHTML = "";
         db.settings.seasons.forEach(s => admSes.add(new Option(s, s)));
         admSes.value = db.settings.currentSeason;
-
         const tSel = document.getElementById('admTeamSelect'); 
         const cur = tSel.value || Object.keys(db.teams)[0];
         tSel.innerHTML = ''; Object.keys(db.teams).forEach(t => tSel.add(new Option(t,t))); tSel.value = cur;
@@ -675,14 +662,13 @@
     function admDelAw(t,i) { db.teams[t].awards.splice(i,1); save(); renderAdminDetails(); }
     function addTeam() { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n&&!db.teams[n]){ db.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; save(); renderAdmin(); renderNav(); }}
     function deleteTeam(n) { if(confirm(`Delete ${n}?`)) { delete db.teams[n]; if(activeContext===n)activeContext=Object.keys(db.teams)[0]||'Career'; save(); location.reload(); }}
-    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV31.json'; a.click(); }
+    function exportData() { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'})); a.download='JoeyV33.json'; a.click(); }
     function importData(e) { const r=new FileReader(); r.onload=(ev)=>{try{let imp=JSON.parse(ev.target.result); if(imp.data&&!imp.teams){imp.teams=imp.data;delete imp.data;} if(imp.teams)Object.values(imp.teams).forEach(t=>{if(!t.tournaments)t.tournaments=[];if(!t.awards)t.awards=[];if(typeof t.active==='undefined')t.active=true;}); if(imp.history)imp.history.forEach(m=>{if(!m.batchId)m.batchId=m.id||Date.now();if(!m.scorers)m.scorers=[];if(!m.awards)m.awards=[];if(!m.season)m.season="2025/26";}); if(!imp.settings)imp.settings={theme:'light',currentSeason:"2025/26",seasons:["2025/26"]}; db=imp; save(); alert("Imported!"); location.reload();}catch(e){alert("Failed");}}; r.readAsText(e.target.files[0]); }
     function factoryReset() { if(confirm("RESET ALL?")) { localStorage.clear(); location.reload(); }}
 
     // --- MATCH DAY LOGIC ---
     function renderMatchDayInputs() {
         document.getElementById('mDate').value = new Date().toISOString().split('T')[0];
-
         const t = db.teams[activeContext];
         const fill = (id, arr) => { const el = document.getElementById(id); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); };
         const tournEl = document.getElementById('mTourn'); tournEl.innerHTML = '<option value="League">League</option>';
@@ -713,10 +699,8 @@
     function addToQueue() {
         const opp = document.getElementById('mOpp').value;
         if(!opp) return alert("Select an opponent (Add in Admin if empty)");
-        
         let dVal = document.getElementById('mDate').value;
         if(!dVal) dVal = new Date().toISOString().split('T')[0];
-
         sessionQueue.push({
             id: Date.now() + Math.random(), 
             date: dVal,
@@ -748,7 +732,6 @@
         const h = historyData.reverse();
         const groups = {};
         h.forEach(m => { const bid = m.batchId || m.id; if(!groups[bid]) groups[bid] = []; groups[bid].push(m); });
-        
         Object.values(groups).forEach(group => {
             const headerDate = formatDateNice(group[0].date) || "Unknown Date";
             const container = document.createElement('div'); container.className = 'session-card';
@@ -784,7 +767,6 @@
         document.getElementById('eOur').value = m.our;
         document.getElementById('eTheir').value = m.their;
         document.getElementById('eNotes').value = m.notes || ""; 
-        
         const t = db.teams[m.team];
         const fill = (eid, arr, val) => { const el = document.getElementById(eid); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); el.value = val; };
         fill('eOpp', t.opps, m.opp); fill('eCoach', t.coaches, m.coach);
