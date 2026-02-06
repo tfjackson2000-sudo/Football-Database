@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V42</title>
+    <title>Joey's Career Tracker V43</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -259,7 +259,7 @@
         });
     }
 
-    function saveToCloud() { if (!ALLOWED_UIDS.includes(currentUser?.uid) || isGuest) return alert("Read Only Mode"); set(ref(rtdb, 'joey_v38'), globalData); }
+    function saveToCloud() { if (!ALLOWED_UIDS.includes(currentUser?.uid) || isGuest) return alert("Read Only Mode"); return set(ref(rtdb, 'joey_v38'), globalData); }
 
     function initUI() {
         if(globalData && globalData.teams && !globalData.teams[activeContext]) activeContext = Object.keys(globalData.teams)[0] || 'Career';
@@ -274,30 +274,34 @@
             reader.onload = (event) => {
                 try {
                     const data = JSON.parse(event.target.result);
-                    if(data.teams || data.history) { globalData = data; saveToCloud(); alert("✅ Restored successfully!"); window.location.reload(); }
-                    else { alert("Invalid file."); }
+                    if(data.teams || data.history) { 
+                        globalData = data; 
+                        saveToCloud()
+                            .then(() => { alert("✅ Restore Complete. Page will reload."); window.location.reload(); })
+                            .catch(err => alert("Upload Error: " + err));
+                    } else { alert("Invalid file structure."); }
                 } catch(err) { alert("Error reading file."); }
             }; reader.readAsText(file);
         },
-        saveSession: () => { const batchId = Date.now(); sessionQueue.forEach(g => g.batchId = batchId); globalData.history.push(...sessionQueue); sessionQueue = []; saveToCloud(); ui.renderQueue(); alert("Saved!"); },
+        saveSession: () => { const batchId = Date.now(); sessionQueue.forEach(g => g.batchId = batchId); globalData.history.push(...sessionQueue); sessionQueue = []; saveToCloud().then(()=>{ui.renderQueue(); alert("Saved!");}); },
         addToQueue: () => {
             const opp = document.getElementById('mOpp').value; if(!opp) return alert("Select Opponent");
             let dVal = document.getElementById('mDate').value || new Date().toISOString().split('T')[0];
             sessionQueue.push({ id: Date.now()+Math.random(), date:dVal, team:activeContext, opp:opp, tourn:document.getElementById('mTourn').value, our:parseInt(document.getElementById('mOur').value)||0, their:parseInt(document.getElementById('mTheir').value)||0, coach:document.getElementById('mCoach').value, scorers:Array.from(document.querySelectorAll('.m-sc-input')).map(s=>s.value), awards:Array.from(document.querySelectorAll('.m-aw-input')).filter(s=>s.value).map(s=>({name:s.dataset.name, player:s.value})), notes:document.getElementById('mNotes').value, season:globalData.settings.currentSeason });
             ui.renderQueue(); document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; ui.renderScorers('m');
         },
-        adminAddItem: (k, id) => { const t = document.getElementById('admTeamSelect').value, v = document.getElementById(id).value.trim(); if(v) { globalData.teams[t][k].push(v); document.getElementById(id).value=""; saveToCloud(); ui.renderAdminDetails(); } },
-        admDel: (k, i) => { const t = document.getElementById('admTeamSelect').value; globalData.teams[t][k].splice(i,1); saveToCloud(); ui.renderAdminDetails(); },
-        addAwardConfig: () => { const t = document.getElementById('admTeamSelect').value, n = document.getElementById('newAwardName').value, m = parseInt(document.getElementById('newAwardMax').value) || 1; if(n) { globalData.teams[t].awards.push({name:n, max:m}); document.getElementById('newAwardName').value=""; saveToCloud(); ui.renderAdminDetails(); } },
-        admDelAw: (i) => { const t = document.getElementById('admTeamSelect').value; globalData.teams[t].awards.splice(i,1); saveToCloud(); ui.renderAdminDetails(); },
-        addTeam: () => { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n && !globalData.teams[n]) { globalData.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; saveToCloud(); ui.renderNav(); } },
-        startNewSeason: () => { const n = document.getElementById('newSeasonNameInput').value; if(n) { globalData.settings.seasons.push(n); globalData.settings.currentSeason = n; saveToCloud(); document.getElementById('newSeasonModal').classList.add('hidden'); } },
-        switchActiveSeason: () => { globalData.settings.currentSeason = document.getElementById('admActiveSeason').value; saveToCloud(); ui.renderNav(); ui.renderMainView(); },
-        createTournamentFromHub: () => { const n = document.getElementById('newTournNameModal').value; if(n) { if(!globalData.teams[activeContext].tournaments) globalData.teams[activeContext].tournaments = []; globalData.teams[activeContext].tournaments.push({name:n, active:true, winner:""}); saveToCloud(); document.getElementById('addTournModal').classList.add('hidden'); ui.renderTournamentView(); } },
-        saveTournWinner: () => { const tName = activeContext, trName = document.getElementById('tournSelector').value, win = document.getElementById('tournWinnerInput').value, idx = globalData.teams[tName].tournaments.findIndex(t=>t.name===trName); if(idx !== -1) { globalData.teams[tName].tournaments[idx].winner = win; saveToCloud(); alert("Saved"); } },
+        adminAddItem: (k, id) => { const t = document.getElementById('admTeamSelect').value, v = document.getElementById(id).value.trim(); if(v) { globalData.teams[t][k].push(v); document.getElementById(id).value=""; saveToCloud().then(()=>ui.renderAdminDetails()); } },
+        admDel: (k, i) => { const t = document.getElementById('admTeamSelect').value; globalData.teams[t][k].splice(i,1); saveToCloud().then(()=>ui.renderAdminDetails()); },
+        addAwardConfig: () => { const t = document.getElementById('admTeamSelect').value, n = document.getElementById('newAwardName').value, m = parseInt(document.getElementById('newAwardMax').value) || 1; if(n) { globalData.teams[t].awards.push({name:n, max:m}); document.getElementById('newAwardName').value=""; saveToCloud().then(()=>ui.renderAdminDetails()); } },
+        admDelAw: (i) => { const t = document.getElementById('admTeamSelect').value; globalData.teams[t].awards.splice(i,1); saveToCloud().then(()=>ui.renderAdminDetails()); },
+        addTeam: () => { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n && !globalData.teams[n]) { globalData.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; saveToCloud().then(()=>ui.renderNav()); } },
+        startNewSeason: () => { const n = document.getElementById('newSeasonNameInput').value; if(n) { globalData.settings.seasons.push(n); globalData.settings.currentSeason = n; saveToCloud().then(()=>{document.getElementById('newSeasonModal').classList.add('hidden')}); } },
+        switchActiveSeason: () => { globalData.settings.currentSeason = document.getElementById('admActiveSeason').value; saveToCloud().then(()=>{ui.renderNav(); ui.renderMainView();}); },
+        createTournamentFromHub: () => { const n = document.getElementById('newTournNameModal').value; if(n) { if(!globalData.teams[activeContext].tournaments) globalData.teams[activeContext].tournaments = []; globalData.teams[activeContext].tournaments.push({name:n, active:true, winner:""}); saveToCloud().then(()=>{document.getElementById('addTournModal').classList.add('hidden'); ui.renderTournamentView();}); } },
+        saveTournWinner: () => { const tName = activeContext, trName = document.getElementById('tournSelector').value, win = document.getElementById('tournWinnerInput').value, idx = globalData.teams[tName].tournaments.findIndex(t=>t.name===trName); if(idx !== -1) { globalData.teams[tName].tournaments[idx].winner = win; saveToCloud().then(()=>alert("Saved")); } },
         openEditActiveTourn: () => { alert("Use Admin panel to edit."); },
-        deleteSeason: () => { if(confirm("Delete current season?")) { const c = globalData.settings.currentSeason; globalData.history = globalData.history.filter(m=>m.season!==c); globalData.settings.seasons = globalData.settings.seasons.filter(s=>s!==c); globalData.settings.currentSeason = globalData.settings.seasons[0] || "2025/26"; saveToCloud(); ui.renderMainView(); } },
-        saveEditedMatch: () => { const id=document.getElementById('editId').value, i=globalData.history.findIndex(x=>x.id==id); if(i===-1)return; globalData.history[i]={...globalData.history[i], date:document.getElementById('eDate').value, opp:document.getElementById('eOpp').value, tourn:document.getElementById('eTourn').value, our:parseInt(document.getElementById('eOur').value)||0, their:parseInt(document.getElementById('eTheir').value)||0, scorers:Array.from(document.querySelectorAll('.e-sc-input')).map(s=>s.value), awards:Array.from(document.querySelectorAll('.e-aw-input')).filter(s=>s.value).map(s=>({name:s.dataset.name,player:s.value})), notes:document.getElementById('eNotes').value }; saveToCloud(); document.getElementById('editModal').classList.add('hidden'); }
+        deleteSeason: () => { if(confirm("Delete current season?")) { const c = globalData.settings.currentSeason; globalData.history = globalData.history.filter(m=>m.season!==c); globalData.settings.seasons = globalData.settings.seasons.filter(s=>s!==c); globalData.settings.currentSeason = globalData.settings.seasons[0] || "2025/26"; saveToCloud().then(()=>ui.renderMainView()); } },
+        saveEditedMatch: () => { const id=document.getElementById('editId').value, i=globalData.history.findIndex(x=>x.id==id); if(i===-1)return; globalData.history[i]={...globalData.history[i], date:document.getElementById('eDate').value, opp:document.getElementById('eOpp').value, tourn:document.getElementById('eTourn').value, our:parseInt(document.getElementById('eOur').value)||0, their:parseInt(document.getElementById('eTheir').value)||0, scorers:Array.from(document.querySelectorAll('.e-sc-input')).map(s=>s.value), awards:Array.from(document.querySelectorAll('.e-aw-input')).filter(s=>s.value).map(s=>({name:s.dataset.name,player:s.value})), notes:document.getElementById('eNotes').value }; saveToCloud().then(()=>{document.getElementById('editModal').classList.add('hidden');}); }
     });
 
     window.ui = {
