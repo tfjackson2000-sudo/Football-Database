@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V35</title>
+    <title>Joey's Career Tracker V36</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -117,7 +117,8 @@
         th { background: var(--session-bg); text-align: center; padding: 12px 8px; font-weight: 700; color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); }
         td { padding: 12px 8px; border-bottom: 1px solid var(--border); text-align: center; font-weight: 500; }
         .t-left { text-align: left; }
-        .pos-1 { background: rgba(255, 215, 0, 0.08); position: relative; }
+        .is-me { background: rgba(255, 215, 0, 0.08); font-weight: bold; } /* Highlight My Team */
+        .pos-1 td:first-child::before { content: "👑 "; }
         
         .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
         .queue-item { background: var(--session-bg); border-left: 4px solid var(--primary); padding: 12px; margin-bottom: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
@@ -261,7 +262,7 @@
         settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"] }
     };
 
-    let db = JSON.parse(localStorage.getItem('joey_v35')) || defaultDB;
+    let db = JSON.parse(localStorage.getItem('joey_v36')) || defaultDB;
     let activeContext = Object.keys(db.teams)[0]; 
     let activeSubTab = "Stats"; 
     let sessionQueue = [];
@@ -269,7 +270,7 @@
     if(!db.settings.currentSeason) { db.settings.currentSeason = "2025/26"; db.settings.seasons = ["2025/26"]; }
     db.history.forEach(m => { if(!m.season) m.season = "2025/26"; });
 
-    function save() { localStorage.setItem('joey_v35', JSON.stringify(db)); }
+    function save() { localStorage.setItem('joey_v36', JSON.stringify(db)); }
     function init() { applyTheme(); if(activeContext!=='Career'&&activeContext!=='Admin'&&!db.teams[activeContext]) activeContext=Object.keys(db.teams)[0]||'Career'; renderNav(); renderMainView(); }
     function toggleTheme() { db.settings.theme = db.settings.theme === 'light' ? 'dark' : 'light'; save(); applyTheme(); }
     function applyTheme() { document.body.setAttribute('data-theme', db.settings.theme); }
@@ -303,7 +304,7 @@
                 document.getElementById('teamStatTitle').innerText = activeContext + " Stats";
                 renderMatchDayInputs(); renderTeamStats();
                 renderHistoryList('teamHistoryList', db.history.filter(m=>m.team===activeContext && m.season===db.settings.currentSeason));
-                renderTeamLeague(); // New function call
+                renderTeamLeague(); 
             } else {
                 document.getElementById('viewTournaments').classList.remove('hidden');
                 renderTournamentView();
@@ -311,11 +312,10 @@
         }
     }
 
-    // --- LEAGUE TABLE LOGIC (2 ROWS) ---
+    // --- LEAGUE TABLE LOGIC (2 ROWS + SORTING FIXED) ---
     function renderTeamLeague() {
         const matches = db.history.filter(m => m.team === activeContext && m.season === db.settings.currentSeason);
         
-        // My Team Stats
         let my = { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 };
         matches.forEach(m => {
             my.p++; my.gf += m.our; my.ga += m.their;
@@ -324,7 +324,6 @@
             else { my.d++; my.pts+=1; }
         });
 
-        // Opponents Stats (Inverted)
         let opp = {
             p: my.p,
             w: my.l, // Their wins = My losses
@@ -335,9 +334,18 @@
             pts: (my.l * 3) + (my.d * 1)
         };
 
-        const row = (name, s, isMe) => `<tr class="${isMe?'pos-1':''}"><td class="t-left">${isMe?'1. ':'2. '}${name}</td><td>${s.p}</td><td>${s.w}</td><td>${s.d}</td><td>${s.l}</td><td>${s.gf-s.ga}</td><td><b>${s.pts}</b></td></tr>`;
+        // NEW SORTING LOGIC: Put objects in array and sort
+        let data = [
+            { name: activeContext, ...my, isMe: true },
+            { name: "Opponents", ...opp, isMe: false }
+        ];
+
+        // Sort: Points DESC, GD DESC, GF DESC
+        data.sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga)) || (b.gf - a.gf));
+
+        const row = (d, i) => `<tr class="${d.isMe?'is-me'+(i===0?' pos-1':''):''}"><td class="t-left">${i+1}. ${d.name}</td><td>${d.p}</td><td>${d.w}</td><td>${d.d}</td><td>${d.l}</td><td>${d.gf-d.ga}</td><td><b>${d.pts}</b></td></tr>`;
         
-        document.querySelector('#teamLeagueTable tbody').innerHTML = row(activeContext, my, true) + row("Opponents", opp, false);
+        document.querySelector('#teamLeagueTable tbody').innerHTML = data.map((d, i) => row(d, i)).join('');
     }
 
     // --- TOURNAMENT LOGIC ---
@@ -347,7 +355,6 @@
         renderArchiveList();
 
         const sel = document.getElementById('tournSelector');
-        // Only repopulate if empty or needs update to ensure we don't lose selection
         if(sel.options.length <= 1) {
             sel.innerHTML = '<option value="">-- Select Active Tournament --</option>';
             if(db.teams[tName].tournaments) {
@@ -361,17 +368,14 @@
         document.getElementById('tournStatsArea').classList.remove('hidden');
         const h = db.history.filter(m => m.tourn === val && m.team === tName && m.season === db.settings.currentSeason);
         
-        // Stats
         document.getElementById('tr-p').innerText = h.length;
         document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length;
         let g=0, a=0; h.forEach(m => { g+=m.scorers.filter(p=>p==="Joey").length; a+=m.awards.filter(x=>x.player==="Joey").length; });
         document.getElementById('tr-g').innerText = g; document.getElementById('tr-a').innerText = a;
 
-        // Winner Input
         const tournObj = db.teams[tName].tournaments.find(t => t.name === val);
         document.getElementById('tournWinnerInput').value = tournObj && tournObj.winner ? tournObj.winner : "";
 
-        // Fixtures (My Team Only)
         renderHistoryList('tournHistoryList', h);
     }
 
@@ -383,13 +387,11 @@
             db.teams[t].tournaments.push({name:n, active:true, winner:""});
             save();
             document.getElementById('addTournModal').classList.add('hidden');
-            document.getElementById('newTournNameModal').value = ""; // Clear input
-            
-            // FIX: Force rebuild selector and select new item
+            document.getElementById('newTournNameModal').value = ""; 
             const sel = document.getElementById('tournSelector');
             sel.innerHTML = '<option value="">-- Select Active Tournament --</option>';
             db.teams[t].tournaments.forEach(tr => { if(tr.active) sel.add(new Option(tr.name, tr.name)); });
-            sel.value = n; // Auto select new one
+            sel.value = n; 
             renderTournamentView();
         }
     }
@@ -398,7 +400,6 @@
         const tName = activeContext;
         const tourName = document.getElementById('tournSelector').value;
         const winner = document.getElementById('tournWinnerInput').value;
-        
         const tIdx = db.teams[tName].tournaments.findIndex(t => t.name === tourName);
         if(tIdx !== -1) {
             db.teams[tName].tournaments[tIdx].winner = winner;
@@ -467,7 +468,7 @@
         });
     }
     
-    // Admin, Edit, etc functions (Minified standard logic)
+    // Admin, Edit, etc functions
     function startNewSeason(){const n=document.getElementById('newSeasonNameInput').value.trim();if(n){if(!db.settings.seasons.includes(n))db.settings.seasons.push(n);db.settings.currentSeason=n;save();document.getElementById('newSeasonModal').classList.add('hidden');renderAdmin();renderNav();}}
     function switchActiveSeason(){db.settings.currentSeason=document.getElementById('admActiveSeason').value;save();renderNav();renderMainView();}
     function deleteSeason(){const c=db.settings.currentSeason;if(db.settings.seasons.length<=1)return alert("Cannot delete only season");if(db.history.some(m=>m.season===c)&&!confirm("Delete season & all matches?"))return;db.history=db.history.filter(m=>m.season!==c);db.settings.seasons=db.settings.seasons.filter(s=>s!==c);db.settings.currentSeason=db.settings.seasons[0];save();renderAdmin();renderNav();renderMainView();}
@@ -476,7 +477,6 @@
     function closeEditModal(){document.getElementById('editModal').classList.add('hidden');}
     function deleteMatch(id){if(confirm("Delete?")){db.history=db.history.filter(m=>m.id!=id);save();renderMainView();}}
     function renderCareer(){const s=document.getElementById('careerSeasonFilter');if(s.options.length<=1)db.settings.seasons.forEach(x=>s.add(new Option(x,x)));const f=s.value;let h=db.history;if(f!=='All Time')h=h.filter(m=>m.season===f);document.getElementById('c-p').innerText=h.length;document.getElementById('c-w').innerText=h.filter(m=>m.our>m.their).length;document.getElementById('c-g').innerText=h.reduce((a,m)=>a+m.scorers.filter(p=>p==="Joey").length,0);document.getElementById('c-a').innerText=h.reduce((a,m)=>a+m.awards.filter(p=>p.player==="Joey").length,0);
-        // Master table calc
         let stats={}; h.forEach(m=>{const u=(n,gf,ga)=>{if(!stats[n])stats[n]={name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};const st=stats[n];st.p++;st.gf+=gf;st.ga+=ga;if(gf>ga){st.w++;st.pts+=3;}else if(gf<ga){st.l++;st.pts+=0;}else{st.d++;st.pts+=1;}};u(m.team,m.our,m.their);u(m.opp,m.their,m.our);});
         const d=Object.values(stats).sort((a,b)=>(b.pts-a.pts)||((b.gf-b.ga)-(a.gf-a.ga))||(b.gf-a.gf));
         const my=Object.keys(db.teams);
@@ -486,7 +486,6 @@
     function renderArchiveList(){const u=document.getElementById('tournArchiveList');u.innerHTML="";if(db.teams[activeContext].tournaments)db.teams[activeContext].tournaments.forEach((t,i)=>{if(!t.active)u.innerHTML+=`<li><span>${t.name}</span><button class="btn-edit" onclick="editTourn('${activeContext}',${i})">✎</button></li>`});}
     function openEditActiveTourn(){const n=document.getElementById('tournSelector').value;const i=db.teams[activeContext].tournaments.findIndex(t=>t.name===n);if(i!==-1)editTourn(activeContext,i);}
     
-    // Admin stuff
     function renderAdmin(){const s=document.getElementById('admActiveSeason');s.innerHTML="";db.settings.seasons.forEach(x=>s.add(new Option(x,x)));s.value=db.settings.currentSeason;const ts=document.getElementById('admTeamSelect');const c=ts.value||Object.keys(db.teams)[0];ts.innerHTML='';Object.keys(db.teams).forEach(t=>ts.add(new Option(t,t)));ts.value=c;renderAdminDetails();document.getElementById('admTeamList').innerHTML=Object.keys(db.teams).map(t=>`<li><span style="display:flex;align-items:center;gap:10px;"><span style="width:15px;height:15px;border-radius:50%;background:${db.teams[t].color};border:1px solid #ccc;"></span> ${t}</span><div><button class="btn-edit" onclick="openEditTeam('${t}')">✎</button><button class="btn-del" onclick="deleteTeam('${t}')">🗑</button></div></li>`).join('');}
     function renderAdminDetails(){const t=db.teams[document.getElementById('admTeamSelect').value];if(!t)return;document.documentElement.style.setProperty('--primary',t.color);const l=(id,a,k)=>document.getElementById(id).innerHTML=a.map((x,i)=>`<li><span>${x}</span><div><button class="btn-edit" onclick="openEditSimple('${document.getElementById('admTeamSelect').value}','${k}',${i})">✎</button><button class="btn-del" onclick="admDel('${document.getElementById('admTeamSelect').value}','${k}',${i})">🗑</button></div></li>`).join('');l('admPlayerList',t.players,'players');l('admCoachList',t.coaches,'coaches');l('admOppList',t.opps,'opps');document.getElementById('admAwardList').innerHTML=t.awards.map((a,i)=>`<li><span>${a.name} (Max:${a.max})</span><div><button class="btn-edit" onclick="openEditAward('${document.getElementById('admTeamSelect').value}',${i})">✎</button><button class="btn-del" onclick="admDelAw('${document.getElementById('admTeamSelect').value}',${i})">🗑</button></div></li>`).join('');}
     function openEditSimple(t,k,i){document.getElementById('esTeam').value=t;document.getElementById('esType').value=k;document.getElementById('esIdx').value=i;document.getElementById('esVal').value=db.teams[t][k][i];document.getElementById('editSimpleModal').classList.remove('hidden');}
@@ -503,7 +502,7 @@
     function admDelAw(t,i){db.teams[t].awards.splice(i,1);save();renderAdminDetails();}
     function addTeam(){const n=document.getElementById('newTeamName').value,c=document.getElementById('newTeamColor').value;if(n&&!db.teams[n]){db.teams[n]={color:c,players:["Joey"],opps:[],coaches:[],awards:[],tournaments:[],active:true};save();renderAdmin();renderNav();}}
     function deleteTeam(n){if(confirm(`Delete ${n}?`)){delete db.teams[n];if(activeContext===n)activeContext=Object.keys(db.teams)[0]||'Career';save();location.reload();}}
-    function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'}));a.download='JoeyV35.json';a.click();}
+    function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(db)],{type:'application/json'}));a.download='JoeyV36.json';a.click();}
     function importData(e){const r=new FileReader();r.onload=(ev)=>{try{let i=JSON.parse(ev.target.result);if(i.data&&!i.teams){i.teams=i.data;delete i.data}db=i;save();location.reload();}catch(e){alert("Error")}};r.readAsText(e.target.files[0]);}
     function factoryReset(){if(confirm("RESET ALL?")){localStorage.clear();location.reload();}}
 
