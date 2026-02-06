@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V39</title>
+    <title>Joey's Career Tracker V41</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -74,6 +74,8 @@
         .btn-guest { background: transparent; border: 2px solid var(--border); color: var(--text); }
         .icon-btn { margin-left: 5px; background: var(--input-bg); border: 1px solid var(--border); border-radius: 50%; width: 36px; height: 36px; min-width: 36px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; color: var(--text); transition: 0.2s; }
 
+        .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
+
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
         th { background: var(--session-bg); padding: 12px 8px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); }
         td { padding: 12px 8px; border-bottom: 1px solid var(--border); text-align: center; }
@@ -111,8 +113,7 @@
 </div>
 
 <div class="nav-container hidden" id="mainNav">
-    <div class="nav-primary" id="navPrimary">
-        </div>
+    <div class="nav-primary" id="navPrimary"></div>
     <div class="nav-secondary hidden" id="navSecondary">
         <div class="tab-btn" id="tabStats" onclick="ui.switchSubTab('Stats')">📊 Stats & Input</div>
         <div class="tab-btn" id="tabTourn" onclick="ui.switchSubTab('Tournaments')">🏆 Tournaments</div>
@@ -196,10 +197,28 @@
 
     <div id="viewAdmin" class="hidden protected-area">
         <h2 style="margin-bottom:20px;">⚙️ Admin</h2>
+        
+        <div class="card" style="border-left: 5px solid red; background: #fff5f5;">
+            <div class="card-header" style="color: #c00;">⚠️ Data Recovery</div>
+            <p style="font-size:0.9rem; margin-bottom:15px;">Missing Dunvant or old data? Click this to force your local data (from V36) to overwrite the Cloud.</p>
+            <button class="btn" style="background: red; color: white;" onclick="app.forceMigration()">Force Restore from Local</button>
+        </div>
+
         <div class="card"><div class="card-header">🛠 Select Team</div><select id="admTeamSelect" onchange="ui.renderAdminDetails()"></select></div>
         <div class="card"><div class="card-header">📅 Season</div><div style="display:flex; gap:10px;"><select id="admActiveSeason" onchange="app.switchActiveSeason()"></select><button class="btn-del" onclick="app.deleteSeason()">🗑</button></div><button class="btn btn-save" onclick="document.getElementById('newSeasonModal').classList.remove('hidden')">➕ New Season</button></div>
         <div class="card"><div class="card-header">🏃‍♂️ Squad</div><div class="form-group"><input type="text" id="admNewPlayer" placeholder="Add Player"><button class="btn btn-add" onclick="app.adminAddItem('players', 'admNewPlayer')">Add</button><ul id="admPlayerList" class="admin-list"></ul></div></div>
         <div class="card"><div class="card-header">🛡 Opponents</div><div class="form-group"><input type="text" id="admNewOpp" placeholder="Add Opponent"><button class="btn btn-add" onclick="app.adminAddItem('opps', 'admNewOpp')">Add</button><ul id="admOppList" class="admin-list"></ul></div></div>
+        
+        <div class="card">
+            <div class="card-header">🏅 Awards</div>
+            <div style="display:flex; gap:5px; margin-bottom:10px;">
+                <input type="text" id="newAwardName" placeholder="Name">
+                <input type="number" id="newAwardMax" placeholder="Max" style="width:70px;" value="1">
+                <button class="btn btn-save" style="width:auto;" onclick="app.addAwardConfig()">Add</button>
+            </div>
+            <ul id="admAwardList" class="admin-list"></ul>
+        </div>
+
         <div class="card"><div class="card-header">🌍 Global Settings</div><label>Add Club:</label><div style="display:flex; gap:5px;"><input type="text" id="newTeamName"><input type="color" id="newTeamColor" value="#333333"><button class="btn btn-add" onclick="app.addTeam()">Create</button></div></div>
     </div>
 </div>
@@ -215,17 +234,16 @@
 
     // --- PASTE YOUR FIREBASE CONFIG HERE ---
     const firebaseConfig = {
-       apiKey: "AIzaSyAkhLB-XkffuTny8yJOw_FCtZSRIo5qQLE",
-  authDomain: "joeyfootball-875eb.firebaseapp.com",
-  databaseURL: "https://joeyfootball-875eb-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "joeyfootball-875eb",
-  storageBucket: "joeyfootball-875eb.firebasestorage.app",
-  messagingSenderId: "647816306796",
-  appId: "1:647816306796:web:686918e1d1c82b8a17f849",
-  measurementId: "G-PX5PH27CES"
+        apiKey: "AIzaSyAkhLB-XkffuTny8yJOw_FCtZSRIo5qQLE",
+        authDomain: "joeyfootball-875eb.firebaseapp.com",
+        databaseURL: "https://joeyfootball-875eb-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "joeyfootball-875eb",
+        storageBucket: "joeyfootball-875eb.firebasestorage.app",
+        messagingSenderId: "647816306796",
+        appId: "1:647816306796:web:686918e1d1c82b8a17f849",
+        measurementId: "G-PX5PH27CES"
     };
 
-    // --- ALLOWED USERS (Your Family) ---
     const ALLOWED_UIDS = [
         "QC6D1Smr9SVgpITffUTrRZSTQEq1", 
         "Np9ZXcd2wNWvwsYA3X1QTcFpSIB3"
@@ -247,35 +265,27 @@
     let currentUser = null;
     let isGuest = false;
 
-    // --- AUTH ---
     const btnLogin = document.getElementById('btnLogin');
     btnLogin.onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
     
-    // --- GUEST LOGIC ---
-    window.app = window.app || {}; // Ensure object exists
+    window.app = window.app || {}; 
     window.app.enterAsGuest = () => {
-        isGuest = true;
-        currentUser = { uid: "GUEST" };
+        isGuest = true; currentUser = { uid: "GUEST" };
         document.getElementById('authOverlay').classList.add('hidden');
         document.getElementById('loadingOverlay').classList.remove('hidden');
-        document.body.classList.add('read-only-mode'); // Enforce UI read-only
-        listenToData(); // Start listening
+        document.body.classList.add('read-only-mode');
+        listenToData();
     };
-
-    window.app.doSignOut = () => {
-        isGuest = false;
-        signOut(auth).then(() => window.location.reload());
-    };
+    window.app.doSignOut = () => { isGuest = false; signOut(auth).then(() => window.location.reload()); };
 
     onAuthStateChanged(auth, (user) => {
-        if (isGuest) return; // Don't override guest mode
+        if (isGuest) return; 
         currentUser = user;
         const authOverlay = document.getElementById('authOverlay');
         const loadOverlay = document.getElementById('loadingOverlay');
 
         if (user) {
             authOverlay.classList.add('hidden');
-            // Permissions check
             if (ALLOWED_UIDS.includes(user.uid)) {
                 document.body.classList.remove('read-only-mode');
                 document.querySelectorAll('.protected-area').forEach(el => el.classList.remove('hidden'));
@@ -285,7 +295,6 @@
             }
             listenToData(); 
         } else {
-            // Not logged in, show Login Overlay
             loadOverlay.classList.add('hidden');
             authOverlay.classList.remove('hidden');
             document.getElementById('mainNav').classList.add('hidden');
@@ -293,9 +302,8 @@
         }
     });
 
-    // --- SYNC ---
     function listenToData() {
-        const dataRef = ref(rtdb, 'joey_v38'); // Keeping v38 DB structure
+        const dataRef = ref(rtdb, 'joey_v38'); 
         onValue(dataRef, (snapshot) => {
             const val = snapshot.val();
             document.getElementById('loadingOverlay').classList.add('hidden');
@@ -306,29 +314,10 @@
                 globalData = val;
                 initUI();
             } else {
-                // Check local if new to cloud (Only if not guest)
-                if(!isGuest) {
-                    const local = localStorage.getItem('joey_v36');
-                    if (local) {
-                        try {
-                            const parsed = JSON.parse(local);
-                            globalData = parsed;
-                            if(ALLOWED_UIDS.includes(currentUser?.uid)) {
-                                set(dataRef, globalData);
-                                alert("🚀 Migration Successful!");
-                            }
-                        } catch(e) {}
-                    }
-                }
-                if (!globalData) {
-                    globalData = { teams: { "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: [], coaches: [], awards: [], tournaments: [], active: true } }, history: [], settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"] } };
-                    if(!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) set(dataRef, globalData);
-                }
+                // Initialize default
+                globalData = { teams: { "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: [], coaches: [], awards: [], tournaments: [], active: true } }, history: [], settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"] } };
+                if(!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) set(dataRef, globalData);
                 initUI();
-            }
-        }, (error) => {
-            if(isGuest && error.code === 'PERMISSION_DENIED') {
-                 alert("⚠️ Permission Denied: You must set Firebase Database Rules to '.read: true' for guests to see data.");
             }
         });
     }
@@ -339,6 +328,7 @@
     }
 
     function initUI() {
+        // Ensure activeContext exists in data
         if(globalData && globalData.teams && !globalData.teams[activeContext]) activeContext = Object.keys(globalData.teams)[0] || 'Career';
         if(globalData && !globalData.history) globalData.history = [];
         ui.renderNav();
@@ -346,7 +336,6 @@
         document.body.setAttribute('data-theme', globalData?.settings?.theme || 'light');
     }
 
-    // --- APP LOGIC ASSIGNMENT ---
     Object.assign(window.app, {
         saveSession: () => {
              const batchId = Date.now();
@@ -372,10 +361,41 @@
             ui.renderQueue(); 
             document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; ui.renderScorers('m');
         },
+        
+        // --- EMERGENCY RESTORE ---
+        forceMigration: () => {
+            if(!confirm("⚠️ ARE YOU SURE? This will overwrite the current Cloud data with the data from your device (V36).")) return;
+            const local = localStorage.getItem('joey_v36');
+            if(local) {
+                try {
+                    globalData = JSON.parse(local);
+                    saveToCloud();
+                    alert("Restored! Dunvant and your old data should now be visible.");
+                } catch(e) { alert("Error reading local data"); }
+            } else {
+                alert("No local V36 data found on this device.");
+            }
+        },
+
+        // --- ADMIN FUNCTIONS ---
         adminAddItem: (k, id) => {
             const t = document.getElementById('admTeamSelect').value;
             const v = document.getElementById(id).value.trim();
             if(v) { globalData.teams[t][k].push(v); document.getElementById(id).value=""; saveToCloud(); ui.renderAdminDetails(); }
+        },
+        admDel: (k, i) => { // Generic delete for players/coaches/opps
+            const t = document.getElementById('admTeamSelect').value;
+            globalData.teams[t][k].splice(i,1); saveToCloud(); ui.renderAdminDetails();
+        },
+        addAwardConfig: () => {
+            const t = document.getElementById('admTeamSelect').value;
+            const n = document.getElementById('newAwardName').value;
+            const m = parseInt(document.getElementById('newAwardMax').value) || 1;
+            if(n) { globalData.teams[t].awards.push({name:n, max:m}); document.getElementById('newAwardName').value=""; saveToCloud(); ui.renderAdminDetails(); }
+        },
+        admDelAw: (i) => {
+            const t = document.getElementById('admTeamSelect').value;
+            globalData.teams[t].awards.splice(i,1); saveToCloud(); ui.renderAdminDetails();
         },
         addTeam: () => {
             const n=document.getElementById('newTeamName').value; const c=document.getElementById('newTeamColor').value;
@@ -435,31 +455,19 @@
     window.ui = {
         renderNav: () => {
             const p = document.getElementById('navPrimary'); p.innerHTML='';
-            // 1. Teams
             Object.keys(globalData.teams).forEach(t => {
                 const b = document.createElement('div'); b.className=`nav-btn ${activeContext===t?'active':''}`; b.innerText=t;
                 b.onclick=()=>{activeContext=t; ui.switchSubTab('Stats');}; p.appendChild(b);
             });
-            // 2. Career & Admin
             const c = document.createElement('div'); c.className=`nav-btn career ${activeContext==='Career'?'active':''}`; c.innerText='🌟 Career'; c.onclick=()=>ui.switchContext('Career'); p.appendChild(c);
             const a = document.createElement('div'); a.className=`nav-btn admin ${activeContext==='Admin'?'active':''}`; a.innerText='⚙️ Admin'; a.onclick=()=>ui.switchContext('Admin'); p.appendChild(a);
             
-            // 3. User Controls (Theme + SignOut)
-            const controls = document.createElement('div'); 
-            controls.style.marginLeft = 'auto'; 
-            controls.style.display = 'flex';
-            
+            const controls = document.createElement('div'); controls.style.marginLeft = 'auto'; controls.style.display = 'flex';
             const tm = document.createElement('button'); tm.className='icon-btn'; tm.innerHTML=globalData.settings.theme==='light'?'🌙':'☀️'; 
             tm.onclick = () => { globalData.settings.theme = globalData.settings.theme === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', globalData.settings.theme); saveToCloud(); };
-            
-            const so = document.createElement('button'); so.className='icon-btn'; so.innerHTML='🚪'; so.title = "Sign Out";
-            so.onclick = () => app.doSignOut();
+            const so = document.createElement('button'); so.className='icon-btn'; so.innerHTML='🚪'; so.title = "Sign Out"; so.onclick = () => app.doSignOut();
+            controls.appendChild(tm); controls.appendChild(so); p.appendChild(controls);
 
-            controls.appendChild(tm);
-            controls.appendChild(so);
-            p.appendChild(controls);
-
-            // Toggle secondary
             if(activeContext==='Career'||activeContext==='Admin') document.getElementById('navSecondary').classList.add('hidden');
             else document.getElementById('navSecondary').classList.remove('hidden');
         },
@@ -563,8 +571,12 @@
         },
         renderAdminDetails: () => {
             const t=globalData.teams[document.getElementById('admTeamSelect').value];
-            const l=(id,a)=>document.getElementById(id).innerHTML=a.map(x=>`<li>${x}</li>`).join('');
-            l('admPlayerList', t.players); l('admCoachList', t.coaches); l('admOppList', t.opps);
+            if(!t) return;
+            // List generator
+            const l=(id,k)=>document.getElementById(id).innerHTML=t[k].map((x,i)=>`<li>${x}<button class="btn-del" onclick="app.admDel('${k}',${i})">🗑</button></li>`).join('');
+            l('admPlayerList', 'players'); l('admCoachList', 'coaches'); l('admOppList', 'opps');
+            // Awards
+            document.getElementById('admAwardList').innerHTML = t.awards.map((a,i)=>`<li>${a.name} (Max:${a.max})<button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></li>`).join('');
         },
         renderTournamentView: () => {
             const tName = activeContext;
