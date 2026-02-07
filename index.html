@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V54</title>
+    <title>Joey's Career Tracker V55</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -38,12 +38,15 @@
         .nav-primary { display: flex; padding: 10px 15px; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
         .nav-scroll-area { display: flex; gap: 10px; overflow-x: auto; flex: 1; min-width: 200px; align-items: center; }
         .nav-controls { display: flex; gap: 8px; align-items: center; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+        
         .nav-secondary { display: flex; padding: 0 15px; background: var(--primary-tint); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); }
         
         .nav-btn { padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.9rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; }
         .nav-btn.active { opacity: 1; background: var(--primary); color: var(--text-on-primary); transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        
         .nav-btn.career { border-color: #ffd700; color: #b8860b; background: transparent; }
         .nav-btn.career.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
+        
         .nav-btn.admin { background: #e9ecef; color: #333; }
         .nav-btn.admin.active { background: #333; color: #fff; }
         
@@ -55,6 +58,8 @@
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); opacity: 1; font-weight: 700; }
 
         .container { max-width: 800px; margin: 25px auto; padding: 0 15px; }
+        
+        /* CARD STYLES */
         .card { background: var(--card); border-radius: 16px; padding: 0; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; }
         .card-header { font-size: 1.1rem; font-weight: 800; padding: 15px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--primary-tint); color: var(--primary); border-bottom: 1px solid var(--border); }
         
@@ -63,6 +68,7 @@
         [data-theme="dark"] .neutral-header { background: #2a2a2a !important; color: #eee !important; }
 
         .card-body { padding: 20px; }
+        
         details > summary { list-style: none; cursor: pointer; outline: none; font-weight: bold; font-size: 1.1rem; }
         details > summary::after { content: ' ▼'; float: right; font-size: 0.8em; opacity: 0.5; }
         details[open] > summary::after { transform: rotate(180deg); }
@@ -74,12 +80,15 @@
         .form-group { margin-bottom: 20px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         select, input, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 1rem; background: var(--card); color: var(--text); box-sizing: border-box; }
+        
         .flex-row { display: flex; gap: 10px; align-items: center; }
         .flex-grow { flex: 1; min-width: 0; }
         .color-picker { width: 50px; padding: 2px; height: 45px; cursor: pointer; border-radius: 8px; border: 1px solid var(--border); }
 
+        /* HISTORY */
         .history-group { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 20px; overflow: hidden; background: var(--card); box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .group-header { background: var(--primary-tint); padding: 10px 15px; font-size: 0.9rem; font-weight: bold; color: var(--primary); border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items: center; }
+        
         .match-row { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; background: var(--card); gap: 10px; }
         .match-row:last-child { border-bottom: none; }
         .match-info { flex: 1; } 
@@ -89,6 +98,7 @@
         .res-d { background: rgba(255, 193, 7, 0.15); color: #d39e00; }
         .match-actions { display: flex; align-items: center; gap: 5px; }
 
+        /* BUTTONS */
         .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; margin-top:5px; transition: 0.2s; }
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
         .btn-add { background: var(--primary); color: var(--text-on-primary); }
@@ -138,6 +148,146 @@
 </div>
 
 <div class="container hidden" id="mainApp">
+    <div id="viewMatchDay" class="hidden">
+        <div class="card">
+            <div class="card-header"><span>📊 <span id="teamStatTitle">Stats</span></span></div>
+            <div class="card-body">
+                <div class="stat-grid">
+                    <div class="stat-item"><span>Games</span><strong id="st-p">0</strong></div>
+                    <div class="stat-item"><span>Wins</span><strong id="st-w">0</strong></div>
+                    <div class="stat-item"><span>Goals</span><strong id="st-g">0</strong></div>
+                    <div class="stat-item"><span>Awards</span><strong id="st-a">0</strong></div>
+                </div>
+            </div>
+        </div>
+        <div class="card protected-area">
+            <details>
+                <summary class="card-header">⚽ Match Day Input</summary>
+                <div class="card-body">
+                    <div class="form-group"><label>Date:</label><input type="date" id="mDate"></div>
+                    <div class="form-group"><label>Competition:</label><select id="mTourn"><option value="League">League</option></select></div>
+                    <div class="form-row"><div><label>Opponent:</label><select id="mOpp"></select></div><div><label>Manager:</label><select id="mCoach"></select></div></div>
+                    <div class="form-row"><div><label>Us:</label><input type="number" id="mOur" value="0" oninput="ui.renderScorers('m')"></div><div><label>Them:</label><input type="number" id="mTheir" value="0"></div></div>
+                    <div id="mScorerList" class="form-group"></div>
+                    <div id="mAwardList" class="form-group"></div>
+                    <div class="form-group"><label>Notes:</label><textarea id="mNotes" rows="2"></textarea></div>
+                    <button type="button" class="btn btn-add" onclick="app.addToQueue()">+ Add Game to Queue</button>
+                    <div id="matchQueue" style="margin-top:15px; padding-top:15px; border-top:1px solid var(--border);"></div>
+                    <button type="button" id="btnFinalize" class="btn btn-save hidden" onclick="app.saveSession()">💾 Save Session</button>
+                </div>
+            </details>
+        </div>
+        <div class="card">
+            <details open>
+                <summary class="card-header">🏆 League Table</summary>
+                <div class="card-body" style="padding:0;">
+                    <table id="teamLeagueTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr></thead><tbody></tbody></table>
+                </div>
+            </details>
+        </div>
+        <div class="card">
+            <details open>
+                <summary class="card-header">🕒 Match History</summary>
+                <div class="card-body" id="teamHistoryList" style="padding:10px;"></div>
+            </details>
+        </div>
+    </div>
+
+    <div id="viewTournaments" class="hidden">
+        <div class="card" style="border-color: var(--tourn-color);">
+            <div class="card-header" style="color: var(--tourn-color); background:rgba(111, 66, 193, 0.05);">🏆 Tournament Hub
+                <button class="btn-outline protected-area" style="width:auto; padding:5px 12px; font-size:0.8rem;" onclick="document.getElementById('addTournModal').classList.remove('hidden')">+ New</button>
+            </div>
+            <div class="card-body">
+                <div class="form-group"><label>Select Tournament:</label><select id="tournSelector" onchange="ui.renderTournamentView()"></select></div>
+                <div id="tournStatsArea" class="hidden">
+                    <div class="stat-grid">
+                        <div class="stat-item"><span>Games</span><strong id="tr-p">0</strong></div>
+                        <div class="stat-item"><span>Wins</span><strong id="tr-w">0</strong></div>
+                        <div class="stat-item"><span>Goals</span><strong id="tr-g">0</strong></div>
+                        <div class="stat-item"><span>Awards</span><strong id="tr-a">0</strong></div>
+                    </div>
+                    <div class="protected-area" style="margin-top:20px; text-align:right;"><button class="btn-edit" style="width:auto;" onclick="app.openEditActiveTourn()">⚙️ Manage</button></div>
+                    <div class="protected-area" style="background:var(--primary-tint); padding:15px; border-radius:10px; margin-top:20px; border:1px solid var(--border);">
+                        <label>🏆 Tournament Winner:</label>
+                        <div class="flex-row"><input type="text" id="tournWinnerInput" placeholder="Enter winner" class="flex-grow"><button class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveTournWinner()">Save</button></div>
+                    </div>
+                    <h3 style="margin-top:25px; border-bottom:2px solid var(--border);">🕒 Fixtures</h3>
+                    <div id="tournHistoryList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewCareer" class="hidden">
+        <div class="card" style="border-color: #DAA520;">
+            <div class="card-header" style="color: #B8860B; background:rgba(218, 165, 32, 0.1);"><span>🌟 Career Overview</span><select id="careerSeasonFilter" onchange="ui.renderCareer()" style="width:auto;"><option value="All Time">All Time</option></select></div>
+            <div class="card-body">
+                <div class="stat-grid"><div class="stat-item"><span>Games</span><strong id="c-p">0</strong></div><div class="stat-item"><span>Wins</span><strong id="c-w">0</strong></div><div class="stat-item"><span>Goals</span><strong id="c-g">0</strong></div><div class="stat-item"><span>Awards</span><strong id="c-a">0</strong></div></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header" style="color:#B8860B; background:rgba(218, 165, 32, 0.1);">🏆 Your Clubs Comparison</div>
+            <div class="card-body" style="padding:0;">
+                <table id="masterTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead><tbody></tbody></table>
+            </div>
+        </div>
+    </div>
+
+    <div id="viewAdmin" class="hidden protected-area">
+        <h2 style="margin-bottom:20px;">⚙️ Admin</h2>
+        
+        <div class="card">
+            <div class="card-header">🛠 Select Team</div>
+            <div class="card-body">
+                <div class="flex-row">
+                    <select id="admTeamSelect" onchange="ui.renderAdminDetails()" class="flex-grow"></select>
+                    <button class="btn-edit" style="font-size:0.9rem; width:auto;" onclick="app.renameTeamPrompt()">Rename</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card"><div class="card-header">📅 Season</div><div class="card-body"><div class="flex-row"><select id="admActiveSeason" onchange="app.switchActiveSeason()" class="flex-grow"></select><button class="btn-del" style="width:auto;" onclick="app.deleteSeason()">🗑</button></div><button class="btn btn-save" onclick="document.getElementById('newSeasonModal').classList.remove('hidden')">➕ New Season</button></div></div>
+        
+        <div class="card">
+            <div class="card-header">🏃‍♂️ Squad</div>
+            <div class="card-body">
+                <div class="form-group flex-row"><input type="text" id="admNewPlayer" placeholder="Add Player" class="flex-grow"><button class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddItem('players', 'admNewPlayer')">Add</button></div>
+                <ul id="admPlayerList" class="admin-list"></ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">🛡 Opponents</div>
+            <div class="card-body">
+                <div class="form-group flex-row"><input type="text" id="admNewOpp" placeholder="Add Opponent" class="flex-grow"><button class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddItem('opps', 'admNewOpp')">Add</button></div>
+                <ul id="admOppList" class="admin-list"></ul>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">🏅 Awards</div>
+            <div class="card-body">
+                <div class="flex-row" style="margin-bottom:10px;"><input type="text" id="newAwardName" placeholder="Name" class="flex-grow"><input type="number" id="newAwardMax" placeholder="Max" style="width:70px;"><button class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.addAwardConfig()">Add</button></div>
+                <ul id="admAwardList" class="admin-list"></ul>
+            </div>
+        </div>
+        
+        <div class="card neutral-card">
+            <div class="card-header neutral-header">🌍 Global Settings</div>
+            <div class="card-body">
+                <label style="display:block; margin-bottom:5px;">Add Club:</label>
+                <div class="flex-row">
+                    <input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow">
+                    <input type="color" id="newTeamColor" value="#333333" class="color-picker">
+                    <button class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></d"container hidden" id="mainApp">
     <div id="viewMatchDay" class="hidden">
         <div class="card">
             <div class="card-header"><span>📊 <span id="teamStatTitle">Stats</span></span></div>
