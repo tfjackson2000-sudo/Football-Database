@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V58</title>
+    <title>Joey's Career Tracker V59</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -58,7 +58,16 @@
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); opacity: 1; font-weight: 700; }
 
         .container { max-width: 800px; margin: 25px auto; padding: 0 15px; }
-        .card { background: var(--card); border-radius: 16px; padding: 0; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; }
+        
+        /* CARD STYLES */
+        .card { background: var(--card); border-radius: 16px; padding: 0; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.3s; }
+        
+        /* Dark Mode Dynamic Coloring */
+        [data-theme="dark"] .card:not(.neutral-card) {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-tint);
+        }
+
         .card-header { font-size: 1.1rem; font-weight: 800; padding: 15px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--primary-tint); color: var(--primary); border-bottom: 1px solid var(--border); }
         
         /* Neutral Header specifically for Global Settings */
@@ -117,6 +126,11 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .modal-box { background: var(--card); padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
         
+        /* TOAST NOTIFICATION */
+        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 50px; display: flex; align-items: center; gap: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 3000; transition: opacity 0.3s; opacity: 0; pointer-events: none; }
+        #toast.visible { opacity: 1; pointer-events: all; }
+        #toast button { background: transparent; border: none; color: #4dabf7; font-weight: bold; cursor: pointer; padding: 0; font-size: 0.95rem; }
+
         #authOverlay, #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; padding: 20px; text-align: center; }
         .auth-card { background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 400px; width: 100%; border: 1px solid var(--border); }
     </style>
@@ -133,6 +147,8 @@
         <button id="btnGuest" class="btn btn-guest" onclick="app.enterAsGuest()">Guest View</button>
     </div>
 </div>
+
+<div id="toast"><span id="toastMsg">Deleted</span><button onclick="app.performUndo()">UNDO</button></div>
 
 <div class="nav-container hidden" id="mainNav">
     <div class="nav-primary">
@@ -328,6 +344,10 @@
 
     const ALLOWED_UIDS = ["QC6D1Smr9SVgpITffUTrRZSTQEq1", "Np9ZXcd2wNWvwsYA3X1QTcFpSIB3"];
     let app, db, auth, rtdb, globalData, activeContext = "Llanelli Town", activeSubTab = "Stats", sessionQueue = [], currentUser = null, isGuest = false;
+    
+    // UNDO SYSTEM VARIABLES
+    let lastDeleted = null;
+    let undoTimer = null;
 
     try { app = initializeApp(firebaseConfig); rtdb = getDatabase(app); auth = getAuth(app); } 
     catch (e) { document.getElementById('loadingOverlay').innerHTML = "<h2>⚠️ Error</h2><p>Firebase Config Failed</p>"; }
@@ -372,6 +392,18 @@
         if(globalData && !globalData.history) globalData.history = [];
         ui.renderNav(); ui.renderMainView(); document.body.setAttribute('data-theme', globalData?.settings?.theme || 'light');
     }
+    
+    // UNDO HELPER FUNCTION
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        document.getElementById('toastMsg').innerText = msg;
+        t.classList.add('visible');
+        if(undoTimer) clearTimeout(undoTimer);
+        undoTimer = setTimeout(() => {
+            t.classList.remove('visible');
+            lastDeleted = null; // Clear history
+        }, 5000);
+    }
 
     // Helper: Date Format
     const fmtDate = (ds) => {
@@ -402,10 +434,56 @@
             sessionQueue.push({ id: Date.now()+Math.random(), date:dVal, team:activeContext, opp:opp, tourn:document.getElementById('mTourn').value, our:parseInt(document.getElementById('mOur').value)||0, their:parseInt(document.getElementById('mTheir').value)||0, coach:document.getElementById('mCoach').value, scorers:Array.from(document.querySelectorAll('.m-sc-input')).map(s=>s.value), awards:Array.from(document.querySelectorAll('.m-aw-input')).filter(s=>s.value).map(s=>({name:s.dataset.name, player:s.value})), notes:document.getElementById('mNotes').value, season:globalData.settings.currentSeason });
             ui.renderQueue(); document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; ui.renderScorers('m');
         },
+        
+        // --- UNDOABLE DELETES ---
+        
+        admDel: (k, i) => { 
+            const t = document.getElementById('admTeamSelect').value; 
+            const item = globalData.teams[t][k][i];
+            lastDeleted = { type: 'adminItem', key: k, index: i, data: item, team: t };
+            globalData.teams[t][k].splice(i,1); 
+            saveToCloud().then(()=>{ ui.renderAdminDetails(); showToast("Item Deleted"); }); 
+        },
+        
+        admDelAw: (i) => { 
+            const t = document.getElementById('admTeamSelect').value; 
+            const item = globalData.teams[t].awards[i];
+            lastDeleted = { type: 'award', index: i, data: item, team: t };
+            globalData.teams[t].awards.splice(i,1); 
+            saveToCloud().then(()=>{ ui.renderAdminDetails(); showToast("Award Deleted"); }); 
+        },
+        
+        deleteMatch: (id) => { 
+            if(confirm("Delete this match?")) { 
+                const m = globalData.history.find(x => x.id == id); 
+                lastDeleted = { type: 'match', data: m };
+                globalData.history = globalData.history.filter(x => x.id != id); 
+                saveToCloud().then(()=>{ ui.renderMainView(); showToast("Match Deleted"); }); 
+            } 
+        },
+        
+        performUndo: () => {
+            if(!lastDeleted) return;
+            const ld = lastDeleted;
+            if(ld.type === 'match') {
+                globalData.history.push(ld.data);
+            } else if (ld.type === 'adminItem') {
+                globalData.teams[ld.team][ld.key].splice(ld.index, 0, ld.data);
+            } else if (ld.type === 'award') {
+                globalData.teams[ld.team].awards.splice(ld.index, 0, ld.data);
+            }
+            saveToCloud().then(() => {
+                ui.renderMainView();
+                document.getElementById('toast').classList.remove('visible');
+                lastDeleted = null;
+                alert("Restored!");
+            });
+        },
+
+        // ------------------------
+
         adminAddItem: (k, id) => { const t = document.getElementById('admTeamSelect').value, v = document.getElementById(id).value.trim(); if(v) { globalData.teams[t][k].push(v); document.getElementById(id).value=""; saveToCloud().then(()=>ui.renderAdminDetails()); } },
-        admDel: (k, i) => { const t = document.getElementById('admTeamSelect').value; globalData.teams[t][k].splice(i,1); saveToCloud().then(()=>ui.renderAdminDetails()); },
         addAwardConfig: () => { const t = document.getElementById('admTeamSelect').value, n = document.getElementById('newAwardName').value, m = parseInt(document.getElementById('newAwardMax').value) || 1; if(n) { globalData.teams[t].awards.push({name:n, max:m}); document.getElementById('newAwardName').value=""; saveToCloud().then(()=>ui.renderAdminDetails()); } },
-        admDelAw: (i) => { const t = document.getElementById('admTeamSelect').value; globalData.teams[t].awards.splice(i,1); saveToCloud().then(()=>ui.renderAdminDetails()); },
         addTeam: () => { const n=document.getElementById('newTeamName').value, c=document.getElementById('newTeamColor').value; if(n && !globalData.teams[n]) { globalData.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true}; saveToCloud().then(()=>ui.renderNav()); } },
         startNewSeason: () => { const n = document.getElementById('newSeasonNameInput').value; if(n) { globalData.settings.seasons.push(n); globalData.settings.currentSeason = n; saveToCloud().then(()=>{document.getElementById('newSeasonModal').classList.add('hidden')}); } },
         switchActiveSeason: () => { globalData.settings.currentSeason = document.getElementById('admActiveSeason').value; saveToCloud().then(()=>{ui.renderNav(); ui.renderMainView();}); },
@@ -414,7 +492,6 @@
         openEditActiveTourn: () => { alert("Use Admin panel to edit."); },
         deleteSeason: () => { if(confirm("Delete current season?")) { const c = globalData.settings.currentSeason; globalData.history = globalData.history.filter(m=>m.season!==c); globalData.settings.seasons = globalData.settings.seasons.filter(s=>s!==c); globalData.settings.currentSeason = globalData.settings.seasons[0] || "2025/26"; saveToCloud().then(()=>ui.renderMainView()); } },
         
-        // SAVE EDITED MATCH - Including MANAGER
         saveEditedMatch: () => { 
             const id=document.getElementById('editId').value, i=globalData.history.findIndex(x=>x.id==id); 
             if(i===-1)return; 
@@ -423,7 +500,7 @@
                 date:document.getElementById('eDate').value, 
                 opp:document.getElementById('eOpp').value, 
                 tourn:document.getElementById('eTourn').value, 
-                coach:document.getElementById('eCoach').value, // Save Manager
+                coach:document.getElementById('eCoach').value, 
                 our:parseInt(document.getElementById('eOur').value)||0, 
                 their:parseInt(document.getElementById('eTheir').value)||0, 
                 scorers:Array.from(document.querySelectorAll('.e-sc-input')).map(s=>s.value), 
@@ -433,12 +510,6 @@
             saveToCloud().then(()=>{document.getElementById('editModal').classList.add('hidden'); ui.renderMainView();}); 
         },
         
-        deleteMatch: (id) => { 
-            if(confirm("Permanently delete this match?")) { 
-                globalData.history = globalData.history.filter(m => m.id != id); 
-                saveToCloud().then(()=>ui.renderMainView()); 
-            } 
-        },
         renameTeamPrompt: () => {
             const oldName = document.getElementById('admTeamSelect').value;
             const newName = prompt(`Rename "${oldName}" to:`, oldName);
@@ -506,7 +577,6 @@
         renderScorers: (p) => { const c = parseInt(document.getElementById(p + 'Our').value) || 0; const d = document.getElementById(p + 'ScorerList'); d.innerHTML = c > 0 ? '<label>Goal Scorers:</label>' : ''; const pl = globalData.teams[activeContext].players; for(let i=0; i<c; i++) { const s = document.createElement('select'); s.className = p + '-sc-input'; s.style.marginBottom='5px'; pl.forEach(x => s.add(new Option(x,x))); d.appendChild(s); } const ad = document.getElementById(p + 'AwardList'); ad.innerHTML = ''; (globalData.teams[activeContext].awards || []).forEach(aw => { const w = document.createElement('div'); w.style.cssText='background:var(--session-bg);padding:8px;border-radius:8px;margin-bottom:5px;'; w.innerHTML = `<small><strong>${aw.name}</strong> (Max ${aw.max})</small>`; for(let k=0; k<aw.max; k++) { const s = document.createElement('select'); s.className = p + '-aw-input'; s.dataset.name = aw.name; s.add(new Option("-", "")); pl.forEach(x => s.add(new Option(x,x))); w.appendChild(s); } ad.appendChild(w); }); },
         renderQueue: () => { const q=document.getElementById('matchQueue'); q.innerHTML=sessionQueue.map((g,i)=>`<div class="queue-item"><div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div><button class="btn-del" onclick="sessionQueue.splice(${i},1);ui.renderQueue()">✕</button></div>`).join(''); document.getElementById('btnFinalize').classList.toggle('hidden', sessionQueue.length===0); },
         
-        // RENDER HISTORY - NOW SHOWS MANAGER
         renderHistory: (data) => { 
             const list = document.getElementById('teamHistoryList'); 
             if(!data.length) { list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">No matches yet</div>'; return; }
@@ -522,8 +592,6 @@
                     currentDay = day;
                     html += `<div class="history-group"><div class="group-header">📅 ${day}</div>`;
                 }
-                
-                // Added Manager Info (Tie emoji)
                 const managerInfo = m.coach ? `<br><small>👔 ${m.coach}</small>` : '';
 
                 html += `
@@ -577,7 +645,6 @@
         },
         renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(sel.options.length <= 1) { sel.innerHTML = '<option value="">-- Select --</option>'; if(globalData.teams[tName].tournaments) globalData.teams[tName].tournaments.forEach(tr => { if(tr.active) sel.add(new Option(tr.name, tr.name)); }); } const val = sel.value; if(!val) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === val && m.team === tName && m.season === globalData.settings.currentSeason); document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s==="Joey").length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player==="Joey").length),0); ui.renderHistory(h, 'tournHistoryList'); },
         
-        // OPEN EDIT MODAL - POPULATES MANAGER
         openEditModal: (id) => { 
             const m = globalData.history.find(x => x.id == id); 
             document.getElementById('editId').value = id; 
@@ -587,10 +654,8 @@
             document.getElementById('eNotes').value = m.notes || ""; 
             const t = globalData.teams[m.team]; 
             const fill = (eid, arr, val) => { const el = document.getElementById(eid); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); el.value = val || ""; }; 
-            
             fill('eOpp', t.opps, m.opp); 
-            fill('eCoach', t.coaches || [], m.coach); // Populate Managers
-            
+            fill('eCoach', t.coaches || [], m.coach); 
             const te = document.getElementById('eTourn'); 
             te.innerHTML='<option value="League">League</option>'; 
             if(t.tournaments) t.tournaments.forEach(tr => te.add(new Option("🏆 "+tr.name, tr.name))); 
