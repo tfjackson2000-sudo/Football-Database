@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V60</title>
+    <title>Joey's Career Tracker V61</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -33,14 +33,16 @@
 
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; transition: background 0.3s, color 0.3s; }
 
-        /* NAV */
+        /* NAV STRUCTURE - 3 ROWS */
         .nav-container { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .nav-primary { display: flex; padding: 10px 15px; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 10px; }
-        .nav-scroll-area { display: flex; gap: 10px; overflow-x: auto; flex: 1; min-width: 200px; align-items: center; }
-        .nav-controls { display: flex; gap: 8px; align-items: center; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
         
-        .nav-secondary { display: flex; padding: 0 15px; background: var(--primary-tint); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); }
+        .nav-row { display: flex; align-items: center; padding: 10px 15px; gap: 10px; border-bottom: 1px solid var(--border); }
+        .nav-row.scroll { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .nav-row.center { justify-content: center; flex-wrap: wrap; }
         
+        .nav-secondary { display: flex; padding: 0 15px; background: var(--primary-tint); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); justify-content: center; }
+
+        /* NAV BUTTONS */
         .nav-btn { padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.9rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; }
         .nav-btn.active { opacity: 1; background: var(--primary); color: var(--text-on-primary); transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         
@@ -49,6 +51,9 @@
         
         .nav-btn.admin { background: #e9ecef; color: #333; }
         .nav-btn.admin.active { background: #333; color: #fff; }
+        
+        /* High Visibility Admin in Dark Mode */
+        [data-theme="dark"] .nav-btn.admin.active { background: #ffffff; color: #000000; border: 2px solid #ffffff; box-shadow: 0 0 10px rgba(255,255,255,0.3); opacity: 1; }
         
         .ctl-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
         .ctl-btn:hover { background: var(--primary-tint); }
@@ -156,10 +161,12 @@
 <div id="toast"><span id="toastMsg">Deleted</span><button onclick="app.performUndo()">UNDO</button></div>
 
 <div class="nav-container hidden" id="mainNav">
-    <div class="nav-primary">
-        <div class="nav-scroll-area" id="navTeamList"></div>
-        <div class="nav-controls" id="navControls"></div>
-    </div>
+    <div id="navRowTeams" class="nav-row scroll"></div>
+    
+    <div id="navRowSystem" class="nav-row center"></div>
+    
+    <div id="navRowControls" class="nav-row center"></div>
+    
     <div class="nav-secondary hidden" id="navSecondary">
         <div class="tab-btn" id="tabStats" onclick="ui.switchSubTab('Stats')">📊 Stats & Input</div>
         <div class="tab-btn" id="tabTourn" onclick="ui.switchSubTab('Tournaments')">🏆 Tournaments</div>
@@ -528,17 +535,48 @@
 
     window.ui = {
         renderNav: () => {
-            const list = document.getElementById('navTeamList'); list.innerHTML='';
-            Object.keys(globalData.teams).forEach(t => { const b = document.createElement('div'); b.className=`nav-btn ${activeContext===t?'active':''}`; b.innerText=t; b.onclick=()=>{ui.switchContext(t);}; list.appendChild(b); });
-            const c = document.createElement('div'); c.className=`nav-btn career ${activeContext==='Career'?'active':''}`; c.innerText='🌟 Career'; c.onclick=()=>ui.switchContext('Career'); list.appendChild(c);
-            const a = document.createElement('div'); a.className=`nav-btn admin ${activeContext==='Admin'?'active':''}`; a.innerText='⚙️ Admin'; a.onclick=()=>ui.switchContext('Admin'); list.appendChild(a);
+            // ROW 1: CLUBS
+            const r1 = document.getElementById('navRowTeams'); r1.innerHTML='';
+            Object.keys(globalData.teams).forEach(t => { 
+                const b = document.createElement('div'); 
+                b.className=`nav-btn ${activeContext===t?'active':''}`; 
+                b.innerText=t; 
+                b.onclick=()=>{ui.switchContext(t);}; 
+                r1.appendChild(b); 
+            });
+
+            // ROW 2: SYSTEM (Career & Admin)
+            const r2 = document.getElementById('navRowSystem'); r2.innerHTML='';
+            const c = document.createElement('div'); 
+            c.className=`nav-btn career ${activeContext==='Career'?'active':''}`; 
+            c.innerText='🌟 Career'; 
+            c.onclick=()=>ui.switchContext('Career'); 
+            r2.appendChild(c);
             
-            const ctrls = document.getElementById('navControls'); ctrls.innerHTML = '';
-            const s = document.createElement('div'); s.className='season-tag'; s.innerText=globalData.settings.currentSeason; ctrls.appendChild(s);
-            const tm = document.createElement('button'); tm.className='ctl-btn'; tm.innerHTML=globalData.settings.theme==='light'?'🌙 Dark':'☀️ Light'; 
+            const a = document.createElement('div'); 
+            a.className=`nav-btn admin ${activeContext==='Admin'?'active':''}`; 
+            a.innerText='⚙️ Admin'; 
+            a.onclick=()=>ui.switchContext('Admin'); 
+            r2.appendChild(a);
+            
+            // ROW 3: CONTROLS
+            const r3 = document.getElementById('navRowControls'); r3.innerHTML = '';
+            const s = document.createElement('div'); 
+            s.className='season-tag'; 
+            s.innerText='Season ' + globalData.settings.currentSeason; // Added "Season " text
+            r3.appendChild(s);
+            
+            const tm = document.createElement('button'); 
+            tm.className='ctl-btn'; 
+            tm.innerHTML=globalData.settings.theme==='light'?'🌙 Dark':'☀️ Light'; 
             tm.onclick = () => { globalData.settings.theme = globalData.settings.theme === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', globalData.settings.theme); saveToCloud(); };
-            ctrls.appendChild(tm);
-            const so = document.createElement('button'); so.className='ctl-btn'; so.innerHTML='🚪 Log Out'; so.onclick = () => app.doSignOut(); ctrls.appendChild(so);
+            r3.appendChild(tm);
+            
+            const so = document.createElement('button'); 
+            so.className='ctl-btn'; 
+            so.innerHTML='🚪 Log Out'; 
+            so.onclick = () => app.doSignOut(); 
+            r3.appendChild(so);
 
             if(activeContext==='Career'||activeContext==='Admin') document.getElementById('navSecondary').classList.add('hidden'); else document.getElementById('navSecondary').classList.remove('hidden');
         },
