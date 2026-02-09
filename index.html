@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V59</title>
+    <title>Joey's Career Tracker V60</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -98,7 +98,12 @@
         
         .match-row { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; background: var(--card); gap: 10px; }
         .match-row:last-child { border-bottom: none; }
-        .match-info { flex: 1; } 
+        .match-info { flex: 1; }
+        
+        /* LABEL STYLES */
+        .info-line { display: block; font-size: 0.85rem; margin-top: 2px; }
+        .text-label { font-weight: 700; color: var(--text-muted); margin-right: 5px; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.5px; }
+        
         .result-badge { padding: 6px 10px; border-radius: 8px; font-weight: 800; font-size: 0.95rem; min-width: 40px; text-align: center; }
         .res-w { background: rgba(40, 167, 69, 0.15); color: #28a745; }
         .res-l { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
@@ -390,10 +395,11 @@
     function initUI() {
         if(globalData && globalData.teams && !globalData.teams[activeContext]) activeContext = Object.keys(globalData.teams)[0] || 'Career';
         if(globalData && !globalData.history) globalData.history = [];
-        ui.renderNav(); ui.renderMainView(); document.body.setAttribute('data-theme', globalData?.settings?.theme || 'light');
+        // FIX: Force context switch to apply colors immediately
+        ui.switchContext(activeContext);
+        document.body.setAttribute('data-theme', globalData?.settings?.theme || 'light');
     }
     
-    // UNDO HELPER FUNCTION
     function showToast(msg) {
         const t = document.getElementById('toast');
         document.getElementById('toastMsg').innerText = msg;
@@ -401,7 +407,7 @@
         if(undoTimer) clearTimeout(undoTimer);
         undoTimer = setTimeout(() => {
             t.classList.remove('visible');
-            lastDeleted = null; // Clear history
+            lastDeleted = null;
         }, 5000);
     }
 
@@ -434,8 +440,6 @@
             sessionQueue.push({ id: Date.now()+Math.random(), date:dVal, team:activeContext, opp:opp, tourn:document.getElementById('mTourn').value, our:parseInt(document.getElementById('mOur').value)||0, their:parseInt(document.getElementById('mTheir').value)||0, coach:document.getElementById('mCoach').value, scorers:Array.from(document.querySelectorAll('.m-sc-input')).map(s=>s.value), awards:Array.from(document.querySelectorAll('.m-aw-input')).filter(s=>s.value).map(s=>({name:s.dataset.name, player:s.value})), notes:document.getElementById('mNotes').value, season:globalData.settings.currentSeason });
             ui.renderQueue(); document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; ui.renderScorers('m');
         },
-        
-        // --- UNDOABLE DELETES ---
         
         admDel: (k, i) => { 
             const t = document.getElementById('admTeamSelect').value; 
@@ -479,8 +483,6 @@
                 alert("Restored!");
             });
         },
-
-        // ------------------------
 
         adminAddItem: (k, id) => { const t = document.getElementById('admTeamSelect').value, v = document.getElementById(id).value.trim(); if(v) { globalData.teams[t][k].push(v); document.getElementById(id).value=""; saveToCloud().then(()=>ui.renderAdminDetails()); } },
         addAwardConfig: () => { const t = document.getElementById('admTeamSelect').value, n = document.getElementById('newAwardName').value, m = parseInt(document.getElementById('newAwardMax').value) || 1; if(n) { globalData.teams[t].awards.push({name:n, max:m}); document.getElementById('newAwardName').value=""; saveToCloud().then(()=>ui.renderAdminDetails()); } },
@@ -592,14 +594,14 @@
                     currentDay = day;
                     html += `<div class="history-group"><div class="group-header">📅 ${day}</div>`;
                 }
-                const managerInfo = m.coach ? `<br><small>👔 ${m.coach}</small>` : '';
 
                 html += `
                 <div class="match-row">
                     <div class="match-info">
                         ${m.notes?'🗒️ ':''}<strong>vs ${m.opp}</strong> <span style="font-size:0.8em">${m.tourn}</span>
-                        ${managerInfo}
-                        <br><small>${(m.scorers||[]).length? '⚽ '+(m.scorers||[]).join(', '):''}</small>
+                        ${m.coach ? `<div class="info-line"><span class="text-label">Manager:</span> ${m.coach}</div>` : ''}
+                        ${(m.scorers||[]).length ? `<div class="info-line"><span class="text-label">Goals:</span> ${(m.scorers||[]).join(', ')}</div>` : ''}
+                        ${(m.awards||[]).length ? `<div class="info-line"><span class="text-label">Awards:</span> ${m.awards.map(a => `${a.name}: ${a.player}`).join(', ')}</div>` : ''}
                     </div>
                     <div class="match-actions">
                         <div class="result-badge ${m.our>m.their?'res-w':m.our<m.their?'res-l':'res-d'}">${m.our}-${m.their}</div>
