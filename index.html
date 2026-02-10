@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V65</title>
+    <title>Joey's Career Tracker V66</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -289,6 +289,7 @@
         <div class="form-group" style="border-top:1px solid var(--border); padding-top:15px;">
             <label>🏅 Awards (For this day)</label>
             <div id="dsAwardList"></div>
+            <button class="btn-sm" style="margin-top:5px;" onclick="app.addDayAwardRow()">+ Add Award</button>
         </div>
         <button class="btn btn-save" onclick="app.saveDaySummary()">Save Group Info</button>
         <button class="btn" onclick="document.getElementById('daySummaryModal').classList.add('hidden')">Cancel</button>
@@ -416,41 +417,44 @@
             // Render Award inputs
             const awContainer = document.getElementById('dsAwardList');
             awContainer.innerHTML = '';
-            const teamAwards = globalData.teams[activeContext].awards || [];
-            const players = globalData.teams[activeContext].players || [];
-            
-            // Existing awards
+            // Load existing awards
             const currentAwards = sum.awards || [];
-            
-            // Function to add a row
-            const addRow = (selAward, selPlayer) => {
-                const div = document.createElement('div');
-                div.className = 'flex-row';
-                div.style.marginBottom = '5px';
-                
-                const s1 = document.createElement('select');
-                s1.className = 'ds-aw-name flex-grow';
-                s1.add(new Option("-- Award --", ""));
-                teamAwards.forEach(a => s1.add(new Option(a.name, a.name)));
-                if(selAward) s1.value = selAward;
-                
-                const s2 = document.createElement('select');
-                s2.className = 'ds-aw-player flex-grow';
-                s2.add(new Option("-- Player --", ""));
-                players.forEach(p => s2.add(new Option(p, p)));
-                if(selPlayer) s2.value = selPlayer;
-                
-                div.appendChild(s1);
-                div.appendChild(s2);
-                awContainer.appendChild(div);
-            };
-
-            // Populate rows
-            currentAwards.forEach(a => addRow(a.name, a.player));
-            // Always add 3 empty rows for new entry
-            addRow(); addRow(); addRow();
+            currentAwards.forEach(a => app.addDayAwardRow(a.name, a.player));
             
             document.getElementById('daySummaryModal').classList.remove('hidden');
+        },
+        
+        addDayAwardRow: (selAward, selPlayer) => {
+            const container = document.getElementById('dsAwardList');
+            const t = globalData.teams[activeContext];
+            const div = document.createElement('div');
+            div.className = 'flex-row';
+            div.style.marginBottom = '5px';
+            
+            // Award Select
+            const s1 = document.createElement('select');
+            s1.className = 'ds-aw-name flex-grow';
+            s1.add(new Option("-- Award --", ""));
+            (t.awards || []).forEach(a => s1.add(new Option(a.name, a.name)));
+            if(selAward) s1.value = selAward;
+
+            // Player Select
+            const s2 = document.createElement('select');
+            s2.className = 'ds-aw-player flex-grow';
+            s2.add(new Option("-- Player --", ""));
+            (t.players || []).forEach(p => s2.add(new Option(p, p)));
+            if(selPlayer) s2.value = selPlayer;
+
+            // Remove Button
+            const btn = document.createElement('button');
+            btn.className = 'btn-del';
+            btn.innerHTML = '✕';
+            btn.onclick = () => div.remove();
+
+            div.appendChild(s1);
+            div.appendChild(s2);
+            div.appendChild(btn);
+            container.appendChild(div);
         },
 
         saveDaySummary: () => {
