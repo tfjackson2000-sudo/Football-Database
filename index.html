@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V66</title>
+    <title>Joey's Career Tracker V67</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -406,7 +406,7 @@
             ui.renderQueue(); document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; ui.renderScorers('m');
         },
         
-        // Day Summary - Includes Award Logic
+        // Day Summary - Includes Award Logic with AUTO-MIGRATION
         openDaySummary: (date) => {
             document.getElementById('dsDate').value = date;
             document.getElementById('dsDateDisplay').innerText = fmtDate(date);
@@ -414,12 +414,29 @@
             document.getElementById('dsPOTW').value = sum.potw || "";
             document.getElementById('dsTOTW').value = sum.totw || "";
             
-            // Render Award inputs
             const awContainer = document.getElementById('dsAwardList');
             awContainer.innerHTML = '';
-            // Load existing awards
+            
+            // 1. Existing Day Awards
             const currentAwards = sum.awards || [];
-            currentAwards.forEach(a => app.addDayAwardRow(a.name, a.player));
+            
+            // 2. Legacy Match Awards (Auto-Import)
+            // We pull these in so the user can edit them, and then save them to the new system.
+            const matches = globalData.history.filter(m => m.date === date && m.team === activeContext);
+            matches.forEach(m => {
+               if(m.awards && m.awards.length > 0) {
+                   m.awards.forEach(a => currentAwards.push(a));
+               } 
+            });
+            
+            // Remove duplicates (simple check based on name/player) if any
+            const uniqueAwards = currentAwards.filter((a, index, self) =>
+                index === self.findIndex((t) => (
+                    t.name === a.name && t.player === a.player
+                ))
+            );
+
+            uniqueAwards.forEach(a => app.addDayAwardRow(a.name, a.player));
             
             document.getElementById('daySummaryModal').classList.remove('hidden');
         },
@@ -431,21 +448,34 @@
             div.className = 'flex-row';
             div.style.marginBottom = '5px';
             
-            // Award Select
             const s1 = document.createElement('select');
             s1.className = 'ds-aw-name flex-grow';
             s1.add(new Option("-- Award --", ""));
-            (t.awards || []).forEach(a => s1.add(new Option(a.name, a.name)));
+            
+            // Populate Award Options
+            const awardsList = t.awards || [];
+            awardsList.forEach(a => s1.add(new Option(a.name, a.name)));
+            
+            // Safety: If saved award isn't in list (deleted from admin), add it temp
+            if(selAward && !awardsList.some(a=>a.name===selAward)) {
+                s1.add(new Option(selAward, selAward));
+            }
             if(selAward) s1.value = selAward;
 
-            // Player Select
             const s2 = document.createElement('select');
             s2.className = 'ds-aw-player flex-grow';
             s2.add(new Option("-- Player --", ""));
-            (t.players || []).forEach(p => s2.add(new Option(p, p)));
+            
+            // Populate Player Options
+            const playerList = t.players || [];
+            playerList.forEach(p => s2.add(new Option(p, p)));
+            
+             // Safety: If saved player isn't in list
+            if(selPlayer && !playerList.includes(selPlayer)) {
+                s2.add(new Option(selPlayer, selPlayer));
+            }
             if(selPlayer) s2.value = selPlayer;
 
-            // Remove Button
             const btn = document.createElement('button');
             btn.className = 'btn-del';
             btn.innerHTML = '✕';
@@ -459,7 +489,6 @@
 
         saveDaySummary: () => {
             const date = document.getElementById('dsDate').value;
-            // Scrape awards
             const names = document.querySelectorAll('.ds-aw-name');
             const players = document.querySelectorAll('.ds-aw-player');
             let awards = [];
@@ -474,6 +503,15 @@
                 totw: document.getElementById('dsTOTW').value,
                 awards: awards
             };
+            
+            // CLEANUP LEGACY: Remove awards from individual matches on this date
+            // This ensures they are now fully managed by the Group/Day system
+            globalData.history.forEach(m => {
+                if(m.date === date && m.team === activeContext) {
+                    m.awards = []; 
+                }
+            });
+
             saveToCloud().then(() => {
                 document.getElementById('daySummaryModal').classList.add('hidden');
                 ui.renderMainView();
