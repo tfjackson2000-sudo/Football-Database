@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Joey's Career Tracker V67</title>
+    <title>Joey's Career Tracker V68</title>
     <style>
         :root { 
             --bg: #f0f2f5; 
@@ -289,7 +289,7 @@
         <div class="form-group" style="border-top:1px solid var(--border); padding-top:15px;">
             <label>🏅 Awards (For this day)</label>
             <div id="dsAwardList"></div>
-            <button class="btn-sm" style="margin-top:5px;" onclick="app.addDayAwardRow()">+ Add Award</button>
+            <button class="btn-sm" style="margin-top:5px;" onclick="window.app.addDayAwardRow()">+ Add Award</button>
         </div>
         <button class="btn btn-save" onclick="app.saveDaySummary()">Save Group Info</button>
         <button class="btn" onclick="document.getElementById('daySummaryModal').classList.add('hidden')">Cancel</button>
@@ -328,10 +328,10 @@
     };
 
     const ALLOWED_UIDS = ["QC6D1Smr9SVgpITffUTrRZSTQEq1", "Np9ZXcd2wNWvwsYA3X1QTcFpSIB3"];
-    let app, db, auth, rtdb, globalData, activeContext = "Llanelli Town", activeSubTab = "Stats", sessionQueue = [], currentUser = null, isGuest = false;
+    let fbApp, db, auth, rtdb, globalData, activeContext = "Llanelli Town", activeSubTab = "Stats", sessionQueue = [], currentUser = null, isGuest = false;
     let lastDeleted = null; let undoTimer = null;
 
-    try { app = initializeApp(firebaseConfig); rtdb = getDatabase(app); auth = getAuth(app); } 
+    try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
     catch (e) { document.getElementById('loadingOverlay').innerHTML = "<h2>⚠️ Error</h2><p>Firebase Config Failed</p>"; }
 
     const btnLogin = document.getElementById('btnLogin');
@@ -421,7 +421,6 @@
             const currentAwards = sum.awards || [];
             
             // 2. Legacy Match Awards (Auto-Import)
-            // We pull these in so the user can edit them, and then save them to the new system.
             const matches = globalData.history.filter(m => m.date === date && m.team === activeContext);
             matches.forEach(m => {
                if(m.awards && m.awards.length > 0) {
@@ -429,14 +428,13 @@
                } 
             });
             
-            // Remove duplicates (simple check based on name/player) if any
             const uniqueAwards = currentAwards.filter((a, index, self) =>
                 index === self.findIndex((t) => (
                     t.name === a.name && t.player === a.player
                 ))
             );
 
-            uniqueAwards.forEach(a => app.addDayAwardRow(a.name, a.player));
+            uniqueAwards.forEach(a => window.app.addDayAwardRow(a.name, a.player));
             
             document.getElementById('daySummaryModal').classList.remove('hidden');
         },
@@ -456,7 +454,7 @@
             const awardsList = t.awards || [];
             awardsList.forEach(a => s1.add(new Option(a.name, a.name)));
             
-            // Safety: If saved award isn't in list (deleted from admin), add it temp
+            // Safety: If saved award isn't in list
             if(selAward && !awardsList.some(a=>a.name===selAward)) {
                 s1.add(new Option(selAward, selAward));
             }
@@ -504,8 +502,7 @@
                 awards: awards
             };
             
-            // CLEANUP LEGACY: Remove awards from individual matches on this date
-            // This ensures they are now fully managed by the Group/Day system
+            // CLEANUP LEGACY: Remove awards from individual matches
             globalData.history.forEach(m => {
                 if(m.date === date && m.team === activeContext) {
                     m.awards = []; 
@@ -612,7 +609,7 @@
                         <div class="group-header">
                             <div class="gh-top">
                                 <span class="gh-date">📅 ${day}</span>
-                                <button class="btn-sm protected-area" onclick="app.openDaySummary('${m.date}')">Edit Awards</button>
+                                <button class="btn-sm protected-area" onclick="window.app.openDaySummary('${m.date}')">Edit Awards</button>
                             </div>
                             ${awardsHtml}
                             ${potw}${totw}
