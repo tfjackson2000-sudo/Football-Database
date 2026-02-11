@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V86</title>
+    <title>Football Tracker V87</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,12 +16,24 @@
 
     <style>
         :root { 
-            /* Green Grass Gradient for Light Mode */
+            /* Green Grass Gradient for Body Background */
             --bg: linear-gradient(180deg, #dcfce7 0%, #f0fdf4 100%);
+            
+            /* NAV PITCH PATTERN (LIGHT MODE) */
+            /* Base color is very light green, stripes are slightly darker mint */
+            --nav-bg-color: #ecfdf5; 
+            --nav-pattern: repeating-linear-gradient(
+                90deg,
+                #ecfdf5,
+                #ecfdf5 30px,
+                #d1fae5 30px,
+                #d1fae5 60px
+            );
+
             --card: #ffffff; 
             --text: #1f1f1f; 
             --text-muted: #666;
-            --border: #d1d5db;
+            --border: #a7f3d0; /* Greener border to match pitch */
             --primary: #333; 
             --primary-tint: #f8f9fa; 
             --text-on-primary: #fff;
@@ -33,6 +45,11 @@
         
         [data-theme="dark"] { 
             --bg: #121212; 
+            
+            /* Dark Mode reverts to plain dark background for readability */
+            --nav-bg-color: #1e1e1e;
+            --nav-pattern: none; 
+
             --card: #1e1e1e; 
             --text: #e4e6eb; 
             --text-muted: #b0b3b8;
@@ -59,9 +76,8 @@
         .app-header {
             text-align: center;
             padding: 25px 15px; 
-            /* The main scarf color based on team */
             background-color: var(--primary);
-            /* Knitted texture using repeating gradients */
+            /* Knitted texture */
             background-image: 
                 repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px),
                 repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(255,255,255,0.1) 5px, rgba(255,255,255,0.1) 10px);
@@ -77,8 +93,8 @@
             border-bottom-left-radius: 20px;
             border-bottom-right-radius: 20px;
             position: relative;
-            z-index: 110; /* Ensure it sits on top of nav */
-            margin-bottom: -15px; /* Overlap the nav slightly */
+            z-index: 110; 
+            margin-bottom: -15px; 
             overflow: hidden;
         }
         
@@ -86,7 +102,6 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            /* Embroidered look */
             filter: drop-shadow(0 3px 3px rgba(0,0,0,0.3));
         }
 
@@ -95,7 +110,6 @@
             font-weight: 900;
             font-size: 1.8rem;
             letter-spacing: -0.5px;
-            /* Color that contrasts with the scarf */
             color: var(--text-on-primary);
             text-shadow: 0 2px 2px rgba(0,0,0,0.4);
         }
@@ -108,30 +122,30 @@
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4));
         }
 
-        /* SEASON "PATCH" SEWN ONTO SCARF */
+        /* SEASON "PATCH" */
         .season-badge {
-            background: #e0c097; /* Leather/Beige patch color */
-            color: #3d2b1f; /* Dark brown text */
+            background: #e0c097; 
+            color: #3d2b1f; 
             padding: 6px 12px;
             border-radius: 4px;
             font-weight: 800;
             font-size: 0.85rem;
-            /* Stitching effect border */
             border: 2px dashed #3d2b1f;
             box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            transform: rotate(-4deg); /* Slight tilt like a patch */
+            transform: rotate(-4deg);
             white-space: nowrap;
         }
 
-        /* NAV STRUCTURE */
+        /* NAV STRUCTURE - THE PITCH */
         .nav-container { 
-            background: var(--card); 
+            background-color: var(--nav-bg-color);
+            background-image: var(--nav-pattern);
             border-bottom: 1px solid var(--border); 
             position: sticky; 
             top: 0; 
             z-index: 100; 
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            padding-top: 15px; /* Spacing for scarf overlap */
+            padding-top: 15px; 
         }
         
         .nav-row { 
@@ -139,30 +153,65 @@
             align-items: center; 
             padding: 10px 15px; 
             gap: 8px; 
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid rgba(0,0,0,0.05); /* Softer divider on pitch */
         }
         
         .nav-row.scroll { 
             overflow-x: auto; 
             white-space: nowrap; 
             -webkit-overflow-scrolling: touch; 
-            justify-content: center; /* CENTRALIZES TABS */
+            justify-content: center; 
         } 
         
         .nav-row.center { justify-content: center; flex-wrap: wrap; }
-        .nav-secondary { display: flex; padding: 0 15px; background: var(--primary-tint); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); justify-content: center; }
+        
+        /* Secondary nav also gets pitch effect but slightly darker/tinted if needed */
+        .nav-secondary { 
+            display: flex; 
+            padding: 0 15px; 
+            background: rgba(255,255,255,0.3); /* Glass effect over pitch */
+            gap: 20px; 
+            overflow-x: auto; 
+            border-bottom: 1px solid var(--border); 
+            justify-content: center; 
+            backdrop-filter: blur(5px);
+        }
 
         /* NAV BUTTONS */
-        .nav-btn { padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.9rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; }
-        .nav-btn.active { opacity: 1; background: var(--primary); color: var(--text-on-primary); transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .nav-btn.career { border-color: #ffd700; color: #b8860b; background: transparent; }
+        /* Updated buttons to stand out on the green stripes */
+        .nav-btn { 
+            padding: 8px 16px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 0.9rem; 
+            white-space: nowrap; 
+            opacity: 0.8; /* Higher opacity for contrast */
+            transition: 0.2s; 
+            border: 1px solid transparent;
+            background: rgba(255,255,255,0.4); /* Frosted pill */
+        }
+        
+        .nav-btn:hover { background: rgba(255,255,255,0.6); }
+
+        .nav-btn.active { 
+            opacity: 1; 
+            background: var(--primary); 
+            color: var(--text-on-primary); 
+            transform: translateY(-1px); 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            border-color: rgba(0,0,0,0.1);
+        }
+        
+        .nav-btn.career { border-color: #daa520; color: #b8860b; background: rgba(255, 215, 0, 0.1); }
         .nav-btn.career.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
-        .nav-btn.admin { background: #e9ecef; color: #333; }
+        
+        .nav-btn.admin { background: rgba(0,0,0,0.05); color: #333; }
         .nav-btn.admin.active { background: #333; color: #fff; }
         
-        .nav-separator { width: 1px; height: 24px; background: var(--border); margin: 0 5px; flex-shrink: 0; }
+        .nav-separator { width: 1px; height: 24px; background: rgba(0,0,0,0.1); margin: 0 5px; flex-shrink: 0; }
 
-        .ctl-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+        .ctl-btn { background: rgba(255,255,255,0.5); border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
         .ctl-btn:hover { background: var(--primary-tint); }
 
         .tab-btn { padding: 12px 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); border-bottom: 3px solid transparent; opacity: 0.7; transition: 0.2s; }
@@ -421,7 +470,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V86</div>
+    <div class="version-tag">V87</div>
 </div>
 
 <div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
