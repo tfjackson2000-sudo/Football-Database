@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V87</title>
+    <title>Football Tracker V88</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,24 +16,12 @@
 
     <style>
         :root { 
-            /* Green Grass Gradient for Body Background */
+            /* Subtle Green Background (V85 Style) */
             --bg: linear-gradient(180deg, #dcfce7 0%, #f0fdf4 100%);
-            
-            /* NAV PITCH PATTERN (LIGHT MODE) */
-            /* Base color is very light green, stripes are slightly darker mint */
-            --nav-bg-color: #ecfdf5; 
-            --nav-pattern: repeating-linear-gradient(
-                90deg,
-                #ecfdf5,
-                #ecfdf5 30px,
-                #d1fae5 30px,
-                #d1fae5 60px
-            );
-
             --card: #ffffff; 
             --text: #1f1f1f; 
             --text-muted: #666;
-            --border: #a7f3d0; /* Greener border to match pitch */
+            --border: #d1d5db; 
             --primary: #333; 
             --primary-tint: #f8f9fa; 
             --text-on-primary: #fff;
@@ -45,11 +33,6 @@
         
         [data-theme="dark"] { 
             --bg: #121212; 
-            
-            /* Dark Mode reverts to plain dark background for readability */
-            --nav-bg-color: #1e1e1e;
-            --nav-pattern: none; 
-
             --card: #1e1e1e; 
             --text: #e4e6eb; 
             --text-muted: #b0b3b8;
@@ -62,7 +45,7 @@
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background: var(--bg); 
-            background-attachment: fixed;
+            background-attachment: fixed; 
             color: var(--text); 
             margin: 0; 
             padding-bottom: 100px; 
@@ -72,152 +55,96 @@
             min-height: 100vh;
         }
 
-        /* --- SCARF HEADER DESIGN --- */
+        /* HEADER */
         .app-header {
             text-align: center;
-            padding: 25px 15px; 
-            background-color: var(--primary);
-            /* Knitted texture */
-            background-image: 
-                repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px),
-                repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(255,255,255,0.1) 5px, rgba(255,255,255,0.1) 10px);
-            
+            padding: 15px 10px; 
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            
-            /* Scarf Shape and Depth */
-            box-shadow: 0 8px 15px rgba(0,0,0,0.3), inset 0 -5px 10px rgba(0,0,0,0.2);
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-            position: relative;
-            z-index: 110; 
-            margin-bottom: -15px; 
-            overflow: hidden;
+            gap: 15px;
+            flex-wrap: wrap; 
         }
         
         .logo-wrapper {
             display: flex;
             align-items: center;
-            gap: 12px;
-            filter: drop-shadow(0 3px 3px rgba(0,0,0,0.3));
+            gap: 10px;
         }
 
         .logo-text {
             font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-weight: 900;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             letter-spacing: -0.5px;
-            color: var(--text-on-primary);
-            text-shadow: 0 2px 2px rgba(0,0,0,0.4);
+            background: linear-gradient(135deg, var(--primary) 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
         }
         
-        /* FOOTBALL SVG - Embroidered look */
+        /* FOOTBALL SVG ANIMATION */
         .football-icon {
-            width: 32px;
-            height: 32px;
-            fill: var(--text-on-primary);
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4));
+            width: 28px;
+            height: 28px;
+            fill: var(--primary);
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
         }
 
-        /* SEASON "PATCH" */
+        /* SEASON BADGE GRAPHIC */
         .season-badge {
-            background: #e0c097; 
-            color: #3d2b1f; 
-            padding: 6px 12px;
-            border-radius: 4px;
+            background: linear-gradient(135deg, #FFD700, #DAA520);
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 6px;
             font-weight: 800;
-            font-size: 0.85rem;
-            border: 2px dashed #3d2b1f;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-            transform: rotate(-4deg);
+            font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            transform: rotate(-3deg);
+            border: 2px solid #fff;
             white-space: nowrap;
         }
 
-        /* NAV STRUCTURE - THE PITCH */
-        .nav-container { 
-            background-color: var(--nav-bg-color);
-            background-image: var(--nav-pattern);
-            border-bottom: 1px solid var(--border); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
-            padding-top: 15px; 
-        }
+        /* NAV STRUCTURE */
+        .nav-container { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
         .nav-row { 
             display: flex; 
             align-items: center; 
-            padding: 10px 15px; 
+            padding: 12px 15px; /* Increased padding slightly for spacing */
             gap: 8px; 
-            border-bottom: 1px solid rgba(0,0,0,0.05); /* Softer divider on pitch */
+            border-bottom: 1px solid var(--border);
         }
         
         .nav-row.scroll { 
             overflow-x: auto; 
             white-space: nowrap; 
             -webkit-overflow-scrolling: touch; 
-            justify-content: center; 
+            justify-content: center; /* CENTRALIZES TABS */
         } 
         
         .nav-row.center { justify-content: center; flex-wrap: wrap; }
-        
-        /* Secondary nav also gets pitch effect but slightly darker/tinted if needed */
-        .nav-secondary { 
-            display: flex; 
-            padding: 0 15px; 
-            background: rgba(255,255,255,0.3); /* Glass effect over pitch */
-            gap: 20px; 
-            overflow-x: auto; 
-            border-bottom: 1px solid var(--border); 
-            justify-content: center; 
-            backdrop-filter: blur(5px);
-        }
+        .nav-secondary { display: flex; padding: 0 15px; background: var(--primary-tint); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); justify-content: center; }
 
         /* NAV BUTTONS */
-        /* Updated buttons to stand out on the green stripes */
-        .nav-btn { 
-            padding: 8px 16px; 
-            border-radius: 20px; 
-            cursor: pointer; 
-            font-weight: 700; 
-            font-size: 0.9rem; 
-            white-space: nowrap; 
-            opacity: 0.8; /* Higher opacity for contrast */
-            transition: 0.2s; 
-            border: 1px solid transparent;
-            background: rgba(255,255,255,0.4); /* Frosted pill */
-        }
-        
-        .nav-btn:hover { background: rgba(255,255,255,0.6); }
-
-        .nav-btn.active { 
-            opacity: 1; 
-            background: var(--primary); 
-            color: var(--text-on-primary); 
-            transform: translateY(-1px); 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-            border-color: rgba(0,0,0,0.1);
-        }
-        
-        .nav-btn.career { border-color: #daa520; color: #b8860b; background: rgba(255, 215, 0, 0.1); }
+        .nav-btn { padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.9rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; }
+        .nav-btn.active { opacity: 1; background: var(--primary); color: var(--text-on-primary); transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .nav-btn.career { border-color: #ffd700; color: #b8860b; background: transparent; }
         .nav-btn.career.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
-        
-        .nav-btn.admin { background: rgba(0,0,0,0.05); color: #333; }
+        .nav-btn.admin { background: #e9ecef; color: #333; }
         .nav-btn.admin.active { background: #333; color: #fff; }
         
-        .nav-separator { width: 1px; height: 24px; background: rgba(0,0,0,0.1); margin: 0 5px; flex-shrink: 0; }
+        .nav-separator { width: 1px; height: 24px; background: var(--border); margin: 0 5px; flex-shrink: 0; }
 
-        .ctl-btn { background: rgba(255,255,255,0.5); border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+        .ctl-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
         .ctl-btn:hover { background: var(--primary-tint); }
 
         .tab-btn { padding: 12px 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); border-bottom: 3px solid transparent; opacity: 0.7; transition: 0.2s; }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); opacity: 1; font-weight: 700; }
 
-        .container { max-width: 800px; margin: 35px auto 25px auto; padding: 0 15px; }
+        .container { max-width: 800px; margin: 25px auto; padding: 0 15px; }
         
         /* CARD STYLES */
         .card { background: var(--card); border-radius: 16px; padding: 0; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.3s; }
@@ -303,9 +230,9 @@
 
 <div id="loadingOverlay">
     <div style="display:flex; align-items:center; gap:10px;">
-        <svg class="football-icon" style="fill:var(--text);"><use href="#icon-football"></use></svg>
-        <h2 style="margin:0;">Football Tracker</h2>
-        <svg class="football-icon" style="fill:var(--text);"><use href="#icon-football"></use></svg>
+        <svg class="football-icon"><use href="#icon-football"></use></svg>
+        <h2 class="logo-text" style="font-size: 2rem;">Football Tracker</h2>
+        <svg class="football-icon"><use href="#icon-football"></use></svg>
     </div>
     <p style="margin-top:10px;">☁️ Syncing...</p>
 </div>
@@ -313,9 +240,9 @@
 <div id="authOverlay" class="hidden">
     <div class="auth-card">
         <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:10px;">
-            <svg class="football-icon" style="fill:var(--text);"><use href="#icon-football"></use></svg>
-            <h2 style="margin:0;">Football Tracker</h2>
-            <svg class="football-icon" style="fill:var(--text);"><use href="#icon-football"></use></svg>
+            <svg class="football-icon"><use href="#icon-football"></use></svg>
+            <h2 style="margin:0;" class="logo-text">Football Tracker</h2>
+            <svg class="football-icon"><use href="#icon-football"></use></svg>
         </div>
         <p style="color:var(--text-muted); margin-bottom:20px;">Please sign in to manage your data.</p>
         <button id="btnLogin" class="btn btn-google">Sign in with Google</button>
@@ -470,7 +397,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V87</div>
+    <div class="version-tag">V88</div>
 </div>
 
 <div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
