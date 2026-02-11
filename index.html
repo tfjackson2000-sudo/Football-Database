@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V82</title>
+    <title>Football Tracker V83</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -77,16 +77,30 @@
         
         /* FOOTBALL SVG ANIMATION */
         .football-icon {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             fill: var(--primary);
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
         }
 
         /* NAV STRUCTURE */
         .nav-container { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .nav-row { display: flex; align-items: center; padding: 10px 15px; gap: 8px; border-bottom: 1px solid var(--border); }
-        .nav-row.scroll { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; } 
+        
+        .nav-row { 
+            display: flex; 
+            align-items: center; 
+            padding: 10px 15px; 
+            gap: 8px; 
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .nav-row.scroll { 
+            overflow-x: auto; 
+            white-space: nowrap; 
+            -webkit-overflow-scrolling: touch; 
+            justify-content: center; /* CENTRALIZES TABS */
+        } 
+        
         .nav-row.center { justify-content: center; flex-wrap: wrap; }
         .nav-secondary { display: flex; padding: 0 15px; background: var(--primary-tint); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); justify-content: center; }
 
@@ -186,11 +200,8 @@
 <body>
 
 <svg style="display: none;">
-    <symbol id="icon-football" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
-        <path d="M12 2a10 10 0 0 0 .1 0zm0 18a8 8 0 0 1-8-8 8 8 0 0 1 8-8 8 8 0 0 1 8 8 8 8 0 0 1-8 8" fill="white" stroke="none"/>
-        <path d="M12 7l-2.5 2 1 3h3l1-3z" fill="currentColor"/>
-        <path d="M12 7V4M9.5 9L7 7M10.5 12l-2 3M13.5 12l2 3M14.5 9l2.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <symbol id="icon-football" viewBox="0 0 512 512">
+        <path d="M256,48C141.31,48,48,141.31,48,256s93.31,208,208,208,208-93.31,208-208S370.69,48,256,48Zm87,41.93-22,66.57a32,32,0,0,1-19.33,20L236,198.17l-35.33-60.67a32,32,0,0,1,3.48-36.93l46.12-58.42A175.76,175.76,0,0,1,343,89.93ZM165.74,103.52l40.41,69.41a32,32,0,0,1-3.49,36.93L153.25,272H80.12a176.69,176.69,0,0,1,85.62-168.48ZM80,288h79.56a32,32,0,0,1,30.31,21.82L213.63,380,166,419.64a32,32,0,0,1-38.65,1.72l-46.6-30.82A174.4,174.4,0,0,1,80,288Zm261.25,120.48-46.12-58.42a32,32,0,0,1,3.48-36.93l35.33-60.67,65.65,21.67a32,32,0,0,1,19.33,20L441.88,340A176.69,176.69,0,0,1,341.25,408.48ZM392.74,272H319.56a32,32,0,0,1-30.31-21.82L265.63,180l47.63-39.64a32,32,0,0,1,38.65-1.72l46.6,30.82A174.4,174.4,0,0,1,432,272ZM256,432a175,175,0,0,1-66.7-13.13l52.56-66.58a32,32,0,0,1,40.44-8.85l75.31,31.32A175.38,175.38,0,0,1,256,432Z"/>
     </symbol>
 </svg>
 
@@ -360,7 +371,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V81</div>
+    <div class="version-tag">V83</div>
 </div>
 
 <div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
