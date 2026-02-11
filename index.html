@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V81</title>
+    <title>Football Tracker V82</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -55,9 +55,13 @@
         /* LOGO HEADER */
         .app-header {
             text-align: center;
-            padding: 15px 0 15px 0; /* Increased bottom padding */
+            padding: 15px 0 15px 0; 
             background: var(--card);
-            border-bottom: 1px solid var(--border); /* Added separator */
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
         }
         
         .logo-text {
@@ -65,17 +69,24 @@
             font-weight: 900;
             font-size: 1.5rem;
             letter-spacing: -0.5px;
-            /* Gradient Text Effect */
             background: linear-gradient(135deg, var(--primary) 0%, #888 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             display: inline-block;
         }
+        
+        /* FOOTBALL SVG ANIMATION */
+        .football-icon {
+            width: 24px;
+            height: 24px;
+            fill: var(--primary);
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+        }
 
         /* NAV STRUCTURE */
         .nav-container { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .nav-row { display: flex; align-items: center; padding: 10px 15px; gap: 10px; border-bottom: 1px solid var(--border); }
-        .nav-row.scroll { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; justify-content: center; } 
+        .nav-row { display: flex; align-items: center; padding: 10px 15px; gap: 8px; border-bottom: 1px solid var(--border); }
+        .nav-row.scroll { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; } 
         .nav-row.center { justify-content: center; flex-wrap: wrap; }
         .nav-secondary { display: flex; padding: 0 15px; background: var(--primary-tint); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); justify-content: center; }
 
@@ -87,6 +98,8 @@
         .nav-btn.admin { background: #e9ecef; color: #333; }
         .nav-btn.admin.active { background: #333; color: #fff; }
         
+        .nav-separator { width: 1px; height: 24px; background: var(--border); margin: 0 5px; flex-shrink: 0; }
+
         .ctl-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
         .ctl-btn:hover { background: var(--primary-tint); }
         .season-tag { font-size: 0.75rem; font-weight: bold; color: var(--primary); background: var(--primary-tint); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); }
@@ -172,11 +185,31 @@
 </head>
 <body>
 
-<div id="loadingOverlay"><h2 class="logo-text" style="font-size: 2rem;">⚽ Football Tracker ⚽</h2><p style="margin-top:10px;">☁️ Syncing...</p></div>
+<svg style="display: none;">
+    <symbol id="icon-football" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+        <path d="M12 2a10 10 0 0 0 .1 0zm0 18a8 8 0 0 1-8-8 8 8 0 0 1 8-8 8 8 0 0 1 8 8 8 8 0 0 1-8 8" fill="white" stroke="none"/>
+        <path d="M12 7l-2.5 2 1 3h3l1-3z" fill="currentColor"/>
+        <path d="M12 7V4M9.5 9L7 7M10.5 12l-2 3M13.5 12l2 3M14.5 9l2.5-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </symbol>
+</svg>
+
+<div id="loadingOverlay">
+    <div style="display:flex; align-items:center; gap:10px;">
+        <svg class="football-icon"><use href="#icon-football"></use></svg>
+        <h2 class="logo-text" style="font-size: 2rem;">Football Tracker</h2>
+        <svg class="football-icon"><use href="#icon-football"></use></svg>
+    </div>
+    <p style="margin-top:10px;">☁️ Syncing...</p>
+</div>
 
 <div id="authOverlay" class="hidden">
     <div class="auth-card">
-        <h2 style="margin-top:0;" class="logo-text">⚽ Football Tracker ⚽</h2>
+        <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:10px;">
+            <svg class="football-icon"><use href="#icon-football"></use></svg>
+            <h2 style="margin:0;" class="logo-text">Football Tracker</h2>
+            <svg class="football-icon"><use href="#icon-football"></use></svg>
+        </div>
         <p style="color:var(--text-muted); margin-bottom:20px;">Please sign in to manage your data.</p>
         <button id="btnLogin" class="btn btn-google">Sign in with Google</button>
         <button id="btnGuest" class="btn btn-guest" onclick="app.enterAsGuest()">Guest View</button>
@@ -187,7 +220,9 @@
 
 <div class="nav-container hidden" id="mainNav">
     <div class="app-header">
-        <span class="logo-text">⚽ Football Tracker ⚽</span>
+        <svg class="football-icon"><use href="#icon-football"></use></svg>
+        <span class="logo-text">Football Tracker</span>
+        <svg class="football-icon"><use href="#icon-football"></use></svg>
     </div>
     <div id="navRowTeams" class="nav-row scroll"></div>
     <div id="navRowSystem" class="nav-row center"></div>
@@ -598,10 +633,33 @@
     window.ui = {
         renderNav: () => {
             const r1 = document.getElementById('navRowTeams'); r1.innerHTML='';
-            Object.keys(globalData.teams).forEach(t => { const b = document.createElement('div'); b.className=`nav-btn ${activeContext===t?'active':''}`; b.innerText=t; b.onclick=()=>{ui.switchContext(t);}; r1.appendChild(b); });
+            
+            // 1. TEAMS
+            Object.keys(globalData.teams).forEach(t => { 
+                const b = document.createElement('div'); 
+                b.className=`nav-btn ${activeContext===t?'active':''}`; 
+                b.innerText=t; 
+                b.onclick=()=>{ui.switchContext(t);}; 
+                r1.appendChild(b); 
+            });
+
+            // 2. SEPARATOR
+            const sep = document.createElement('div');
+            sep.className = 'nav-separator';
+            r1.appendChild(sep);
+
+            // 3. CAREER TAB
+            const c = document.createElement('div'); 
+            c.className=`nav-btn career ${activeContext==='Career'?'active':''}`; 
+            c.innerText='🌟 Career'; 
+            c.onclick=()=>ui.switchContext('Career'); 
+            r1.appendChild(c);
+
             const r2 = document.getElementById('navRowSystem'); r2.innerHTML='';
-            const c = document.createElement('div'); c.className=`nav-btn career ${activeContext==='Career'?'active':''}`; c.innerText='🌟 Career'; c.onclick=()=>ui.switchContext('Career'); r2.appendChild(c);
+            
+            // ADMIN TAB (Row 2)
             const a = document.createElement('div'); a.className=`nav-btn admin ${activeContext==='Admin'?'active':''}`; a.innerText='⚙️ Admin'; a.onclick=()=>ui.switchContext('Admin'); r2.appendChild(a);
+            
             const r3 = document.getElementById('navRowControls'); r3.innerHTML = '';
             const s = document.createElement('div'); s.className='season-tag'; s.innerText='Season ' + globalData.settings.currentSeason; r3.appendChild(s);
             const tm = document.createElement('button'); tm.className='ctl-btn'; tm.innerHTML=globalData.settings.theme==='light'?'🌙 Dark':'☀️ Light'; 
