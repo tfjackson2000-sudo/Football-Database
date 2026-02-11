@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Joey's Tracker</title>
+    <title>Joey's Tracker V71</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -41,13 +41,12 @@
             --tourn-color: #a76dff;
         }
 
-        /* IOS SAFE AREA SUPPORT */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background: var(--bg); 
             color: var(--text); 
             margin: 0; 
-            padding-bottom: 80px; 
+            padding-bottom: 100px; 
             padding-top: env(safe-area-inset-top);
             transition: background 0.3s, color 0.3s; 
             -webkit-tap-highlight-color: transparent;
@@ -67,7 +66,6 @@
         .nav-btn.career.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
         .nav-btn.admin { background: #e9ecef; color: #333; }
         .nav-btn.admin.active { background: #333; color: #fff; }
-        [data-theme="dark"] .nav-btn.admin.active { background: #ffffff; color: #000000; border: 2px solid #ffffff; box-shadow: 0 0 10px rgba(255,255,255,0.3); opacity: 1; }
         
         .ctl-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
         .ctl-btn:hover { background: var(--primary-tint); }
@@ -80,7 +78,6 @@
         
         /* CARD STYLES */
         .card { background: var(--card); border-radius: 16px; padding: 0; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.3s; }
-        [data-theme="dark"] .card:not(.neutral-card) { border-color: var(--primary); box-shadow: 0 0 15px var(--primary-tint); }
         .card-header { font-size: 1.1rem; font-weight: 800; padding: 15px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--primary-tint); color: var(--primary); border-bottom: 1px solid var(--border); }
         .neutral-card .card-header { background: #f0f2f5 !important; color: #333 !important; }
         [data-theme="dark"] .neutral-card .card-header { background: #2a2a2a !important; color: #eee !important; }
@@ -101,14 +98,12 @@
         .flex-grow { flex: 1; min-width: 0; }
         .color-picker { width: 50px; padding: 2px; height: 45px; cursor: pointer; border-radius: 8px; border: 1px solid var(--border); }
 
-        /* HISTORY & AWARDS */
         .history-group { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 25px; overflow: hidden; background: var(--card); box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .group-header { background: var(--primary-tint); padding: 12px 15px; border-bottom: 1px solid var(--border); }
         .gh-top { display:flex; justify-content:space-between; align-items: center; margin-bottom: 5px; }
         .gh-date { font-size: 1rem; font-weight: 800; color: var(--primary); }
         .gh-awards { font-size: 0.85rem; color: var(--text-muted); background: var(--bg); padding: 8px; border-radius: 8px; margin-top: 5px; border: 1px solid var(--border); }
         
-        /* New dedicated Award Tag */
         .aw-tag { display: inline-block; background: #FFD700; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; margin-right: 5px; margin-bottom: 2px; }
         
         .match-row { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; background: var(--card); gap: 12px; }
@@ -123,7 +118,6 @@
         .res-w { background: rgba(40, 167, 69, 0.15); color: #28a745; }
         .res-l { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
         .res-d { background: rgba(255, 193, 7, 0.15); color: #d39e00; }
-        .match-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
 
         .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; margin-top:5px; transition: 0.2s; }
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
@@ -146,9 +140,7 @@
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .modal-box { background: var(--card); padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
         
-        #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 50px; display: flex; align-items: center; gap: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 3000; transition: opacity 0.3s; opacity: 0; pointer-events: none; }
-        #toast.visible { opacity: 1; pointer-events: all; }
-        #toast button { background: transparent; border: none; color: #4dabf7; font-weight: bold; cursor: pointer; padding: 0; font-size: 0.95rem; }
+        .version-tag { text-align: center; margin-top: 30px; font-size: 0.75rem; color: var(--text-muted); opacity: 0.5; font-weight: bold; }
 
         #authOverlay, #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; padding: 20px; text-align: center; }
         .auth-card { background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 400px; width: 100%; border: 1px solid var(--border); }
@@ -188,7 +180,7 @@
                     <div class="stat-item"><span>Games</span><strong id="st-p">0</strong></div>
                     <div class="stat-item"><span>Wins</span><strong id="st-w">0</strong></div>
                     <div class="stat-item"><span>Goals</span><strong id="st-g">0</strong></div>
-                    <div class="stat-item"><span>Awards</span><strong id="st-a">0</strong></div>
+                    <div class="stat-item"><span>Awards</span><strong id="st-a">N/A</strong></div>
                 </div>
             </div>
         </div>
@@ -292,8 +284,13 @@
         <div class="card"><div class="card-header">🏃‍♂️ Squad</div><div class="card-body"><div class="form-group flex-row"><input type="text" id="admNewPlayer" placeholder="Add Player" class="flex-grow"><button class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddItem('players', 'admNewPlayer')">Add</button></div><ul id="admPlayerList" class="admin-list"></ul></div></div>
         <div class="card"><div class="card-header">🛡 Opponents</div><div class="card-body"><div class="form-group flex-row"><input type="text" id="admNewOpp" placeholder="Add Opponent" class="flex-grow"><button class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddItem('opps', 'admNewOpp')">Add</button></div><ul id="admOppList" class="admin-list"></ul></div></div>
         <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body"><div class="flex-row" style="margin-bottom:10px;"><input type="text" id="newAwardName" placeholder="Name" class="flex-grow"><input type="number" id="newAwardMax" placeholder="Max" style="width:70px;"><button class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.addAwardConfig()">Add</button></div><ul id="admAwardList" class="admin-list"></ul></div></div>
-        <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body"><label style="display:block; margin-bottom:5px;">Add Club:</label><div class="flex-row"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div></div></div>
+        <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body">
+            <label style="display:block; margin-bottom:5px;">Add Club:</label>
+            <div class="flex-row" style="margin-bottom:15px;"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div>
+            <button class="btn-del" style="width:100%; border:1px solid var(--danger); border-radius:10px; padding:10px;" onclick="app.deleteTeam()">🗑 Delete Active Club</button>
+        </div></div>
     </div>
+    <div class="version-tag">V71</div>
 </div>
 
 <div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
@@ -430,7 +427,6 @@
             document.getElementById('dsDate').value = date;
             document.getElementById('dsDateDisplay').innerText = fmtDate(date);
             const sum = globalData.daySummaries[date] || {};
-            // REMOVED POTW/TOTW loading
             
             const awContainer = document.getElementById('dsAwardList');
             awContainer.innerHTML = '';
@@ -468,28 +464,18 @@
             s1.className = 'ds-aw-name flex-grow';
             s1.add(new Option("-- Award --", ""));
             
-            // Populate Award Options
             const awardsList = t.awards || [];
             awardsList.forEach(a => s1.add(new Option(a.name, a.name)));
-            
-            // Safety: If saved award isn't in list
-            if(selAward && !awardsList.some(a=>a.name===selAward)) {
-                s1.add(new Option(selAward, selAward));
-            }
+            if(selAward && !awardsList.some(a=>a.name===selAward)) s1.add(new Option(selAward, selAward));
             if(selAward) s1.value = selAward;
 
             const s2 = document.createElement('select');
             s2.className = 'ds-aw-player flex-grow';
             s2.add(new Option("-- Player --", ""));
             
-            // Populate Player Options
             const playerList = t.players || [];
             playerList.forEach(p => s2.add(new Option(p, p)));
-            
-             // Safety: If saved player isn't in list
-            if(selPlayer && !playerList.includes(selPlayer)) {
-                s2.add(new Option(selPlayer, selPlayer));
-            }
+            if(selPlayer && !playerList.includes(selPlayer)) s2.add(new Option(selPlayer, selPlayer));
             if(selPlayer) s2.value = selPlayer;
 
             const btn = document.createElement('button');
@@ -514,12 +500,8 @@
                 }
             });
 
-            globalData.daySummaries[date] = {
-                awards: awards
-                // POTW and TOTW are removed
-            };
+            globalData.daySummaries[date] = { awards: awards };
             
-            // CLEANUP LEGACY: Remove awards from individual matches
             globalData.history.forEach(m => {
                 if(m.date === date && m.team === activeContext) {
                     m.awards = []; 
@@ -535,6 +517,15 @@
         // Deletes/Undo
         admDel: (k, i) => { const t = document.getElementById('admTeamSelect').value; const item = globalData.teams[t][k][i]; lastDeleted = { type: 'adminItem', key: k, index: i, data: item, team: t }; globalData.teams[t][k].splice(i,1); saveToCloud().then(()=>{ ui.renderAdminDetails(); showToast("Item Deleted"); }); },
         admDelAw: (i) => { const t = document.getElementById('admTeamSelect').value; const item = globalData.teams[t].awards[i]; lastDeleted = { type: 'award', index: i, data: item, team: t }; globalData.teams[t].awards.splice(i,1); saveToCloud().then(()=>{ ui.renderAdminDetails(); showToast("Award Deleted"); }); },
+        deleteTeam: () => {
+            const t = document.getElementById('admTeamSelect').value;
+            if(Object.keys(globalData.teams).length <= 1) return alert("Cannot delete the last team.");
+            if(confirm(`Delete club ${t}? This cannot be undone.`)) {
+                delete globalData.teams[t];
+                activeContext = Object.keys(globalData.teams)[0];
+                saveToCloud().then(() => { ui.initUI(); });
+            }
+        },
         deleteMatch: (id) => { if(confirm("Delete this match?")) { const m = globalData.history.find(x => x.id == id); lastDeleted = { type: 'match', data: m }; globalData.history = globalData.history.filter(x => x.id != id); saveToCloud().then(()=>{ ui.renderMainView(); showToast("Match Deleted"); }); } },
         performUndo: () => { if(!lastDeleted) return; const ld = lastDeleted; if(ld.type === 'match') { globalData.history.push(ld.data); } else if (ld.type === 'adminItem') { globalData.teams[ld.team][ld.key].splice(ld.index, 0, ld.data); } else if (ld.type === 'award') { globalData.teams[ld.team].awards.splice(ld.index, 0, ld.data); } saveToCloud().then(() => { ui.renderMainView(); document.getElementById('toast').classList.remove('visible'); lastDeleted = null; alert("Restored!"); }); },
 
@@ -604,8 +595,6 @@
                     currentDay = day;
                     // Day Summary & Awards
                     const sum = globalData.daySummaries[m.date] || {};
-                    // POTW and TOTW text removed from here
-                    
                     // Awards Rendering
                     let awardsHtml = '';
                     if(sum.awards && sum.awards.length > 0) {
@@ -666,20 +655,29 @@
         
         renderTeamStats: () => { 
             const h = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); 
-            // Count Legacy Match Awards
-            let legacyCount = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player==="Joey").length),0);
-            // Count New Day Awards
-            let dayCount = 0;
-            const dates = [...new Set(h.map(m => m.date))];
-            dates.forEach(d => {
+            // Calculate Award Stats based on Match Days
+            const uniqueDates = [...new Set(h.map(m => m.date))];
+            const maxAwards = uniqueDates.length;
+            let awardCount = 0;
+            uniqueDates.forEach(d => {
                 const sum = globalData.daySummaries[d];
-                if(sum && sum.awards) dayCount += sum.awards.filter(x=>x.player==="Joey").length;
+                if(sum && sum.awards) {
+                    // Count only awards where player is "Joey" (or current user logic if expanded)
+                    // Currently assuming we count ALL awards won by this user's team context
+                    awardCount += sum.awards.filter(x => x.player === "Joey").length;
+                }
             });
 
             document.getElementById('st-p').innerText = h.length; 
             document.getElementById('st-w').innerText = h.filter(m=>m.our>m.their).length; 
             document.getElementById('st-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s==="Joey").length),0); 
-            document.getElementById('st-a').innerText = legacyCount + dayCount;
+            
+            // Format Award Display
+            if (awardCount === 0) {
+                document.getElementById('st-a').innerText = "N/A";
+            } else {
+                document.getElementById('st-a').innerText = `${awardCount} / ${maxAwards}`;
+            }
         },
         
         renderCareer: () => { 
