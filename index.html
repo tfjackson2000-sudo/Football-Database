@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Joey's Tracker V72</title>
+    <title>Joey's Tracker V73</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -141,6 +141,11 @@
         .modal-box { background: var(--card); padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
         
         .version-tag { text-align: center; margin-top: 30px; font-size: 0.75rem; color: var(--text-muted); opacity: 0.5; font-weight: bold; }
+
+        /* TOAST FIX */
+        #toast { visibility: hidden; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 50px; display: flex; align-items: center; gap: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 3000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        #toast.visible { visibility: visible; opacity: 1; pointer-events: all; }
+        #toast button { background: transparent; border: none; color: #4dabf7; font-weight: bold; cursor: pointer; padding: 0; font-size: 0.95rem; }
 
         #authOverlay, #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; padding: 20px; text-align: center; }
         .auth-card { background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 400px; width: 100%; border: 1px solid var(--border); }
@@ -290,7 +295,7 @@
             <button class="btn-del" style="width:100%; border:1px solid var(--danger); border-radius:10px; padding:10px;" onclick="app.deleteTeam()">🗑 Delete Active Club</button>
         </div></div>
     </div>
-    <div class="version-tag">V72</div>
+    <div class="version-tag">V73</div>
 </div>
 
 <div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
@@ -301,7 +306,6 @@
         <h3>Edit Awards & Honors</h3>
         <input type="hidden" id="dsDate">
         <p id="dsDateDisplay" style="color:var(--text-muted); font-weight:bold; margin-bottom:15px;"></p>
-        
         <div class="form-group" style="border-top:1px solid var(--border); padding-top:15px;">
             <label>🏅 Awards (For this day)</label>
             <div id="dsAwardList"></div>
@@ -422,7 +426,6 @@
             ui.renderQueue(); document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; ui.renderScorers('m');
         },
         
-        // Day Summary - Includes Award Logic with AUTO-MIGRATION
         openDaySummary: (date) => {
             document.getElementById('dsDate').value = date;
             document.getElementById('dsDateDisplay').innerText = fmtDate(date);
@@ -431,10 +434,9 @@
             const awContainer = document.getElementById('dsAwardList');
             awContainer.innerHTML = '';
             
-            // 1. Existing Day Awards
             const currentAwards = sum.awards || [];
             
-            // 2. Legacy Match Awards (Auto-Import)
+            // Auto-Import Legacy Awards for Editing
             const matches = globalData.history.filter(m => m.date === date && m.team === activeContext);
             matches.forEach(m => {
                if(m.awards && m.awards.length > 0) {
@@ -449,7 +451,6 @@
             );
 
             uniqueAwards.forEach(a => window.app.addDayAwardRow(a.name, a.player));
-            
             document.getElementById('daySummaryModal').classList.remove('hidden');
         },
         
@@ -502,6 +503,7 @@
 
             globalData.daySummaries[date] = { awards: awards };
             
+            // Clean up legacy match awards since they are now in Summary
             globalData.history.forEach(m => {
                 if(m.date === date && m.team === activeContext) {
                     m.awards = []; 
@@ -593,18 +595,15 @@
                 if(day !== currentDay) {
                     if(currentDay !== null) html += '</div>'; 
                     currentDay = day;
-                    // Day Summary & Awards
                     const sum = globalData.daySummaries[m.date] || {};
-                    // Awards Rendering
                     let awardsHtml = '';
                     if(sum.awards && sum.awards.length > 0) {
                         awardsHtml += `<div class="gh-awards">`;
                         sum.awards.forEach(a => { awardsHtml += `<span class="aw-tag">${a.name}: ${a.player}</span>`; });
                         awardsHtml += `</div>`;
                     }
-                    // Legacy Match-based Awards (Fallback)
                     const legacyAwards = data.filter(mx => mx.date === m.date && mx.awards && mx.awards.length > 0);
-                    if(legacyAwards.length > 0) {
+                    if(legacyAwards.length > 0 && (!sum.awards || sum.awards.length === 0)) {
                         awardsHtml += `<div class="gh-awards" style="opacity:0.7">`;
                         legacyAwards.forEach(mx => mx.awards.forEach(a => { awardsHtml += `<span class="aw-tag">${a.name}: ${a.player}</span>`; }));
                         awardsHtml += `</div>`;
@@ -655,15 +654,22 @@
         
         renderTeamStats: () => { 
             const h = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); 
-            // Calculate Award Stats based on Match Days
             const uniqueDates = [...new Set(h.map(m => m.date))];
             const maxAwards = uniqueDates.length;
             let awardCount = 0;
             uniqueDates.forEach(d => {
                 const sum = globalData.daySummaries[d];
-                if(sum && sum.awards) {
-                    // Count all awards saved for this date
+                // 1. Check New Day Summary
+                if(sum && sum.awards && sum.awards.length > 0) {
                     awardCount += sum.awards.length;
+                } else {
+                    // 2. Fallback to Legacy Match Awards if no summary exists
+                    const matchesOnDay = h.filter(m => m.date === d);
+                    let legacyAwardsOnDay = 0;
+                    matchesOnDay.forEach(m => {
+                        if (m.awards) legacyAwardsOnDay += m.awards.length;
+                    });
+                    awardCount += legacyAwardsOnDay;
                 }
             });
 
@@ -671,7 +677,6 @@
             document.getElementById('st-w').innerText = h.filter(m=>m.our>m.their).length; 
             document.getElementById('st-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s==="Joey").length),0); 
             
-            // Format Award Display
             if (awardCount === 0) {
                 document.getElementById('st-a').innerText = "N/A";
             } else {
