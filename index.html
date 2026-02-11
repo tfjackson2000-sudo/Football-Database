@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V85</title>
+    <title>Football Tracker V86</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,12 +16,12 @@
 
     <style>
         :root { 
-            /* NEW: Green Grass Gradient for Light Mode */
+            /* Green Grass Gradient for Light Mode */
             --bg: linear-gradient(180deg, #dcfce7 0%, #f0fdf4 100%);
             --card: #ffffff; 
             --text: #1f1f1f; 
             --text-muted: #666;
-            --border: #d1d5db; /* Slightly darker border for contrast on green */
+            --border: #d1d5db;
             --primary: #333; 
             --primary-tint: #f8f9fa; 
             --text-on-primary: #fff;
@@ -45,7 +45,7 @@
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
             background: var(--bg); 
-            background-attachment: fixed; /* Keeps gradient fixed when scrolling */
+            background-attachment: fixed;
             color: var(--text); 
             margin: 0; 
             padding-bottom: 100px; 
@@ -55,60 +55,84 @@
             min-height: 100vh;
         }
 
-        /* LOGO HEADER */
+        /* --- SCARF HEADER DESIGN --- */
         .app-header {
             text-align: center;
-            padding: 15px 10px; 
-            background: var(--card);
-            border-bottom: 1px solid var(--border);
+            padding: 25px 15px; 
+            /* The main scarf color based on team */
+            background-color: var(--primary);
+            /* Knitted texture using repeating gradients */
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(0,0,0,0.1) 5px, rgba(0,0,0,0.1) 10px),
+                repeating-linear-gradient(-45deg, transparent, transparent 5px, rgba(255,255,255,0.1) 5px, rgba(255,255,255,0.1) 10px);
+            
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
-            flex-wrap: wrap; 
+            gap: 20px;
+            flex-wrap: wrap;
+            
+            /* Scarf Shape and Depth */
+            box-shadow: 0 8px 15px rgba(0,0,0,0.3), inset 0 -5px 10px rgba(0,0,0,0.2);
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            position: relative;
+            z-index: 110; /* Ensure it sits on top of nav */
+            margin-bottom: -15px; /* Overlap the nav slightly */
+            overflow: hidden;
         }
         
         .logo-wrapper {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            /* Embroidered look */
+            filter: drop-shadow(0 3px 3px rgba(0,0,0,0.3));
         }
 
         .logo-text {
             font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-weight: 900;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, var(--primary) 0%, #888 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: inline-block;
+            /* Color that contrasts with the scarf */
+            color: var(--text-on-primary);
+            text-shadow: 0 2px 2px rgba(0,0,0,0.4);
         }
         
-        /* FOOTBALL SVG ANIMATION */
+        /* FOOTBALL SVG - Embroidered look */
         .football-icon {
-            width: 28px;
-            height: 28px;
-            fill: var(--primary);
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+            width: 32px;
+            height: 32px;
+            fill: var(--text-on-primary);
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4));
         }
 
-        /* SEASON BADGE GRAPHIC */
+        /* SEASON "PATCH" SEWN ONTO SCARF */
         .season-badge {
-            background: linear-gradient(135deg, #FFD700, #DAA520);
-            color: #000;
-            padding: 4px 10px;
-            border-radius: 6px;
+            background: #e0c097; /* Leather/Beige patch color */
+            color: #3d2b1f; /* Dark brown text */
+            padding: 6px 12px;
+            border-radius: 4px;
             font-weight: 800;
-            font-size: 0.8rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            transform: rotate(-3deg);
-            border: 2px solid #fff;
+            font-size: 0.85rem;
+            /* Stitching effect border */
+            border: 2px dashed #3d2b1f;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            transform: rotate(-4deg); /* Slight tilt like a patch */
             white-space: nowrap;
         }
 
         /* NAV STRUCTURE */
-        .nav-container { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .nav-container { 
+            background: var(--card); 
+            border-bottom: 1px solid var(--border); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+            padding-top: 15px; /* Spacing for scarf overlap */
+        }
         
         .nav-row { 
             display: flex; 
@@ -144,7 +168,7 @@
         .tab-btn { padding: 12px 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); border-bottom: 3px solid transparent; opacity: 0.7; transition: 0.2s; }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); opacity: 1; font-weight: 700; }
 
-        .container { max-width: 800px; margin: 25px auto; padding: 0 15px; }
+        .container { max-width: 800px; margin: 35px auto 25px auto; padding: 0 15px; }
         
         /* CARD STYLES */
         .card { background: var(--card); border-radius: 16px; padding: 0; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.3s; }
@@ -230,9 +254,9 @@
 
 <div id="loadingOverlay">
     <div style="display:flex; align-items:center; gap:10px;">
-        <svg class="football-icon"><use href="#icon-football"></use></svg>
-        <h2 class="logo-text" style="font-size: 2rem;">Football Tracker</h2>
-        <svg class="football-icon"><use href="#icon-football"></use></svg>
+        <svg class="football-icon" style="fill:var(--text);"><use href="#icon-football"></use></svg>
+        <h2 style="margin:0;">Football Tracker</h2>
+        <svg class="football-icon" style="fill:var(--text);"><use href="#icon-football"></use></svg>
     </div>
     <p style="margin-top:10px;">☁️ Syncing...</p>
 </div>
@@ -240,9 +264,9 @@
 <div id="authOverlay" class="hidden">
     <div class="auth-card">
         <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:10px;">
-            <svg class="football-icon"><use href="#icon-football"></use></svg>
-            <h2 style="margin:0;" class="logo-text">Football Tracker</h2>
-            <svg class="football-icon"><use href="#icon-football"></use></svg>
+            <svg class="football-icon" style="fill:var(--text);"><use href="#icon-football"></use></svg>
+            <h2 style="margin:0;">Football Tracker</h2>
+            <svg class="football-icon" style="fill:var(--text);"><use href="#icon-football"></use></svg>
         </div>
         <p style="color:var(--text-muted); margin-bottom:20px;">Please sign in to manage your data.</p>
         <button id="btnLogin" class="btn btn-google">Sign in with Google</button>
@@ -397,7 +421,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V85</div>
+    <div class="version-tag">V86</div>
 </div>
 
 <div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
