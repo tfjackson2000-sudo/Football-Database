@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V101</title>
+    <title>Football Tracker V102</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -157,6 +157,7 @@
             overflow-x: hidden; 
         }
 
+        /* DESKTOP CENTER OVERRIDE */
         @media (min-width: 768px) {
             .clubs-container {
                 justify-content: center;
@@ -190,7 +191,6 @@
             align-items: center;
             gap: 8px;
             padding-bottom: 2px;
-            /* Hide scrollbar */
             scrollbar-width: none; 
             -ms-overflow-style: none;
         }
@@ -398,6 +398,8 @@
         </div>
         
         <div class="nav-divider"></div>
+        
+        <div id="btnCareerNav" class="nav-btn career-pill" onclick="ui.switchContext('Career')">Career</div>
 
         <div id="navRowTeams" class="clubs-scroll-area"></div>
     </div>
@@ -533,7 +535,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V101</div>
+    <div class="version-tag">V102</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -643,6 +645,23 @@
     function initUI() {
         if(!globalData.daySummaries) globalData.daySummaries = {};
         if(!globalData.settings.profileName) globalData.settings.profileName = "Joey"; 
+        
+        // AUTO CLEANUP: Deduplicate Match History by ID to fix "2/6" becoming "2/3"
+        if(globalData.history && globalData.history.length > 0) {
+            const seen = new Set();
+            const uniqueHistory = [];
+            let duplicatesFound = false;
+            globalData.history.forEach(m => {
+                if(!seen.has(m.id)) {
+                    seen.add(m.id);
+                    uniqueHistory.push(m);
+                } else { duplicatesFound = true; }
+            });
+            if(duplicatesFound) {
+                globalData.history = uniqueHistory;
+                if(ALLOWED_UIDS.includes(currentUser?.uid) && !isGuest) saveToCloud();
+            }
+        }
         
         // FORCE DEFAULT TO CAREER
         activeContext = "Career";
@@ -754,15 +773,7 @@
             
             const r1 = document.getElementById('navRowTeams'); 
             r1.innerHTML='';
-
-            // 1. INJECT CAREER BUTTON AS FIRST ITEM IN SCROLL AREA
-            const cBtn = document.createElement('div');
-            cBtn.className = `nav-btn career-pill ${activeContext==='Career'?'active':''}`;
-            cBtn.innerText = 'Career';
-            cBtn.onclick = () => ui.switchContext('Career');
-            r1.appendChild(cBtn);
-
-            // 2. INJECT CLUB BUTTONS
+            // 1. INJECT CLUB BUTTONS
             Object.keys(globalData.teams).forEach(t => { 
                 const b = document.createElement('div'); 
                 b.className = `nav-btn ${activeContext===t?'active':''}`; 
@@ -770,6 +781,10 @@
                 b.onclick=()=>{ui.switchContext(t);}; 
                 r1.appendChild(b); 
             });
+
+            // UPDATE CAREER PILL ACTIVE STATE
+            const cBtn = document.getElementById('btnCareerNav');
+            if(activeContext === 'Career') cBtn.classList.add('active'); else cBtn.classList.remove('active');
         },
         switchContext: (c) => { 
             if (globalData.teams[c]) lastActiveTeam = c;
