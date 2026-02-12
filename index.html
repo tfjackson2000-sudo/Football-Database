@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V93</title>
+    <title>Football Tracker V94</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -23,7 +23,7 @@
             --text-muted: #666;
             --border: #e4e4e7; 
             
-            /* DYNAMIC THEME VARIABLES (For buttons/accents only) */
+            /* DYNAMIC THEME VARIABLES */
             --primary: #333333;       
             --primary-tint: #f0f0f0;  
             --text-on-primary: #ffffff;
@@ -44,7 +44,6 @@
             --text-muted: #b0b3b8;
             --border: #333333; 
             --shadow: 0 4px 12px rgba(0,0,0,0.4);
-            --fixed-black: #ffffff; /* Invert fixed black elements for readability in dark mode? Or keep black sticker? User said "Keep sticker black". Let's keep sticker black but text white */
         }
 
         body { 
@@ -87,7 +86,6 @@
             font-weight: 900;
             font-size: 1.5rem;
             letter-spacing: -0.5px;
-            /* FIXED BLACK LOGO */
             color: var(--text); 
             display: inline-block;
         }
@@ -95,7 +93,6 @@
         .football-icon {
             width: 24px;
             height: 24px;
-            /* FIXED BLACK ICON */
             fill: var(--text);
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
         }
@@ -120,13 +117,11 @@
         }
 
         .clubs-sticker {
-            /* FIXED BLACK STICKER */
             background: #111 !important;
             color: #fff !important;
-            transform: rotate(0deg); /* Straight for side layout looks cleaner, or slight tilt? Let's do slight */
             transform: rotate(-2deg);
             margin-right: 0;
-            flex-shrink: 0; /* Prevent shrinking */
+            flex-shrink: 0;
         }
 
         /* ADMIN ICON */
@@ -161,7 +156,17 @@
             align-items: center; 
             padding: 10px 15px; 
             border-bottom: 1px solid var(--border);
-            gap: 15px; /* Spacing between sticker area and buttons */
+            gap: 15px; 
+        }
+
+        /* DESKTOP CENTER OVERRIDE */
+        @media (min-width: 768px) {
+            .clubs-container {
+                justify-content: center;
+            }
+            .clubs-scroll-area {
+                flex-grow: 0 !important;
+            }
         }
 
         .sticker-area {
@@ -561,7 +566,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V93</div>
+    <div class="version-tag">V94</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -798,10 +803,7 @@
         updateSecondaryNav: () => {
             const tabStats = document.getElementById('tabStats');
             const tabTourn = document.getElementById('tabTourn');
-            if(activeContext !== 'Career' && activeContext !== 'Admin') {
-                tabStats.innerText = `${activeContext} Stats & Input`;
-                tabTourn.innerText = `${activeContext} Tournaments`;
-            }
+            // REMOVED THE DYNAMIC TEXT LOGIC SO IT STAYS STATIC
             tabStats.className = 'subtab-btn'; tabTourn.className = 'subtab-btn';
             if(activeSubTab === 'Stats') tabStats.classList.add('active');
             if(activeSubTab === 'Tournaments') tabTourn.classList.add('active');
