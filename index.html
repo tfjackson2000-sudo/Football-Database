@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V89</title>
+    <title>Football Tracker V90</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -113,17 +113,6 @@
             margin-left: 10px;
         }
 
-        .player-sticker {
-            position: absolute;
-            top: -10px;
-            left: -15px;
-            background: linear-gradient(135deg, #ff6b6b, #ee5253);
-            color: white;
-            transform: rotate(-8deg);
-            z-index: 10;
-            font-size: 0.7rem;
-        }
-
         .clubs-sticker {
             background: var(--primary);
             color: var(--text-on-primary);
@@ -173,19 +162,47 @@
             padding: 8px 15px;
         }
 
-        .nav-secondary { display: flex; padding: 0 15px; background: var(--card); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); justify-content: center; }
+        .nav-secondary { 
+            display: flex; 
+            padding: 10px 15px; 
+            background: var(--card); 
+            gap: 10px; 
+            overflow-x: auto; 
+            border-bottom: 1px solid var(--border); 
+            justify-content: center; 
+            white-space: nowrap;
+        }
 
         /* BUTTONS */
         .nav-btn { padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.85rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; background: var(--bg); color: var(--text); }
         .nav-btn.active { opacity: 1; background: var(--primary); color: var(--text-on-primary); transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         
+        /* Subtabs now look like nav buttons */
+        .subtab-btn {
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            opacity: 0.5;
+            transition: 0.2s;
+            border: 2px solid transparent;
+            background: var(--bg);
+            color: var(--text);
+        }
+        .subtab-btn.active {
+            opacity: 1;
+            background: var(--primary);
+            color: var(--text-on-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
         .career-btn { 
             width: 100%; text-align: center; border: 2px solid #ffd700; color: #b8860b; background: transparent; font-size: 1rem; padding: 10px; border-radius: 10px; font-weight: 800;
         }
         .career-btn.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
-
-        .tab-btn { padding: 12px 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); border-bottom: 3px solid transparent; opacity: 0.7; transition: 0.2s; }
-        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); opacity: 1; font-weight: 700; }
 
         .container { max-width: 800px; margin: 25px auto; padding: 0 15px; flex-grow: 1; width: 100%; box-sizing: border-box; }
         
@@ -318,8 +335,6 @@
 <div class="nav-container hidden" id="mainNav">
     <div class="app-header">
         <div class="logo-wrapper">
-            <div id="playerSticker" class="sticker player-sticker"></div>
-            
             <svg class="football-icon"><use href="#icon-football"></use></svg>
             <span class="logo-text">Football Tracker</span>
             <svg class="football-icon"><use href="#icon-football"></use></svg>
@@ -330,17 +345,17 @@
     </div>
     
     <div class="nav-row">
-        <div class="sticker clubs-sticker">My Clubs</div>
+        <div id="clubsSticker" class="sticker clubs-sticker">Clubs</div>
         <div id="navRowTeams" class="clubs-row"></div>
     </div>
     
     <div class="nav-row career-row">
-        <div id="btnCareer" class="career-btn" onclick="ui.switchContext('Career')">🌟 My Career</div>
+        <div id="btnCareer" class="career-btn" onclick="ui.switchContext('Career')">🌟 Career Stats</div>
     </div>
 
     <div class="nav-secondary hidden" id="navSecondary">
-        <div class="tab-btn" id="tabStats" onclick="ui.switchSubTab('Stats')">Stats & Input</div>
-        <div class="tab-btn" id="tabTourn" onclick="ui.switchSubTab('Tournaments')">Tournaments</div>
+        <div class="subtab-btn" id="tabStats" onclick="ui.switchSubTab('Stats')">Stats & Input</div>
+        <div class="subtab-btn" id="tabTourn" onclick="ui.switchSubTab('Tournaments')">Tournaments</div>
     </div>
 </div>
 
@@ -471,7 +486,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V89</div>
+    <div class="version-tag">V90</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -751,7 +766,12 @@
         renderNav: () => {
             // RENDER SEASON BADGE
             document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
-            document.getElementById('playerSticker').innerText = globalData.settings.profileName || "Player";
+            
+            // DYNAMIC CLUBS STICKER
+            document.getElementById('clubsSticker').innerText = (globalData.settings.profileName || "Player") + "'s Clubs";
+            
+            // DYNAMIC CAREER BUTTON TEXT
+            document.getElementById('btnCareer').innerText = "🌟 " + (globalData.settings.profileName || "Player") + "'s Career Stats";
 
             const r1 = document.getElementById('navRowTeams'); r1.innerHTML='';
             
@@ -779,8 +799,13 @@
                 tabTourn.innerText = `${activeContext} Tournaments`;
             }
 
-            tabStats.classList.toggle('active', activeSubTab === 'Stats');
-            tabTourn.classList.toggle('active', activeSubTab === 'Tournaments');
+            // Remove all active classes first
+            tabStats.classList.remove('active');
+            tabTourn.classList.remove('active');
+
+            // Apply active class based on state
+            if(activeSubTab === 'Stats') tabStats.classList.add('active');
+            if(activeSubTab === 'Tournaments') tabTourn.classList.add('active');
         },
         switchContext: (c) => { 
             // TRACK LAST ACTIVE TEAM
