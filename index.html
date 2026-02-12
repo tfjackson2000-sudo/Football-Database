@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V92</title>
+    <title>Football Tracker V93</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,22 +16,25 @@
 
     <style>
         :root { 
-            /* BASE VARIABLES (Default to Career Grey/Gold) */
+            /* BASE VARIABLES */
             --bg: #f4f4f5; 
             --card: #ffffff; 
             --text: #1f1f1f; 
             --text-muted: #666;
             --border: #e4e4e7; 
             
-            /* DYNAMIC THEME VARIABLES */
-            --primary: #333333;       /* Changes per club */
-            --primary-tint: #f0f0f0;  /* Changes per club */
+            /* DYNAMIC THEME VARIABLES (For buttons/accents only) */
+            --primary: #333333;       
+            --primary-tint: #f0f0f0;  
             --text-on-primary: #ffffff;
-            --accent: #DAA520;        /* Gold by default */
+            --accent: #DAA520;        
             
             --success: #28a745;
             --danger: #dc3545;
             --shadow: 0 4px 12px rgba(0,0,0,0.06);
+            
+            /* FIXED COLORS */
+            --fixed-black: #111111;
         }
         
         [data-theme="dark"] { 
@@ -40,8 +43,8 @@
             --text: #e4e6eb; 
             --text-muted: #b0b3b8;
             --border: #333333; 
-            /* Dark mode keeps dynamic colors, just darker backgrounds */
             --shadow: 0 4px 12px rgba(0,0,0,0.4);
+            --fixed-black: #ffffff; /* Invert fixed black elements for readability in dark mode? Or keep black sticker? User said "Keep sticker black". Let's keep sticker black but text white */
         }
 
         body { 
@@ -84,19 +87,17 @@
             font-weight: 900;
             font-size: 1.5rem;
             letter-spacing: -0.5px;
-            /* Gradient Text using current Primary Color */
-            background: linear-gradient(135deg, var(--text) 0%, var(--primary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            /* FIXED BLACK LOGO */
+            color: var(--text); 
             display: inline-block;
         }
         
         .football-icon {
             width: 24px;
             height: 24px;
-            fill: var(--primary);
+            /* FIXED BLACK ICON */
+            fill: var(--text);
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
-            transition: fill 0.3s;
         }
 
         /* STICKERS */
@@ -109,7 +110,6 @@
             border: 2px solid #fff;
             white-space: nowrap;
             display: inline-block;
-            transition: background 0.3s;
         }
 
         .season-sticker {
@@ -120,10 +120,13 @@
         }
 
         .clubs-sticker {
-            background: var(--primary);
-            color: var(--text-on-primary);
-            transform: rotate(2deg);
-            margin-bottom: 8px; /* Spacing between sticker and buttons */
+            /* FIXED BLACK STICKER */
+            background: #111 !important;
+            color: #fff !important;
+            transform: rotate(0deg); /* Straight for side layout looks cleaner, or slight tilt? Let's do slight */
+            transform: rotate(-2deg);
+            margin-right: 0;
+            flex-shrink: 0; /* Prevent shrinking */
         }
 
         /* ADMIN ICON */
@@ -143,37 +146,43 @@
         /* NAV STRUCTURE */
         .nav-container { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
-        /* Centralized Column for Clubs Row */
-        .nav-column-center { 
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
-            padding: 12px 15px; 
-            border-bottom: 1px solid var(--border);
-        }
-        
-        /* Buttons Scroll Row */
-        .clubs-row {
-            width: 100%;
-            overflow-x: auto;
-            white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
-            display: flex;
-            align-items: center;
-            justify-content: center; 
-            gap: 8px;
-            padding-bottom: 2px; /* Space for shadow */
-        }
-        
-        /* CAREER ROW */
+        /* ROW 1: CAREER BUTTON */
         .career-row {
             display: flex;
             justify-content: center;
             background: var(--primary-tint);
             padding: 10px 15px;
-            transition: background 0.3s;
+            border-bottom: 1px solid var(--border);
         }
 
+        /* ROW 2: CLUBS WITH SIDE STICKER */
+        .clubs-container { 
+            display: flex; 
+            align-items: center; 
+            padding: 10px 15px; 
+            border-bottom: 1px solid var(--border);
+            gap: 15px; /* Spacing between sticker area and buttons */
+        }
+
+        .sticker-area {
+            padding-right: 15px;
+            border-right: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Buttons Scroll Row */
+        .clubs-scroll-area {
+            flex-grow: 1;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 2px;
+        }
+        
         .nav-secondary { 
             display: flex; 
             padding: 12px 15px; 
@@ -408,13 +417,15 @@
         <button class="admin-icon-btn protected-area" onclick="ui.switchContext('Admin')">⚙️</button>
     </div>
     
-    <div class="nav-column-center">
-        <div id="clubsSticker" class="sticker clubs-sticker">Clubs</div>
-        <div id="navRowTeams" class="clubs-row"></div>
-    </div>
-    
     <div class="career-row">
         <div id="btnCareer" class="career-btn" onclick="ui.switchContext('Career')">🌟 Career Stats</div>
+    </div>
+    
+    <div class="clubs-container">
+        <div class="sticker-area">
+            <div id="clubsSticker" class="sticker clubs-sticker">Clubs</div>
+        </div>
+        <div id="navRowTeams" class="clubs-scroll-area"></div>
     </div>
 
     <div class="nav-secondary hidden" id="navSecondary">
@@ -550,7 +561,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V92</div>
+    <div class="version-tag">V93</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -608,7 +619,7 @@
     };
 
     const ALLOWED_UIDS = ["QC6D1Smr9SVgpITffUTrRZSTQEq1", "Np9ZXcd2wNWvwsYA3X1QTcFpSIB3"];
-    let fbApp, db, auth, rtdb, globalData, activeContext = "Llanelli Town", activeSubTab = "Stats", sessionQueue = [], currentUser = null, isGuest = false;
+    let fbApp, db, auth, rtdb, globalData, activeContext = "Career", activeSubTab = "Stats", sessionQueue = [], currentUser = null, isGuest = false;
     let lastDeleted = null; let undoTimer = null;
     let lastActiveTeam = "Llanelli Town"; 
 
@@ -661,10 +672,8 @@
         if(!globalData.daySummaries) globalData.daySummaries = {};
         if(!globalData.settings.profileName) globalData.settings.profileName = "Joey"; 
         
-        const isSystemPage = (activeContext === 'Admin' || activeContext === 'Career');
-        if(!isSystemPage && globalData && globalData.teams && !globalData.teams[activeContext]) {
-             activeContext = Object.keys(globalData.teams)[0] || 'Career';
-        }
+        // FORCE DEFAULT TO CAREER
+        activeContext = "Career";
         
         if(globalData && !globalData.history) globalData.history = [];
         
@@ -687,11 +696,9 @@
     
     function hexToRgb(hex) {
         let r = 0, g = 0, b = 0;
-        // Handle hex string #RRGGBB or #RGB
         if(hex.startsWith('#')) hex = hex.slice(1);
         if (hex.length === 3) { r = parseInt(hex[0]+hex[0], 16); g = parseInt(hex[1]+hex[1], 16); b = parseInt(hex[2]+hex[2], 16); } 
         else if (hex.length === 6) { r = parseInt(hex.substring(0,2), 16); g = parseInt(hex.substring(2,4), 16); b = parseInt(hex.substring(4,6), 16); }
-        // Return transparent tint
         return `rgba(${r},${g},${b}, 0.08)`;
     }
 
