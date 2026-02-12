@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V103</title>
+    <title>Football Tracker V104</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#222222">
@@ -165,7 +165,7 @@
         <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body"><div class="flex-row" style="margin-bottom:10px;"><input type="text" id="newAwardName" placeholder="Name" class="flex-grow"><input type="number" id="newAwardMax" placeholder="Max" style="width:70px;"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.addAwardConfig()">Add</button></div><ul id="admAwardList" class="admin-list"></ul></div></div>
         <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body"><label style="display:block; margin-bottom:5px;">Profile Name (Select from Squad):</label><div class="flex-row" style="margin-bottom:20px;"><select id="adminProfileName" class="flex-grow"></select><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button></div><label style="display:block; margin-bottom:5px;">Add Club:</label><div class="flex-row" style="margin-bottom:15px;"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button type="button" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div><label style="display:block; margin-bottom:5px;">Manage Clubs:</label><ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V103</div>
+    <div class="version-tag">V104</div>
 </div>
 
 <footer class="app-footer" id="appFooter"><button onclick="app.toggleTheme()">🌓 Theme</button><button onclick="app.doSignOut()">🚪 Log Out</button></footer>
@@ -232,27 +232,9 @@
             document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
             document.getElementById('clubsSticker').innerText = (globalData.settings.profileName || "Player") + "'s Stats";
             const r1 = document.getElementById('navRowTeams'); r1.innerHTML='';
-            
-            // 1. Career Pill
-            const cBtn = document.createElement('div'); 
-            cBtn.className = `nav-btn career-pill ${activeContext==='Career'?'active':''}`; 
-            cBtn.innerText = 'Career'; 
-            cBtn.onclick = () => ui.switchContext('Career'); 
-            r1.appendChild(cBtn);
-
-            // 2. Divider
-            const div = document.createElement('div');
-            div.className = 'nav-divider';
-            r1.appendChild(div);
-
-            // 3. Clubs
-            Object.keys(globalData.teams).forEach(t => { 
-                const b = document.createElement('div'); 
-                b.className = `nav-btn ${activeContext===t?'active':''}`; 
-                b.innerText = t; 
-                b.onclick=()=>{ui.switchContext(t);}; 
-                r1.appendChild(b); 
-            });
+            const cBtn = document.createElement('div'); cBtn.className = `nav-btn career-pill ${activeContext==='Career'?'active':''}`; cBtn.innerText = 'Career'; cBtn.onclick = () => ui.switchContext('Career'); r1.appendChild(cBtn);
+            const div = document.createElement('div'); div.className = 'nav-divider'; r1.appendChild(div);
+            Object.keys(globalData.teams).forEach(t => { const b = document.createElement('div'); b.className = `nav-btn ${activeContext===t?'active':''}`; b.innerText = t; b.onclick=()=>{ui.switchContext(t);}; r1.appendChild(b); });
         },
         switchContext: (c) => { 
             if (globalData.teams[c]) lastActiveTeam = c; activeContext = c; 
@@ -266,11 +248,8 @@
             ['viewMatchDay','viewCareer','viewAdmin'].forEach(id=>document.getElementById(id).classList.add('hidden'));
             if(activeContext === 'Career') { 
                 document.getElementById('viewCareer').classList.remove('hidden');
-                const cs = document.getElementById('careerSeasonFilter'); 
-                const currentVal = cs.value; 
-                cs.innerHTML = '<option value="All Time">All Time</option>';
-                globalData.settings.seasons.forEach(s => { cs.add(new Option(s, s)); }); 
-                cs.value = currentVal; 
+                const cs = document.getElementById('careerSeasonFilter'); const currentVal = cs.value; cs.innerHTML = '<option value="All Time">All Time</option>';
+                globalData.settings.seasons.forEach(s => { cs.add(new Option(s, s)); }); cs.value = currentVal; 
                 ui.renderCareer(); 
             } else if(activeContext === 'Admin') { 
                 document.getElementById('viewAdmin').classList.remove('hidden'); 
@@ -322,15 +301,19 @@
             document.getElementById('c-p').innerText = h.length; 
             document.getElementById('c-w').innerText = h.filter(m=>m.our>m.their).length; 
             document.getElementById('c-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
-            // FIXED MATH:
-            const uniqueDates = [...new Set(h.map(m => m.date))]; 
-            const maxAwards = uniqueDates.length; 
+            
+            // LOGIC FIX: Group unique dates BY TEAM to handle double-headers correctly
+            const uniqueClubDates = new Set(h.map(m => m.date + '_' + m.team));
+            const maxAwards = uniqueClubDates.size;
+            
+            // Get raw unique dates for award lookup
+            const rawUniqueDates = [...new Set(h.map(m => m.date))];
+
             let cAwardCount = 0; 
-            uniqueDates.forEach(d => { 
+            rawUniqueDates.forEach(d => { 
                 const sum = globalData.daySummaries[d]; 
                 if(sum && sum.awards) cAwardCount += sum.awards.filter(a => a.player === profile).length; 
                 else { 
-                    // FILTER LEGACY AWARDS BY THE SAME 'h' CONTEXT
                     h.filter(m=>m.date===d).forEach(m=>{ if(m.awards) cAwardCount += m.awards.filter(a => a.player === profile).length; }); 
                 } 
             }); 
