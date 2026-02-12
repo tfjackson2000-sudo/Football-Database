@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V99</title>
+    <title>Football Tracker V101</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -147,25 +147,16 @@
         /* NAV STRUCTURE */
         .nav-container { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         
-        /* ROW 1: CAREER BUTTON */
-        .career-row {
-            display: flex;
-            justify-content: center;
-            background: var(--primary-tint);
-            padding: 10px 15px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        /* ROW 2: CLUBS WITH SIDE STICKER */
+        /* UNIFIED NAV ROW */
         .clubs-container { 
             display: flex; 
             align-items: center; 
             padding: 10px 15px; 
             border-bottom: 1px solid var(--border);
-            gap: 15px; 
+            gap: 10px; 
+            overflow-x: hidden; 
         }
 
-        /* DESKTOP CENTER OVERRIDE */
         @media (min-width: 768px) {
             .clubs-container {
                 justify-content: center;
@@ -176,12 +167,19 @@
         }
 
         .sticker-area {
-            padding-right: 15px;
-            border-right: 2px solid var(--border);
             display: flex;
             align-items: center;
+            flex-shrink: 0;
         }
         
+        .nav-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+            margin: 0 5px;
+            flex-shrink: 0;
+        }
+
         /* Buttons Scroll Row */
         .clubs-scroll-area {
             flex-grow: 1;
@@ -192,7 +190,11 @@
             align-items: center;
             gap: 8px;
             padding-bottom: 2px;
+            /* Hide scrollbar */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
         }
+        .clubs-scroll-area::-webkit-scrollbar { display: none; }
 
         /* BUTTONS */
         .nav-btn { 
@@ -207,6 +209,7 @@
             background: var(--bg); 
             color: var(--text-muted); 
             opacity: 0.8;
+            flex-shrink: 0;
         }
         .nav-btn.active { 
             transform: translateY(-1px); 
@@ -217,27 +220,17 @@
             opacity: 1;
         }
 
-        .career-btn { 
-            width: 100%; 
-            max-width: 400px;
-            text-align: center; 
-            border: 1px solid var(--accent); 
-            color: var(--text); 
-            background: var(--card); 
-            font-size: 1rem; 
-            padding: 10px; 
-            border-radius: 10px; 
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: 0.3s;
+        /* CAREER PILL STYLE */
+        .career-pill {
+            border: 1px solid #DAA520;
+            color: #B8860B;
+            background: var(--card);
         }
-        .career-btn.active { 
+        .career-pill.active {
             background: linear-gradient(135deg, #DAA520, #FFD700); 
-            color: #000; 
-            border-color: transparent; 
+            color: #000;
+            border-color: transparent;
+            opacity: 1;
         }
 
         .container { max-width: 800px; margin: 25px auto; padding: 0 15px; flex-grow: 1; width: 100%; box-sizing: border-box; }
@@ -276,13 +269,8 @@
             display:flex; 
             justify-content:space-between; 
             align-items:center; 
-            
-            /* BACKGROUND IS DYNAMIC TINT */
             background: var(--primary-tint); 
-            
-            /* TEXT COLOR IS FIXED (Black in Light, White in Dark) */
             color: var(--text-highlight) !important; 
-            
             border-bottom: 1px solid var(--border);
             transition: background 0.3s, color 0.3s;
         }
@@ -298,14 +286,7 @@
 
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
         .stat-item { background: var(--bg); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
-        
-        /* FIXED BLACK STAT NUMBERS (LIGHT MODE) */
-        .stat-item strong { 
-            font-size: 1.5rem; 
-            color: var(--text-highlight); 
-            display: block; 
-            line-height: 1; 
-        }
+        .stat-item strong { font-size: 1.5rem; color: var(--text-highlight); display: block; line-height: 1; }
         
         .form-group { margin-bottom: 20px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
@@ -317,14 +298,7 @@
         .history-group { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 25px; overflow: hidden; background: var(--card); box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .group-header { background: var(--primary-tint); padding: 12px 15px; border-bottom: 1px solid var(--border); transition: background 0.3s; }
         .gh-top { display:flex; justify-content:space-between; align-items: center; margin-bottom: 5px; }
-        
-        /* FIXED BLACK DATE (LIGHT MODE) */
-        .gh-date { 
-            font-size: 1rem; 
-            font-weight: 800; 
-            color: var(--text-highlight); 
-        }
-        
+        .gh-date { font-size: 1rem; font-weight: 800; color: var(--text-highlight); }
         .gh-awards { font-size: 0.85rem; color: var(--text-muted); background: var(--bg); padding: 8px; border-radius: 8px; margin-top: 5px; border: 1px solid var(--border); }
         
         .aw-tag { display: inline-block; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; margin-right: 5px; margin-bottom: 2px; }
@@ -353,35 +327,10 @@
         .btn-guest { background: transparent; border: 2px solid var(--border); color: var(--text); }
         
         .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
-        
-        /* IMPROVED TABLE STYLING */
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; table-layout: fixed; }
-        
-        th { 
-            background: var(--primary-tint); 
-            color: var(--text-highlight); 
-            padding: 12px 6px; 
-            font-size: 0.75rem; 
-            text-transform: uppercase; 
-            border-bottom: 2px solid var(--border); 
-            text-align: center; 
-        }
-        
-        td { 
-            padding: 12px 6px; 
-            border-bottom: 1px solid var(--border); 
-            text-align: center; 
-            white-space: nowrap;
-        }
-
-        /* FORCE FIRST COLUMN (TEAM NAME) ALIGNMENT & WIDTH */
-        th:first-child, td:first-child {
-            text-align: left;
-            width: 35%; /* Fixed width for name */
-            padding-left: 10px;
-            white-space: normal; 
-        }
-        
+        th { background: var(--primary-tint); color: var(--text-highlight); padding: 12px 6px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); text-align: center; }
+        td { padding: 12px 6px; border-bottom: 1px solid var(--border); text-align: center; white-space: nowrap; }
+        th:first-child, td:first-child { text-align: left; width: 35%; padding-left: 10px; white-space: normal; }
         .num-col { font-weight: bold; }
         .is-me { background: var(--primary-tint); font-weight: bold; }
 
@@ -442,14 +391,14 @@
         <button class="admin-icon-btn protected-area" onclick="ui.switchContext('Admin')">⚙️</button>
     </div>
     
-    <div class="career-row">
-        <div id="btnCareer" class="career-btn" onclick="ui.switchContext('Career')">🌟 Career Stats</div>
-    </div>
-    
     <div class="clubs-container">
+        
         <div class="sticker-area">
-            <div id="clubsSticker" class="sticker clubs-sticker">Clubs</div>
+            <div id="clubsSticker" class="sticker clubs-sticker">Stats</div>
         </div>
+        
+        <div class="nav-divider"></div>
+
         <div id="navRowTeams" class="clubs-scroll-area"></div>
     </div>
 </div>
@@ -584,7 +533,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V99</div>
+    <div class="version-tag">V101</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -801,10 +750,19 @@
     window.ui = {
         renderNav: () => {
             document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
-            document.getElementById('clubsSticker').innerText = (globalData.settings.profileName || "Player") + "'s Clubs";
-            document.getElementById('btnCareer').innerText = "🌟 " + (globalData.settings.profileName || "Player") + "'s Career Stats";
+            document.getElementById('clubsSticker').innerText = (globalData.settings.profileName || "Player") + "'s Stats";
+            
+            const r1 = document.getElementById('navRowTeams'); 
+            r1.innerHTML='';
 
-            const r1 = document.getElementById('navRowTeams'); r1.innerHTML='';
+            // 1. INJECT CAREER BUTTON AS FIRST ITEM IN SCROLL AREA
+            const cBtn = document.createElement('div');
+            cBtn.className = `nav-btn career-pill ${activeContext==='Career'?'active':''}`;
+            cBtn.innerText = 'Career';
+            cBtn.onclick = () => ui.switchContext('Career');
+            r1.appendChild(cBtn);
+
+            // 2. INJECT CLUB BUTTONS
             Object.keys(globalData.teams).forEach(t => { 
                 const b = document.createElement('div'); 
                 b.className = `nav-btn ${activeContext===t?'active':''}`; 
@@ -812,9 +770,6 @@
                 b.onclick=()=>{ui.switchContext(t);}; 
                 r1.appendChild(b); 
             });
-
-            const btnCareer = document.getElementById('btnCareer');
-            btnCareer.className = `career-btn ${activeContext==='Career'?'active':''}`;
         },
         switchContext: (c) => { 
             if (globalData.teams[c]) lastActiveTeam = c;
