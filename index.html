@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V95</title>
+    <title>Football Tracker V96</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -29,6 +29,9 @@
             --text-on-primary: #ffffff;
             --accent: #DAA520;        
             
+            /* HEADER TEXT COLOR (Black in Light, White in Dark) */
+            --header-text: #111111; 
+
             --success: #28a745;
             --danger: #dc3545;
             --shadow: 0 4px 12px rgba(0,0,0,0.06);
@@ -44,6 +47,9 @@
             --text-muted: #b0b3b8;
             --border: #333333; 
             --shadow: 0 4px 12px rgba(0,0,0,0.4);
+            
+            /* White Headers in Dark Mode for contrast */
+            --header-text: #ffffff;
         }
 
         body { 
@@ -301,8 +307,13 @@
             display:flex; 
             justify-content:space-between; 
             align-items:center; 
+            
+            /* BACKGROUND IS DYNAMIC TINT */
             background: var(--primary-tint); 
-            color: var(--primary); 
+            
+            /* TEXT COLOR IS FIXED (Black in Light, White in Dark) */
+            color: var(--header-text) !important; 
+            
             border-bottom: 1px solid var(--border);
             transition: background 0.3s, color 0.3s;
         }
@@ -498,7 +509,7 @@
 
     <div id="viewTournaments" class="hidden">
         <div class="card" style="border-color: var(--tourn-color);">
-            <div class="card-header" style="color: var(--tourn-color); background:rgba(111, 66, 193, 0.05);">🏆 Tournament Hub
+            <div class="card-header" style="background:rgba(111, 66, 193, 0.05);">🏆 Tournament Hub
                 <button type="button" class="btn-outline protected-area" style="width:auto; padding:5px 12px; font-size:0.8rem;" onclick="document.getElementById('addTournModal').classList.remove('hidden')">+ New</button>
             </div>
             <div class="card-body">
@@ -524,13 +535,13 @@
 
     <div id="viewCareer" class="hidden">
         <div class="card" style="border-color: #DAA520;">
-            <div class="card-header" style="color: #B8860B; background:rgba(218, 165, 32, 0.1);"><span>🌟 Career Overview</span><select id="careerSeasonFilter" onchange="ui.renderCareer()" style="width:auto;"><option value="All Time">All Time</option></select></div>
+            <div class="card-header" style="background:rgba(218, 165, 32, 0.1);"><span>🌟 Career Overview</span><select id="careerSeasonFilter" onchange="ui.renderCareer()" style="width:auto;"><option value="All Time">All Time</option></select></div>
             <div class="card-body">
                 <div class="stat-grid"><div class="stat-item"><span>Games</span><strong id="c-p">0</strong></div><div class="stat-item"><span>Wins</span><strong id="c-w">0</strong></div><div class="stat-item"><span>Goals</span><strong id="c-g">0</strong></div><div class="stat-item"><span>Awards</span><strong id="c-a">0</strong></div></div>
             </div>
         </div>
         <div class="card">
-            <div class="card-header" style="color:#B8860B; background:rgba(218, 165, 32, 0.1);">🏆 Your Clubs Comparison</div>
+            <div class="card-header" style="background:rgba(218, 165, 32, 0.1);">🏆 Your Clubs Comparison</div>
             <div class="card-body" style="padding:0;">
                 <table id="masterTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead><tbody></tbody></table>
             </div>
@@ -566,7 +577,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V95</div>
+    <div class="version-tag">V96</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
