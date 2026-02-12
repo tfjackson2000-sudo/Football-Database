@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V96</title>
+    <title>Football Tracker V97</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -23,14 +23,14 @@
             --text-muted: #666;
             --border: #e4e4e7; 
             
-            /* DYNAMIC THEME VARIABLES */
+            /* DYNAMIC THEME VARIABLES (Backgrounds only) */
             --primary: #333333;       
             --primary-tint: #f0f0f0;  
             --text-on-primary: #ffffff;
             --accent: #DAA520;        
             
-            /* HEADER TEXT COLOR (Black in Light, White in Dark) */
-            --header-text: #111111; 
+            /* FIXED TEXT COLORS (Light Mode = Black) */
+            --text-highlight: #111111; 
 
             --success: #28a745;
             --danger: #dc3545;
@@ -48,8 +48,8 @@
             --border: #333333; 
             --shadow: 0 4px 12px rgba(0,0,0,0.4);
             
-            /* White Headers in Dark Mode for contrast */
-            --header-text: #ffffff;
+            /* White Text in Dark Mode for contrast */
+            --text-highlight: #ffffff;
         }
 
         body { 
@@ -312,7 +312,7 @@
             background: var(--primary-tint); 
             
             /* TEXT COLOR IS FIXED (Black in Light, White in Dark) */
-            color: var(--header-text) !important; 
+            color: var(--text-highlight) !important; 
             
             border-bottom: 1px solid var(--border);
             transition: background 0.3s, color 0.3s;
@@ -329,7 +329,14 @@
 
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
         .stat-item { background: var(--bg); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
-        .stat-item strong { font-size: 1.5rem; color: var(--primary); display: block; line-height: 1; }
+        
+        /* FIXED BLACK STAT NUMBERS (LIGHT MODE) */
+        .stat-item strong { 
+            font-size: 1.5rem; 
+            color: var(--text-highlight); 
+            display: block; 
+            line-height: 1; 
+        }
         
         .form-group { margin-bottom: 20px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
@@ -341,7 +348,14 @@
         .history-group { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 25px; overflow: hidden; background: var(--card); box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .group-header { background: var(--primary-tint); padding: 12px 15px; border-bottom: 1px solid var(--border); transition: background 0.3s; }
         .gh-top { display:flex; justify-content:space-between; align-items: center; margin-bottom: 5px; }
-        .gh-date { font-size: 1rem; font-weight: 800; color: var(--primary); }
+        
+        /* FIXED BLACK DATE (LIGHT MODE) */
+        .gh-date { 
+            font-size: 1rem; 
+            font-weight: 800; 
+            color: var(--text-highlight); 
+        }
+        
         .gh-awards { font-size: 0.85rem; color: var(--text-muted); background: var(--bg); padding: 8px; border-radius: 8px; margin-top: 5px; border: 1px solid var(--border); }
         
         .aw-tag { display: inline-block; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; margin-right: 5px; margin-bottom: 2px; }
@@ -370,10 +384,36 @@
         .btn-guest { background: transparent; border: 2px solid var(--border); color: var(--text); }
         
         .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
-        th { background: var(--primary-tint); color: var(--primary); padding: 12px 8px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); text-align: left; }
-        td { padding: 12px 8px; border-bottom: 1px solid var(--border); text-align: left; }
-        .num-col { text-align: center; font-weight: bold; }
+        
+        /* IMPROVED TABLE STYLING */
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; table-layout: fixed; }
+        
+        th { 
+            background: var(--primary-tint); 
+            color: var(--text-highlight); 
+            padding: 12px 6px; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            border-bottom: 2px solid var(--border); 
+            text-align: center; /* Center by default */
+        }
+        
+        td { 
+            padding: 12px 6px; 
+            border-bottom: 1px solid var(--border); 
+            text-align: center; /* Center by default */
+            white-space: nowrap;
+        }
+
+        /* FORCE FIRST COLUMN (TEAM NAME) ALIGNMENT & WIDTH */
+        th:first-child, td:first-child {
+            text-align: left;
+            width: 35%; /* Fixed width for name */
+            padding-left: 10px;
+            white-space: normal; /* Allow wrapping if needed */
+        }
+        
+        .num-col { font-weight: bold; }
         .is-me { background: var(--primary-tint); font-weight: bold; }
 
         .hidden { display: none !important; }
@@ -577,7 +617,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V96</div>
+    <div class="version-tag">V97</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
