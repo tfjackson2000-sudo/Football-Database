@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V94</title>
+    <title>Football Tracker V95</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -454,11 +454,27 @@
         </div>
         
         <div class="card">
+            <details open>
+                <summary class="card-header">🏆 League Table</summary>
+                <div class="card-body" style="padding:0;">
+                    <table id="teamLeagueTable"><thead><tr><th>Team</th><th class="num-col">P</th><th class="num-col">W</th><th class="num-col">D</th><th class="num-col">L</th><th class="num-col">GD</th><th class="num-col">Pts</th></tr></thead><tbody></tbody></table>
+                </div>
+            </details>
+        </div>
+
+        <div class="card">
             <details>
                 <summary class="card-header">👟 Top Scorers</summary>
                 <div class="card-body" style="padding:0;">
                     <table id="topScorerTable"><thead><tr><th>Player</th><th class="num-col">Goals</th></tr></thead><tbody></tbody></table>
                 </div>
+            </details>
+        </div>
+        
+        <div class="card">
+            <details>
+                <summary class="card-header">🕒 Match History</summary>
+                <div class="card-body" id="teamHistoryList" style="padding:10px;"></div>
             </details>
         </div>
 
@@ -476,22 +492,6 @@
                     <div id="matchQueue" style="margin-top:15px; padding-top:15px; border-top:1px solid var(--border);"></div>
                     <button type="button" id="btnFinalize" class="btn btn-save hidden" onclick="app.saveSession()">💾 Save Session</button>
                 </div>
-            </details>
-        </div>
-        
-        <div class="card">
-            <details open>
-                <summary class="card-header">🏆 League Table</summary>
-                <div class="card-body" style="padding:0;">
-                    <table id="teamLeagueTable"><thead><tr><th>Team</th><th class="num-col">P</th><th class="num-col">W</th><th class="num-col">D</th><th class="num-col">L</th><th class="num-col">GD</th><th class="num-col">Pts</th></tr></thead><tbody></tbody></table>
-                </div>
-            </details>
-        </div>
-        
-        <div class="card">
-            <details>
-                <summary class="card-header">🕒 Match History</summary>
-                <div class="card-body" id="teamHistoryList" style="padding:10px;"></div>
             </details>
         </div>
     </div>
@@ -566,7 +566,7 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V94</div>
+    <div class="version-tag">V95</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -854,7 +854,16 @@
                 const sSel = document.getElementById('admActiveSeason'); sSel.innerHTML=''; globalData.settings.seasons.forEach(s=>sSel.add(new Option(s,s))); sSel.value = globalData.settings.currentSeason; ui.renderAdminDetails(); 
             } 
             else { 
-                if(activeSubTab === 'Stats') { document.getElementById('viewMatchDay').classList.remove('hidden'); document.getElementById('teamStatTitle').innerText = activeContext; ui.renderMatchDayInputs(); ui.renderTeamStats(); ui.renderLeagueTable(); ui.renderTopScorers(); ui.renderHistory(globalData.history.filter(m=>m.team===activeContext && m.season===globalData.settings.currentSeason)); } 
+                if(activeSubTab === 'Stats') { 
+                    document.getElementById('viewMatchDay').classList.remove('hidden'); 
+                    // UPDATED WORDING HERE
+                    document.getElementById('teamStatTitle').innerText = activeContext + " Overview"; 
+                    ui.renderMatchDayInputs(); 
+                    ui.renderTeamStats(); 
+                    ui.renderLeagueTable(); 
+                    ui.renderTopScorers(); 
+                    ui.renderHistory(globalData.history.filter(m=>m.team===activeContext && m.season===globalData.settings.currentSeason)); 
+                } 
                 else { document.getElementById('viewTournaments').classList.remove('hidden'); ui.renderTournHub(); } 
             }
         },
