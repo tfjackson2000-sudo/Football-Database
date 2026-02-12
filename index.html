@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V104</title>
+    <title>Football Tracker V105</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#222222">
@@ -165,7 +165,7 @@
         <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body"><div class="flex-row" style="margin-bottom:10px;"><input type="text" id="newAwardName" placeholder="Name" class="flex-grow"><input type="number" id="newAwardMax" placeholder="Max" style="width:70px;"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.addAwardConfig()">Add</button></div><ul id="admAwardList" class="admin-list"></ul></div></div>
         <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body"><label style="display:block; margin-bottom:5px;">Profile Name (Select from Squad):</label><div class="flex-row" style="margin-bottom:20px;"><select id="adminProfileName" class="flex-grow"></select><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button></div><label style="display:block; margin-bottom:5px;">Add Club:</label><div class="flex-row" style="margin-bottom:15px;"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button type="button" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div><label style="display:block; margin-bottom:5px;">Manage Clubs:</label><ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V104</div>
+    <div class="version-tag">V105</div>
 </div>
 
 <footer class="app-footer" id="appFooter"><button onclick="app.toggleTheme()">🌓 Theme</button><button onclick="app.doSignOut()">🚪 Log Out</button></footer>
@@ -295,30 +295,67 @@
         renderTeamStats: () => { const h = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); const uniqueDates = [...new Set(h.map(m => m.date))]; const maxAwards = uniqueDates.length; const profile = globalData.settings.profileName; let awardCount = 0; uniqueDates.forEach(d => { const sum = globalData.daySummaries[d]; if(sum && sum.awards && sum.awards.length > 0) { awardCount += sum.awards.filter(a => a.player === profile).length; } else { const matchesOnDay = h.filter(m => m.date === d); let legacyAwardsOnDay = 0; matchesOnDay.forEach(m => { if (m.awards) legacyAwardsOnDay += m.awards.filter(a => a.player === profile).length; }); awardCount += legacyAwardsOnDay; } }); document.getElementById('st-p').innerText = h.length; document.getElementById('st-w').innerText = h.filter(m=>m.our>m.their).length; document.getElementById('st-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); if (awardCount === 0) { document.getElementById('st-a').innerText = "N/A"; } else { document.getElementById('st-a').innerText = `${awardCount} / ${maxAwards}`; } },
         renderCareer: () => { 
             const f = document.getElementById('careerSeasonFilter').value; 
+            const profile = globalData.settings.profileName;
+            
+            // 1. CALCULATE AGGREGATE STATS
+            let totalGames = 0, totalWins = 0, totalGoals = 0;
+            let totalAwardWins = 0, totalAwardOpps = 0;
+
+            // Iterate through every club to build the totals
+            Object.keys(globalData.teams).forEach(teamName => {
+                let teamHistory = globalData.history.filter(m => m.team === teamName);
+                if(f !== 'All Time') teamHistory = teamHistory.filter(m => m.season === f);
+                
+                // Game Stats
+                totalGames += teamHistory.length;
+                totalWins += teamHistory.filter(m => m.our > m.their).length;
+                totalGoals += teamHistory.reduce((acc, m) => acc + (m.scorers||[]).filter(s => s === profile).length, 0);
+
+                // Award Stats (Per Club Logic)
+                const teamUniqueDates = [...new Set(teamHistory.map(m => m.date))];
+                let teamAwards = 0;
+                
+                teamUniqueDates.forEach(d => {
+                    const sum = globalData.daySummaries[d];
+                    if(sum && sum.awards && sum.awards.length > 0) {
+                        teamAwards += sum.awards.filter(a => a.player === profile).length;
+                    } else {
+                        // Fallback to legacy
+                        const matchesOnDay = teamHistory.filter(m => m.date === d);
+                        matchesOnDay.forEach(m => { if (m.awards) teamAwards += m.awards.filter(a => a.player === profile).length; });
+                    }
+                });
+
+                // ONLY ADD TO TOTAL IF AWARDS > 0 (Ignore "N/A" clubs)
+                if (teamAwards > 0) {
+                    totalAwardWins += teamAwards;
+                    totalAwardOpps += teamUniqueDates.length;
+                }
+            });
+
+            // 2. RENDER TOP STATS
+            document.getElementById('c-p').innerText = totalGames;
+            document.getElementById('c-w').innerText = totalWins;
+            document.getElementById('c-g').innerText = totalGoals;
+            document.getElementById('c-a').innerText = totalAwardWins === 0 ? "N/A" : `${totalAwardWins} / ${totalAwardOpps}`;
+
+            // 3. RENDER COMPARISON TABLE (Existing Logic)
             let h = globalData.history; 
             if(f !== 'All Time') h = h.filter(m => m.season === f); 
-            const profile = globalData.settings.profileName; 
-            document.getElementById('c-p').innerText = h.length; 
-            document.getElementById('c-w').innerText = h.filter(m=>m.our>m.their).length; 
-            document.getElementById('c-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
-            
-            // LOGIC FIX: Group unique dates BY TEAM to handle double-headers correctly
-            const uniqueClubDates = new Set(h.map(m => m.date + '_' + m.team));
-            const maxAwards = uniqueClubDates.size;
-            
-            // Get raw unique dates for award lookup
-            const rawUniqueDates = [...new Set(h.map(m => m.date))];
-
-            let cAwardCount = 0; 
-            rawUniqueDates.forEach(d => { 
-                const sum = globalData.daySummaries[d]; 
-                if(sum && sum.awards) cAwardCount += sum.awards.filter(a => a.player === profile).length; 
-                else { 
-                    h.filter(m=>m.date===d).forEach(m=>{ if(m.awards) cAwardCount += m.awards.filter(a => a.player === profile).length; }); 
-                } 
+            let stats={}; 
+            h.forEach(m=>{
+                const u=(n,gf,ga)=>{
+                    if(!stats[n]) stats[n]={name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};
+                    const st=stats[n]; st.p++; st.gf+=gf; st.ga+=ga;
+                    if(gf>ga){st.w++; st.pts+=3;} else if(gf<ga){st.l++; st.pts+=0;} else{st.d++; st.pts+=1;}
+                };
+                u(m.team,m.our,m.their);
             }); 
-            document.getElementById('c-a').innerText = cAwardCount === 0 ? "N/A" : `${cAwardCount} / ${maxAwards}`; 
-            let stats={}; h.forEach(m=>{const u=(n,gf,ga)=>{if(!stats[n])stats[n]={name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};const st=stats[n];st.p++;st.gf+=gf;st.ga+=ga;if(gf>ga){st.w++;st.pts+=3;}else if(gf<ga){st.l++;st.pts+=0;}else{st.d++;st.pts+=1;}};u(m.team,m.our,m.their);}); const d = Object.values(stats).filter(t => globalData.teams[t.name] !== undefined).sort((a,b)=>b.pts-a.pts); document.querySelector('#masterTable tbody').innerHTML=d.map((t,i)=>{ const color = globalData.teams[t.name].color; return `<tr class="is-me"><td class="t-left" style="color:${color}">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf-t.ga}</td><td>${t.gf}</td><td><b>${t.pts}</b></td></tr>`; }).join(''); 
+            const d = Object.values(stats).filter(t => globalData.teams[t.name] !== undefined).sort((a,b)=>b.pts-a.pts); 
+            document.querySelector('#masterTable tbody').innerHTML=d.map((t,i)=>{ 
+                const color = globalData.teams[t.name].color; 
+                return `<tr class="is-me"><td class="t-left" style="color:${color}">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf-t.ga}</td><td>${t.gf}</td><td><b>${t.pts}</b></td></tr>`; 
+            }).join(''); 
         },
         renderAdminDetails: () => { const t=globalData.teams[document.getElementById('admTeamSelect').value]; if(!t) return; const l=(id,k)=>document.getElementById(id).innerHTML=t[k].map((x,i)=>`<li>${x}<button class="btn-del" onclick="app.admDel('${k}',${i})">🗑</button></li>`).join(''); l('admPlayerList', 'players'); l('admOppList', 'opps'); document.getElementById('admAwardList').innerHTML = t.awards.map((a,i)=>`<li>${a.name} (Max:${a.max})<button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></li>`).join(''); const profSel = document.getElementById('adminProfileName'); profSel.innerHTML = ''; t.players.forEach(p => { profSel.add(new Option(p, p)); }); if(globalData.settings.profileName) profSel.value = globalData.settings.profileName; const clubList = document.getElementById('admClubList'); clubList.innerHTML = Object.keys(globalData.teams).map(teamName => { const isCurrent = teamName === activeContext; const deleteBtn = isCurrent ? '<span style="font-size:0.7em; opacity:0.5;">(Active)</span>' : `<button class="btn-del" onclick="app.admDelClub('${teamName}')">🗑</button>`; return `<li><span style="color:${globalData.teams[teamName].color}; font-weight:bold;">${teamName}</span>${deleteBtn}</li>`; }).join(''); },
         renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(!sel.value) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === sel.value && m.team === tName && m.season === globalData.settings.currentSeason); const profile = globalData.settings.profileName; document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); ui.renderHistory(h, 'tournHistoryList'); },
