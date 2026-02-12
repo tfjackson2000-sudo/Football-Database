@@ -3,31 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V90</title>
+    <title>Football Tracker V91</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Football Tracker">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#333333">
+    <meta name="theme-color" content="#222222">
 
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚽</text></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22 style=%22background:white;%22><rect width=%22100%22 height=%22100%22 fill=%22white%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22central%22 text-anchor=%22middle%22 font-size=%2270%22>⚽</text></svg>">
 
     <style>
         :root { 
-            --bg: linear-gradient(180deg, #dcfce7 0%, #f0fdf4 100%);
+            /* GLOBAL CAREER THEME (Light Mode Base) */
+            --bg: #f4f4f5; /* Light Grey Background */
             --card: #ffffff; 
             --text: #1f1f1f; 
             --text-muted: #666;
-            --border: #d1d5db; 
-            --primary: #333; 
-            --primary-tint: #f8f9fa; 
-            --text-on-primary: #fff;
+            --border: #e4e4e7; 
+            
+            /* The "Career" Look Colors */
+            --primary: #333333; /* Dark Grey */
+            --primary-tint: #f0f0f0; 
+            --text-on-primary: #ffffff;
+            --accent: #DAA520; /* Gold */
+            
             --success: #28a745;
             --danger: #dc3545;
-            --shadow: 0 4px 12px rgba(0,0,0,0.08);
-            --tourn-color: #6f42c1;
+            --shadow: 0 4px 12px rgba(0,0,0,0.06);
         }
         
         [data-theme="dark"] { 
@@ -35,10 +39,12 @@
             --card: #1e1e1e; 
             --text: #e4e6eb; 
             --text-muted: #b0b3b8;
-            --border: #383838; 
+            --border: #333333; 
+            --primary: #e4e6eb; /* Lighter text for primary in dark mode */
             --primary-tint: #252525;
+            --text-on-primary: #121212;
+            --accent: #FFD700; /* Brighter Gold for Dark Mode */
             --shadow: 0 4px 12px rgba(0,0,0,0.4);
-            --tourn-color: #a76dff;
         }
 
         body { 
@@ -81,7 +87,8 @@
             font-weight: 900;
             font-size: 1.5rem;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, var(--primary) 0%, #888 100%);
+            /* Gold/Grey Gradient Text */
+            background: linear-gradient(135deg, var(--text) 0%, var(--accent) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             display: inline-block;
@@ -90,7 +97,7 @@
         .football-icon {
             width: 24px;
             height: 24px;
-            fill: var(--primary);
+            fill: var(--text);
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
         }
 
@@ -114,8 +121,8 @@
         }
 
         .clubs-sticker {
-            background: var(--primary);
-            color: var(--text-on-primary);
+            background: #333;
+            color: #fff;
             margin-right: 10px;
             transform: rotate(2deg);
         }
@@ -144,7 +151,7 @@
             border-bottom: 1px solid var(--border);
         }
         
-        /* CLUBS ROW */
+        /* CLUBS ROW - CENTERED */
         .clubs-row {
             overflow-x: auto;
             white-space: nowrap;
@@ -152,6 +159,7 @@
             flex-grow: 1;
             display: flex;
             align-items: center;
+            justify-content: center; /* CENTRALIZED */
             gap: 8px;
         }
         
@@ -159,12 +167,12 @@
         .career-row {
             justify-content: center;
             background: var(--primary-tint);
-            padding: 8px 15px;
+            padding: 10px 15px;
         }
 
         .nav-secondary { 
             display: flex; 
-            padding: 10px 15px; 
+            padding: 12px 15px; 
             background: var(--card); 
             gap: 10px; 
             overflow-x: auto; 
@@ -174,35 +182,69 @@
         }
 
         /* BUTTONS */
-        .nav-btn { padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.85rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; background: var(--bg); color: var(--text); }
-        .nav-btn.active { opacity: 1; background: var(--primary); color: var(--text-on-primary); transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        /* Default State (Subtle Grey) */
+        .nav-btn { 
+            padding: 6px 14px; 
+            border-radius: 20px; 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 0.85rem; 
+            white-space: nowrap; 
+            transition: 0.2s; 
+            border: 1px solid var(--border); 
+            background: var(--bg); 
+            color: var(--text-muted); 
+        }
+        /* Active State gets color via inline style in JS */
+        .nav-btn.active { 
+            transform: translateY(-1px); 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
+            color: #fff !important; 
+            border-color: transparent;
+            opacity: 1;
+        }
         
-        /* Subtabs now look like nav buttons */
+        /* Subtabs - same pill style */
         .subtab-btn {
-            padding: 6px 14px;
+            padding: 8px 18px;
             border-radius: 20px;
             cursor: pointer;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             white-space: nowrap;
-            opacity: 0.5;
             transition: 0.2s;
-            border: 2px solid transparent;
+            border: 1px solid var(--border);
             background: var(--bg);
-            color: var(--text);
+            color: var(--text-muted);
         }
         .subtab-btn.active {
-            opacity: 1;
-            background: var(--primary);
-            color: var(--text-on-primary);
-            transform: translateY(-1px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            background: #333; /* Default active is Dark Grey */
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
         }
 
         .career-btn { 
-            width: 100%; text-align: center; border: 2px solid #ffd700; color: #b8860b; background: transparent; font-size: 1rem; padding: 10px; border-radius: 10px; font-weight: 800;
+            width: 100%; 
+            max-width: 400px;
+            text-align: center; 
+            border: 1px solid var(--accent); 
+            color: var(--text); 
+            background: transparent; 
+            font-size: 1rem; 
+            padding: 10px; 
+            border-radius: 10px; 
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .career-btn.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
+        .career-btn.active { 
+            background: linear-gradient(135deg, #DAA520, #FFD700); 
+            color: #000; 
+            border-color: transparent; 
+        }
 
         .container { max-width: 800px; margin: 25px auto; padding: 0 15px; flex-grow: 1; width: 100%; box-sizing: border-box; }
         
@@ -215,22 +257,39 @@
             justify-content: center;
             gap: 15px;
             opacity: 0.6;
+            border-top: 1px solid var(--border);
+            background: var(--bg);
         }
         .app-footer button {
-            background: none;
+            background: var(--card);
             border: 1px solid var(--border);
             padding: 8px 16px;
             border-radius: 20px;
             font-weight: 600;
             color: var(--text);
             cursor: pointer;
+            box-shadow: var(--shadow);
         }
 
         /* CARD STYLES */
         .card { background: var(--card); border-radius: 16px; padding: 0; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.3s; }
-        .card-header { font-size: 1.1rem; font-weight: 800; padding: 15px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--primary-tint); color: var(--primary); border-bottom: 1px solid var(--border); }
-        .neutral-card .card-header { background: #f0f2f5 !important; color: #333 !important; }
-        [data-theme="dark"] .neutral-card .card-header { background: #2a2a2a !important; color: #eee !important; }
+        
+        /* Global Career Style Header for Cards */
+        .card-header { 
+            font-size: 1.1rem; 
+            font-weight: 800; 
+            padding: 15px 20px; 
+            display:flex; 
+            justify-content:space-between; 
+            align-items:center; 
+            background: var(--primary-tint); 
+            color: var(--text); 
+            border-bottom: 1px solid var(--border); 
+        }
+        
+        /* Subtle Gold accent for headers */
+        .card-header span:first-child { border-left: 3px solid var(--accent); padding-left: 10px; }
+
         .card-body { padding: 20px; }
         
         details > summary { list-style: none; cursor: pointer; outline: none; font-weight: bold; font-size: 1.1rem; }
@@ -239,7 +298,7 @@
 
         .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; text-align: center; }
         .stat-item { background: var(--bg); padding: 10px; border-radius: 10px; border: 1px solid var(--border); }
-        .stat-item strong { font-size: 1.5rem; color: var(--primary); display: block; line-height: 1; }
+        .stat-item strong { font-size: 1.5rem; color: var(--text); display: block; line-height: 1; }
         
         .form-group { margin-bottom: 20px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
@@ -251,10 +310,10 @@
         .history-group { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 25px; overflow: hidden; background: var(--card); box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .group-header { background: var(--primary-tint); padding: 12px 15px; border-bottom: 1px solid var(--border); }
         .gh-top { display:flex; justify-content:space-between; align-items: center; margin-bottom: 5px; }
-        .gh-date { font-size: 1rem; font-weight: 800; color: var(--primary); }
+        .gh-date { font-size: 1rem; font-weight: 800; color: var(--text); }
         .gh-awards { font-size: 0.85rem; color: var(--text-muted); background: var(--bg); padding: 8px; border-radius: 8px; margin-top: 5px; border: 1px solid var(--border); }
         
-        .aw-tag { display: inline-block; background: #FFD700; color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; margin-right: 5px; margin-bottom: 2px; }
+        .aw-tag { display: inline-block; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; margin-right: 5px; margin-bottom: 2px; }
         
         .match-row { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; background: var(--card); gap: 12px; }
         .match-row:last-child { border-bottom: none; }
@@ -271,7 +330,7 @@
 
         .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; margin-top:5px; transition: 0.2s; }
         .btn:hover { opacity: 0.9; transform: translateY(-1px); }
-        .btn-add { background: var(--primary); color: var(--text-on-primary); }
+        .btn-add { background: #333; color: #fff; }
         .btn-save { background: var(--success); color: white; }
         .btn-del { background: transparent; color: var(--danger); font-size: 1.1rem; border: none; cursor:pointer; }
         .btn-edit { background: transparent; color: #3b82f6; font-size: 1.2rem; border: none; cursor:pointer; }
@@ -281,10 +340,10 @@
         
         .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
-        th { background: var(--primary-tint); color: var(--primary); padding: 12px 8px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); text-align: left; }
+        th { background: var(--primary-tint); color: var(--text); padding: 12px 8px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); text-align: left; }
         td { padding: 12px 8px; border-bottom: 1px solid var(--border); text-align: left; }
         .num-col { text-align: center; font-weight: bold; }
-        .is-me { background: var(--primary-tint); font-weight: bold; }
+        .is-me { background: rgba(218, 165, 32, 0.15); font-weight: bold; }
 
         .hidden { display: none !important; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
@@ -338,7 +397,6 @@
             <svg class="football-icon"><use href="#icon-football"></use></svg>
             <span class="logo-text">Football Tracker</span>
             <svg class="football-icon"><use href="#icon-football"></use></svg>
-            
             <div id="headerSeasonBadge" class="sticker season-sticker"></div>
         </div>
         <button class="admin-icon-btn protected-area" onclick="ui.switchContext('Admin')">⚙️</button>
@@ -486,11 +544,11 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V90</div>
+    <div class="version-tag">V91</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
-    <button onclick="(() => { globalData.settings.theme = globalData.settings.theme === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', globalData.settings.theme); saveToCloud(); })()">🌓 Theme</button>
+    <button onclick="app.toggleTheme()">🌓 Theme</button>
     <button onclick="app.doSignOut()">🚪 Log Out</button>
 </footer>
 
@@ -557,6 +615,13 @@
     window.app = window.app || {};
     window.app.enterAsGuest = () => { isGuest = true; currentUser = { uid: "GUEST" }; document.getElementById('authOverlay').classList.add('hidden'); document.getElementById('loadingOverlay').classList.remove('hidden'); document.body.classList.add('read-only-mode'); listenToData(); };
     window.app.doSignOut = () => { isGuest = false; signOut(auth).then(() => window.location.reload()); };
+    
+    // NEW: Proper toggle function attached to window.app
+    window.app.toggleTheme = () => {
+        globalData.settings.theme = globalData.settings.theme === 'light' ? 'dark' : 'light';
+        document.body.setAttribute('data-theme', globalData.settings.theme);
+        saveToCloud();
+    };
 
     onAuthStateChanged(auth, (user) => {
         if (isGuest) return;
@@ -617,13 +682,6 @@
         const s = ["th", "st", "nd", "rd"]; const v = day % 100; const suffix = s[(v - 20) % 10] || s[v] || s[0];
         return `${day}${suffix} ${m} ${y}`;
     };
-
-    function hexToRgb(hex) {
-        let r = 0, g = 0, b = 0;
-        if (hex.length === 4) { r = "0x" + hex[1] + hex[1]; g = "0x" + hex[2] + hex[2]; b = "0x" + hex[3] + hex[3]; } 
-        else if (hex.length === 7) { r = "0x" + hex[1] + hex[2]; g = "0x" + hex[3] + hex[4]; b = "0x" + hex[5] + hex[6]; }
-        return `rgba(${+r},${+g},${+b}, 0.08)`;
-    }
 
     Object.assign(window.app, {
         saveSession: () => { const batchId = Date.now(); sessionQueue.forEach(g => g.batchId = batchId); globalData.history.push(...sessionQueue); sessionQueue = []; saveToCloud().then(()=>{ui.renderQueue(); alert("Saved!");}); },
@@ -764,23 +822,25 @@
 
     window.ui = {
         renderNav: () => {
-            // RENDER SEASON BADGE
             document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
-            
-            // DYNAMIC CLUBS STICKER
             document.getElementById('clubsSticker').innerText = (globalData.settings.profileName || "Player") + "'s Clubs";
-            
-            // DYNAMIC CAREER BUTTON TEXT
             document.getElementById('btnCareer').innerText = "🌟 " + (globalData.settings.profileName || "Player") + "'s Career Stats";
 
             const r1 = document.getElementById('navRowTeams'); r1.innerHTML='';
             
-            // 1. TEAMS
+            // 1. TEAMS BUTTONS (CENTERED)
             Object.keys(globalData.teams).forEach(t => { 
                 const b = document.createElement('div'); 
-                b.className=`nav-btn ${activeContext===t?'active':''}`; 
-                b.innerText=t; 
+                b.className = `nav-btn ${activeContext===t?'active':''}`; 
+                b.innerText = t; 
                 b.onclick=()=>{ui.switchContext(t);}; 
+
+                // APPLY SUBTLE COLOR IF ACTIVE
+                if(activeContext === t && globalData.teams[t]) {
+                    b.style.backgroundColor = globalData.teams[t].color;
+                    b.style.borderColor = globalData.teams[t].color;
+                }
+
                 r1.appendChild(b); 
             });
 
@@ -793,30 +853,38 @@
             const tabStats = document.getElementById('tabStats');
             const tabTourn = document.getElementById('tabTourn');
             
-            // Rename tabs dynamically
             if(activeContext !== 'Career' && activeContext !== 'Admin') {
                 tabStats.innerText = `${activeContext} Stats & Input`;
                 tabTourn.innerText = `${activeContext} Tournaments`;
             }
 
-            // Remove all active classes first
-            tabStats.classList.remove('active');
-            tabTourn.classList.remove('active');
+            // Reset Subtabs
+            tabStats.className = 'subtab-btn';
+            tabTourn.className = 'subtab-btn';
+            
+            // Remove Inline Styles from previous toggles
+            tabStats.style = '';
+            tabTourn.style = '';
 
-            // Apply active class based on state
-            if(activeSubTab === 'Stats') tabStats.classList.add('active');
-            if(activeSubTab === 'Tournaments') tabTourn.classList.add('active');
+            // Apply Active & Color
+            const applyActive = (el) => {
+                el.classList.add('active');
+                // SUBTLE COLOR FOR SUB TABS: Use standard Grey for active, OR faint tint of team color?
+                // Request said "Same style as club buttons".
+                // If we want them to pop, we use team color. If we want "Career Style", we use Dark Grey.
+                // Let's use Dark Grey/Gold default, but maybe a border of team color?
+                // Let's stick to the Career Theme default (Dark Grey) for consistency unless asked.
+                // If user wants team color on subtabs, uncomment next line:
+                // if(globalData.teams[activeContext]) el.style.backgroundColor = globalData.teams[activeContext].color;
+            };
+
+            if(activeSubTab === 'Stats') applyActive(tabStats);
+            if(activeSubTab === 'Tournaments') applyActive(tabTourn);
         },
         switchContext: (c) => { 
-            // TRACK LAST ACTIVE TEAM
-            if (globalData.teams[c]) {
-                lastActiveTeam = c;
-            }
-
+            if (globalData.teams[c]) lastActiveTeam = c;
             activeContext = c; 
-            if(c === 'Career') { document.documentElement.style.setProperty('--primary', '#444'); document.documentElement.style.setProperty('--primary-tint', 'rgba(100, 100, 100, 0.08)'); document.documentElement.style.setProperty('--text-on-primary', '#fff'); } 
-            else if (c === 'Admin') { document.documentElement.style.setProperty('--primary', '#333'); document.documentElement.style.setProperty('--primary-tint', '#f0f2f5'); document.documentElement.style.setProperty('--text-on-primary', '#fff'); } 
-            else if(globalData.teams[c]) { const color = globalData.teams[c].color; document.documentElement.style.setProperty('--primary', color); document.documentElement.style.setProperty('--primary-tint', hexToRgb(color)); document.documentElement.style.setProperty('--text-on-primary', '#fff'); }
+            // REMOVED GLOBAL COLOR SWITCHING to keep "Career Look"
             ui.renderNav(); ui.renderMainView(); 
         },
         switchSubTab: (t) => { activeSubTab = t; ui.updateSecondaryNav(); ui.renderMainView(); },
@@ -825,29 +893,18 @@
             ['viewMatchDay','viewTournaments','viewAdmin','viewCareer'].forEach(id=>document.getElementById(id).classList.add('hidden'));
             if(activeContext === 'Career') { 
                 document.getElementById('viewCareer').classList.remove('hidden');
-                
-                // POPULATE CAREER SEASONS DYNAMICALLY
                 const cs = document.getElementById('careerSeasonFilter');
                 const currentVal = cs.value;
                 cs.innerHTML = '<option value="All Time">All Time</option>';
-                globalData.settings.seasons.forEach(s => {
-                    cs.add(new Option(s, s));
-                });
-                cs.value = currentVal; // Restore selection
-
+                globalData.settings.seasons.forEach(s => { cs.add(new Option(s, s)); });
+                cs.value = currentVal; 
                 ui.renderCareer(); 
             } 
             else if(activeContext === 'Admin') { 
                 document.getElementById('viewAdmin').classList.remove('hidden'); 
-                const sel = document.getElementById('admTeamSelect'); 
-                sel.innerHTML=''; 
+                const sel = document.getElementById('admTeamSelect'); sel.innerHTML=''; 
                 Object.keys(globalData.teams).forEach(t=>sel.add(new Option(t,t))); 
-                
-                // AUTO-SELECT LAST ACTIVE TEAM
-                if(lastActiveTeam && globalData.teams[lastActiveTeam]) {
-                    sel.value = lastActiveTeam;
-                }
-                
+                if(lastActiveTeam && globalData.teams[lastActiveTeam]) sel.value = lastActiveTeam;
                 const sSel = document.getElementById('admActiveSeason'); sSel.innerHTML=''; globalData.settings.seasons.forEach(s=>sSel.add(new Option(s,s))); sSel.value = globalData.settings.currentSeason; ui.renderAdminDetails(); 
             } 
             else { 
@@ -969,24 +1026,14 @@
             
             // Career Stats Calculation for Awards
             const uniqueDates = [...new Set(h.map(m => m.date))];
-            const maxAwards = uniqueDates.length; // Total unique days in career filter
+            const maxAwards = uniqueDates.length; 
             let cAwardCount = 0;
-            
             uniqueDates.forEach(d => {
                 const sum = globalData.daySummaries[d];
                 if(sum && sum.awards) cAwardCount += sum.awards.filter(a => a.player === profile).length;
-                else {
-                     h.filter(m=>m.date===d).forEach(m=>{
-                         if(m.awards) cAwardCount += m.awards.filter(a => a.player === profile).length;
-                     });
-                }
+                else { h.filter(m=>m.date===d).forEach(m=>{ if(m.awards) cAwardCount += m.awards.filter(a => a.player === profile).length; }); }
             });
-            
-            if (cAwardCount === 0) {
-                document.getElementById('c-a').innerText = "N/A";
-            } else {
-                document.getElementById('c-a').innerText = `${cAwardCount} / ${maxAwards}`;
-            }
+            document.getElementById('c-a').innerText = cAwardCount === 0 ? "N/A" : `${cAwardCount} / ${maxAwards}`;
             
             let stats={}; h.forEach(m=>{const u=(n,gf,ga)=>{if(!stats[n])stats[n]={name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};const st=stats[n];st.p++;st.gf+=gf;st.ga+=ga;if(gf>ga){st.w++;st.pts+=3;}else if(gf<ga){st.l++;st.pts+=0;}else{st.d++;st.pts+=1;}};u(m.team,m.our,m.their);}); 
             const d = Object.values(stats).filter(t => globalData.teams[t.name] !== undefined).sort((a,b)=>b.pts-a.pts); 
@@ -995,32 +1042,16 @@
         renderAdminDetails: () => { 
             const t=globalData.teams[document.getElementById('admTeamSelect').value]; 
             if(!t) return; 
-            document.documentElement.style.setProperty('--primary', t.color); 
-            document.documentElement.style.setProperty('--primary-tint', hexToRgb(t.color)); 
             
             const l=(id,k)=>document.getElementById(id).innerHTML=t[k].map((x,i)=>`<li>${x}<button class="btn-del" onclick="app.admDel('${k}',${i})">🗑</button></li>`).join(''); 
             l('admPlayerList', 'players'); 
             l('admOppList', 'opps'); 
             
             document.getElementById('admAwardList').innerHTML = t.awards.map((a,i)=>`<li>${a.name} (Max:${a.max})<button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></li>`).join(''); 
-
-            // POPULATE PROFILE DROPDOWN
-            const profSel = document.getElementById('adminProfileName');
-            profSel.innerHTML = '';
-            t.players.forEach(p => {
-                profSel.add(new Option(p, p));
-            });
-            if(globalData.settings.profileName) {
-                profSel.value = globalData.settings.profileName;
-            }
-
-            // POPULATE CLUB LIST
+            const profSel = document.getElementById('adminProfileName'); profSel.innerHTML = ''; t.players.forEach(p => { profSel.add(new Option(p, p)); });
+            if(globalData.settings.profileName) profSel.value = globalData.settings.profileName;
             const clubList = document.getElementById('admClubList');
-            clubList.innerHTML = Object.keys(globalData.teams).map(teamName => {
-                const isCurrent = teamName === activeContext;
-                const deleteBtn = isCurrent ? '<span style="font-size:0.7em; opacity:0.5;">(Active)</span>' : `<button class="btn-del" onclick="app.admDelClub('${teamName}')">🗑</button>`;
-                return `<li><span style="color:${globalData.teams[teamName].color}; font-weight:bold;">${teamName}</span>${deleteBtn}</li>`;
-            }).join('');
+            clubList.innerHTML = Object.keys(globalData.teams).map(teamName => { const isCurrent = teamName === activeContext; const deleteBtn = isCurrent ? '<span style="font-size:0.7em; opacity:0.5;">(Active)</span>' : `<button class="btn-del" onclick="app.admDelClub('${teamName}')">🗑</button>`; return `<li><span style="color:${globalData.teams[teamName].color}; font-weight:bold;">${teamName}</span>${deleteBtn}</li>`; }).join('');
         },
         renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(sel.options.length <= 1) { sel.innerHTML = '<option value="">-- Select --</option>'; if(globalData.teams[tName].tournaments) globalData.teams[tName].tournaments.forEach(tr => { if(tr.active) sel.add(new Option(tr.name, tr.name)); }); } const val = sel.value; if(!val) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === val && m.team === tName && m.season === globalData.settings.currentSeason); const profile = globalData.settings.profileName; document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); ui.renderHistory(h, 'tournHistoryList'); },
         openEditModal: (id) => { const m = globalData.history.find(x => x.id == id); document.getElementById('editId').value = id; document.getElementById('eDate').value = m.date; document.getElementById('eOur').value = m.our; document.getElementById('eTheir').value = m.their; document.getElementById('eNotes').value = m.notes || ""; const t = globalData.teams[m.team]; const fill = (eid, arr, val) => { const el = document.getElementById(eid); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); el.value = val || ""; }; fill('eOpp', t.opps, m.opp); fill('eCoach', t.coaches || [], m.coach); const te = document.getElementById('eTourn'); te.innerHTML='<option value="League">League</option>'; if(t.tournaments) t.tournaments.forEach(tr => te.add(new Option("🏆 "+tr.name, tr.name))); te.value = m.tourn; ui.renderScorers('e'); document.getElementById('editModal').classList.remove('hidden'); }
