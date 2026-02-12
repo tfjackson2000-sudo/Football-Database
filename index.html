@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V88</title>
+    <title>Football Tracker V89</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -16,7 +16,6 @@
 
     <style>
         :root { 
-            /* Subtle Green Background (V85 Style) */
             --bg: linear-gradient(180deg, #dcfce7 0%, #f0fdf4 100%);
             --card: #ffffff; 
             --text: #1f1f1f; 
@@ -48,30 +47,33 @@
             background-attachment: fixed; 
             color: var(--text); 
             margin: 0; 
-            padding-bottom: 100px; 
+            padding-bottom: 40px; 
             padding-top: env(safe-area-inset-top);
             transition: background 0.3s, color 0.3s; 
             -webkit-tap-highlight-color: transparent;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* HEADER */
         .app-header {
             text-align: center;
-            padding: 15px 10px; 
+            padding: 10px 15px 15px 15px;
             background: var(--card);
             border-bottom: 1px solid var(--border);
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 15px;
-            flex-wrap: wrap; 
+            flex-wrap: nowrap;
         }
-        
+
         .logo-wrapper {
             display: flex;
             align-items: center;
             gap: 10px;
+            position: relative;
         }
 
         .logo-text {
@@ -85,26 +87,62 @@
             display: inline-block;
         }
         
-        /* FOOTBALL SVG ANIMATION */
         .football-icon {
-            width: 28px;
-            height: 28px;
+            width: 24px;
+            height: 24px;
             fill: var(--primary);
             filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
         }
 
-        /* SEASON BADGE GRAPHIC */
-        .season-badge {
-            background: linear-gradient(135deg, #FFD700, #DAA520);
-            color: #000;
-            padding: 4px 10px;
-            border-radius: 6px;
+        /* STICKERS */
+        .sticker {
+            padding: 4px 8px;
+            border-radius: 4px;
             font-weight: 800;
-            font-size: 0.8rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            transform: rotate(-3deg);
+            font-size: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             border: 2px solid #fff;
             white-space: nowrap;
+            display: inline-block;
+        }
+
+        .season-sticker {
+            background: linear-gradient(135deg, #FFD700, #DAA520);
+            color: #000;
+            transform: rotate(-3deg);
+            margin-left: 10px;
+        }
+
+        .player-sticker {
+            position: absolute;
+            top: -10px;
+            left: -15px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5253);
+            color: white;
+            transform: rotate(-8deg);
+            z-index: 10;
+            font-size: 0.7rem;
+        }
+
+        .clubs-sticker {
+            background: var(--primary);
+            color: var(--text-on-primary);
+            margin-right: 10px;
+            transform: rotate(2deg);
+        }
+
+        /* ADMIN ICON */
+        .admin-icon-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.4rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            padding: 0;
+            line-height: 1;
         }
 
         /* NAV STRUCTURE */
@@ -113,39 +151,64 @@
         .nav-row { 
             display: flex; 
             align-items: center; 
-            padding: 12px 15px; /* Increased padding slightly for spacing */
-            gap: 8px; 
+            padding: 10px 15px; 
             border-bottom: 1px solid var(--border);
         }
         
-        .nav-row.scroll { 
-            overflow-x: auto; 
-            white-space: nowrap; 
-            -webkit-overflow-scrolling: touch; 
-            justify-content: center; /* CENTRALIZES TABS */
-        } 
+        /* CLUBS ROW */
+        .clubs-row {
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
         
-        .nav-row.center { justify-content: center; flex-wrap: wrap; }
-        .nav-secondary { display: flex; padding: 0 15px; background: var(--primary-tint); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); justify-content: center; }
+        /* CAREER ROW */
+        .career-row {
+            justify-content: center;
+            background: var(--primary-tint);
+            padding: 8px 15px;
+        }
 
-        /* NAV BUTTONS */
-        .nav-btn { padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.9rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; }
+        .nav-secondary { display: flex; padding: 0 15px; background: var(--card); gap: 20px; overflow-x: auto; border-bottom: 1px solid var(--border); justify-content: center; }
+
+        /* BUTTONS */
+        .nav-btn { padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.85rem; white-space: nowrap; opacity: 0.6; transition: 0.2s; border: 2px solid transparent; background: var(--bg); color: var(--text); }
         .nav-btn.active { opacity: 1; background: var(--primary); color: var(--text-on-primary); transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .nav-btn.career { border-color: #ffd700; color: #b8860b; background: transparent; }
-        .nav-btn.career.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
-        .nav-btn.admin { background: #e9ecef; color: #333; }
-        .nav-btn.admin.active { background: #333; color: #fff; }
         
-        .nav-separator { width: 1px; height: 24px; background: var(--border); margin: 0 5px; flex-shrink: 0; }
-
-        .ctl-btn { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 8px; font-size: 0.75rem; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
-        .ctl-btn:hover { background: var(--primary-tint); }
+        .career-btn { 
+            width: 100%; text-align: center; border: 2px solid #ffd700; color: #b8860b; background: transparent; font-size: 1rem; padding: 10px; border-radius: 10px; font-weight: 800;
+        }
+        .career-btn.active { background: linear-gradient(135deg, #ffd700, #daa520); color: #000; border-color: transparent; }
 
         .tab-btn { padding: 12px 10px; cursor: pointer; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); border-bottom: 3px solid transparent; opacity: 0.7; transition: 0.2s; }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); opacity: 1; font-weight: 700; }
 
-        .container { max-width: 800px; margin: 25px auto; padding: 0 15px; }
+        .container { max-width: 800px; margin: 25px auto; padding: 0 15px; flex-grow: 1; width: 100%; box-sizing: border-box; }
         
+        /* FOOTER */
+        .app-footer {
+            margin-top: auto;
+            padding: 20px 15px 40px 15px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            opacity: 0.6;
+        }
+        .app-footer button {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
+        }
+
         /* CARD STYLES */
         .card { background: var(--card); border-radius: 16px; padding: 0; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.3s; }
         .card-header { font-size: 1.1rem; font-weight: 800; padding: 15px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--primary-tint); color: var(--primary); border-bottom: 1px solid var(--border); }
@@ -255,18 +318,29 @@
 <div class="nav-container hidden" id="mainNav">
     <div class="app-header">
         <div class="logo-wrapper">
+            <div id="playerSticker" class="sticker player-sticker"></div>
+            
             <svg class="football-icon"><use href="#icon-football"></use></svg>
             <span class="logo-text">Football Tracker</span>
             <svg class="football-icon"><use href="#icon-football"></use></svg>
+            
+            <div id="headerSeasonBadge" class="sticker season-sticker"></div>
         </div>
-        <div id="headerSeasonBadge" class="season-badge"></div>
+        <button class="admin-icon-btn protected-area" onclick="ui.switchContext('Admin')">⚙️</button>
     </div>
-    <div id="navRowTeams" class="nav-row scroll"></div>
-    <div id="navRowSystem" class="nav-row center"></div>
-    <div id="navRowControls" class="nav-row center"></div>
+    
+    <div class="nav-row">
+        <div class="sticker clubs-sticker">My Clubs</div>
+        <div id="navRowTeams" class="clubs-row"></div>
+    </div>
+    
+    <div class="nav-row career-row">
+        <div id="btnCareer" class="career-btn" onclick="ui.switchContext('Career')">🌟 My Career</div>
+    </div>
+
     <div class="nav-secondary hidden" id="navSecondary">
-        <div class="tab-btn" id="tabStats" onclick="ui.switchSubTab('Stats')">📊 Stats & Input</div>
-        <div class="tab-btn" id="tabTourn" onclick="ui.switchSubTab('Tournaments')">🏆 Tournaments</div>
+        <div class="tab-btn" id="tabStats" onclick="ui.switchSubTab('Stats')">Stats & Input</div>
+        <div class="tab-btn" id="tabTourn" onclick="ui.switchSubTab('Tournaments')">Tournaments</div>
     </div>
 </div>
 
@@ -397,8 +471,13 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V88</div>
+    <div class="version-tag">V89</div>
 </div>
+
+<footer class="app-footer" id="appFooter">
+    <button onclick="(() => { globalData.settings.theme = globalData.settings.theme === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', globalData.settings.theme); saveToCloud(); })()">🌓 Theme</button>
+    <button onclick="app.doSignOut()">🚪 Log Out</button>
+</footer>
 
 <div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
 <div id="newSeasonModal" class="modal-overlay hidden"><div class="modal-box"><h3>New Season</h3><input type="text" id="newSeasonNameInput" placeholder="YYYY/YY"><button class="btn btn-save" onclick="app.startNewSeason()">Start</button><button class="btn" onclick="document.getElementById('newSeasonModal').classList.add('hidden')">Cancel</button></div></div>
@@ -476,6 +555,7 @@
             document.getElementById('loadingOverlay').classList.add('hidden');
             document.getElementById('authOverlay').classList.remove('hidden');
             document.getElementById('mainNav').classList.add('hidden'); document.getElementById('mainApp').classList.add('hidden');
+            document.getElementById('appFooter').classList.add('hidden');
         }
     });
 
@@ -483,7 +563,7 @@
         const dataRef = ref(rtdb, 'joey_v38');
         onValue(dataRef, (snapshot) => {
             document.getElementById('loadingOverlay').classList.add('hidden');
-            document.getElementById('mainNav').classList.remove('hidden'); document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('mainNav').classList.remove('hidden'); document.getElementById('mainApp').classList.remove('hidden'); document.getElementById('appFooter').classList.remove('hidden');
             const val = snapshot.val();
             if (val) { globalData = val; initUI(); }
             else { globalData = { teams: { "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: [], coaches: [], awards: [], tournaments: [], active: true } }, history: [], daySummaries: {}, settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"], profileName: "Joey" } }; if(!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) set(dataRef, globalData); initUI(); }
@@ -671,6 +751,7 @@
         renderNav: () => {
             // RENDER SEASON BADGE
             document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
+            document.getElementById('playerSticker').innerText = globalData.settings.profileName || "Player";
 
             const r1 = document.getElementById('navRowTeams'); r1.innerHTML='';
             
@@ -683,33 +764,23 @@
                 r1.appendChild(b); 
             });
 
-            // 2. SEPARATOR
-            const sep = document.createElement('div');
-            sep.className = 'nav-separator';
-            r1.appendChild(sep);
+            const btnCareer = document.getElementById('btnCareer');
+            btnCareer.className = `career-btn ${activeContext==='Career'?'active':''}`;
 
-            // 3. CAREER TAB
-            const c = document.createElement('div'); 
-            c.className=`nav-btn career ${activeContext==='Career'?'active':''}`; 
-            c.innerText='🌟 Career'; 
-            c.onclick=()=>ui.switchContext('Career'); 
-            r1.appendChild(c);
-
-            const r2 = document.getElementById('navRowSystem'); r2.innerHTML='';
-            
-            // ADMIN TAB (Row 2)
-            const a = document.createElement('div'); a.className=`nav-btn admin ${activeContext==='Admin'?'active':''}`; a.innerText='⚙️ Admin'; a.onclick=()=>ui.switchContext('Admin'); r2.appendChild(a);
-            
-            const r3 = document.getElementById('navRowControls'); r3.innerHTML = '';
-            // REMOVED OLD SEASON TAG FROM HERE
-            const tm = document.createElement('button'); tm.className='ctl-btn'; tm.innerHTML=globalData.settings.theme==='light'?'🌙 Dark':'☀️ Light'; 
-            tm.onclick = () => { globalData.settings.theme = globalData.settings.theme === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', globalData.settings.theme); saveToCloud(); }; r3.appendChild(tm);
-            const so = document.createElement('button'); so.className='ctl-btn'; so.innerHTML='🚪 Log Out'; so.onclick = () => app.doSignOut(); r3.appendChild(so);
             if(activeContext==='Career'||activeContext==='Admin') document.getElementById('navSecondary').classList.add('hidden'); else document.getElementById('navSecondary').classList.remove('hidden');
         },
         updateSecondaryNav: () => {
-            document.getElementById('tabStats').classList.toggle('active', activeSubTab === 'Stats');
-            document.getElementById('tabTourn').classList.toggle('active', activeSubTab === 'Tournaments');
+            const tabStats = document.getElementById('tabStats');
+            const tabTourn = document.getElementById('tabTourn');
+            
+            // Rename tabs dynamically
+            if(activeContext !== 'Career' && activeContext !== 'Admin') {
+                tabStats.innerText = `${activeContext} Stats & Input`;
+                tabTourn.innerText = `${activeContext} Tournaments`;
+            }
+
+            tabStats.classList.toggle('active', activeSubTab === 'Stats');
+            tabTourn.classList.toggle('active', activeSubTab === 'Tournaments');
         },
         switchContext: (c) => { 
             // TRACK LAST ACTIVE TEAM
@@ -873,7 +944,9 @@
             
             // Career Stats Calculation for Awards
             const uniqueDates = [...new Set(h.map(m => m.date))];
+            const maxAwards = uniqueDates.length; // Total unique days in career filter
             let cAwardCount = 0;
+            
             uniqueDates.forEach(d => {
                 const sum = globalData.daySummaries[d];
                 if(sum && sum.awards) cAwardCount += sum.awards.filter(a => a.player === profile).length;
@@ -883,7 +956,12 @@
                      });
                 }
             });
-            document.getElementById('c-a').innerText = cAwardCount;
+            
+            if (cAwardCount === 0) {
+                document.getElementById('c-a').innerText = "N/A";
+            } else {
+                document.getElementById('c-a').innerText = `${cAwardCount} / ${maxAwards}`;
+            }
             
             let stats={}; h.forEach(m=>{const u=(n,gf,ga)=>{if(!stats[n])stats[n]={name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};const st=stats[n];st.p++;st.gf+=gf;st.ga+=ga;if(gf>ga){st.w++;st.pts+=3;}else if(gf<ga){st.l++;st.pts+=0;}else{st.d++;st.pts+=1;}};u(m.team,m.our,m.their);}); 
             const d = Object.values(stats).filter(t => globalData.teams[t.name] !== undefined).sort((a,b)=>b.pts-a.pts); 
