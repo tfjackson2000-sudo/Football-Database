@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V110</title>
+    <title>Football Tracker V111</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -300,7 +300,7 @@
         <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body"><div class="flex-row" style="margin-bottom:10px;"><input type="text" id="newAwardName" placeholder="Name" class="flex-grow"><input type="number" id="newAwardMax" placeholder="Max" style="width:70px;"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.addAwardConfig()">Add</button></div><ul id="admAwardList" class="admin-list"></ul></div></div>
         <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body"><p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">Note: Profile selection is now personal to each device (see footer). The setting below only sets a default for new visitors.</p><label style="display:block; margin-bottom:5px;">Default Profile Name:</label><div class="flex-row" style="margin-bottom:20px;"><select id="adminProfileName" class="flex-grow"></select><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button></div><label style="display:block; margin-bottom:5px;">Add Club:</label><div class="flex-row" style="margin-bottom:15px;"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button type="button" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div><label style="display:block; margin-bottom:5px;">Manage Clubs:</label><ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V110</div>
+    <div class="version-tag">V111</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -480,25 +480,19 @@
         },
         renameTeamPrompt: () => { const oldName = document.getElementById('admTeamSelect').value; const newName = prompt(`Rename "${oldName}" to:`, oldName); if(newName && newName !== oldName && newName.trim() !== "") { if(globalData.teams[newName]) return alert("Team name already exists!"); globalData.teams[newName] = globalData.teams[oldName]; delete globalData.teams[oldName]; globalData.history.forEach(m => { if(m.team === oldName) m.team = newName; }); activeContext = newName; saveToCloud().then(()=>{ alert("Renamed successfully"); ui.initUI(); }); } },
 
-        // --- UPDATED RENDER SCORERS TO INCLUDE O.G. ---
         renderScorers: (p) => { 
             const c = parseInt(document.getElementById(p + 'Our').value) || 0; 
             const d = document.getElementById(p + 'ScorerList'); 
             d.innerHTML = c > 0 ? '<label>Goal Scorers:</label>' : ''; 
-            
-            // Filter players based on checked lineup boxes
             const checkedBoxes = document.querySelectorAll(`.${p}-lineup-chk:checked`);
             const availablePlayers = Array.from(checkedBoxes).map(cb => cb.value);
 
             for(let i=0; i<c; i++) { 
                 const s = document.createElement('select'); 
                 s.className = p + '-sc-input'; s.style.marginBottom='5px'; 
-                // Add Squad
                 availablePlayers.forEach(x => s.add(new Option(x,x))); 
-                // Add Separator and O.G.
                 s.add(new Option("---", ""));
                 s.add(new Option("O.G. (Own Goal)", "O.G."));
-                
                 d.appendChild(s); 
             } 
         }
@@ -593,7 +587,16 @@
             if(!ALLOWED_UIDS.includes(currentUser?.uid) || isGuest) document.querySelectorAll('.protected-area').forEach(el=>el.classList.add('hidden')); 
         },
 
-        renderTopScorers: () => { const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); const counts = {}; matches.forEach(m => (m.scorers || []).forEach(p => counts[p] = (counts[p] || 0) + 1)); const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]); const tbl = document.querySelector('#topScorerTable tbody'); tbl.innerHTML = sorted.length ? sorted.map(s => `<tr><td>${s[0]}</td><td class="num-col">${s[1]}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center">No goals yet</td></tr>'; },
+        renderTopScorers: () => { 
+            const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); 
+            const counts = {}; 
+            matches.forEach(m => (m.scorers || []).forEach(p => counts[p] = (counts[p] || 0) + 1)); 
+            const sorted = Object.entries(counts)
+                .filter(([name, count]) => name !== 'O.G.') // FILTER OUT O.G.
+                .sort((a,b) => b[1] - a[1]); 
+            const tbl = document.querySelector('#topScorerTable tbody'); 
+            tbl.innerHTML = sorted.length ? sorted.map(s => `<tr><td>${s[0]}</td><td class="num-col">${s[1]}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center">No goals yet</td></tr>'; 
+        },
         renderLeagueTable: () => { const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); let my = { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; matches.forEach(m => { my.p++; my.gf += m.our; my.ga += m.their; if(m.our > m.their) { my.w++; my.pts+=3; } else if(m.our < m.their) { my.l++; my.pts+=0; } else { my.d++; my.pts+=1; } }); let opp = { p: my.p, w: my.l, d: my.d, l: my.w, gf: my.ga, ga: my.gf, pts: (my.l * 3) + (my.d * 1) }; let data = [{ name: activeContext, ...my, isMe: true }, { name: "Opponents", ...opp, isMe: false }]; data.sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga))); document.querySelector('#teamLeagueTable tbody').innerHTML = data.map((d, i) => `<tr class="${d.isMe?'is-me':''}"><td class="t-left">${i+1}. ${d.name}</td><td>${d.p}</td><td>${d.w}</td><td>${d.d}</td><td>${d.l}</td><td>${d.gf-d.ga}</td><td><b>${d.pts}</b></td></tr>`).join(''); },
         
         renderTeamStats: () => { 
