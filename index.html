@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V107</title>
+    <title>Football Tracker V109</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -43,7 +43,7 @@
             --border: #333333; 
             --shadow: 0 4px 12px rgba(0,0,0,0.4);
             --text-highlight: #ffffff;
-            --primary-tint: #2a2a2a; /* Darker tint for headers in dark mode */
+            --primary-tint: #2a2a2a; 
             --table-head-bg: #2d2d2d;
         }
 
@@ -72,169 +72,38 @@
             align-items: center;
         }
 
-        .logo-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-text {
-            font-weight: 900;
-            font-size: 1.5rem;
-            letter-spacing: -0.5px;
-            color: var(--text); 
-        }
-        
-        .logo-icon {
-            font-size: 1.6rem;
-            line-height: 1;
-        }
+        .logo-wrapper { display: flex; align-items: center; gap: 10px; }
+        .logo-text { font-weight: 900; font-size: 1.5rem; letter-spacing: -0.5px; color: var(--text); }
+        .logo-icon { font-size: 1.6rem; line-height: 1; }
 
         /* STICKERS */
-        .sticker {
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-weight: 800;
-            font-size: 0.75rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            border: 2px solid #fff;
-            white-space: nowrap;
-            display: inline-block;
-        }
-
-        .season-sticker {
-            background: linear-gradient(135deg, #FFD700, #DAA520);
-            color: #000;
-            transform: rotate(-3deg);
-            margin-left: 10px;
-        }
-
-        .clubs-sticker {
-            background: #111 !important;
-            color: #fff !important;
-            transform: rotate(-2deg);
-            margin-right: 0;
-            flex-shrink: 0;
-        }
-
-        /* ADMIN ICON */
-        .admin-icon-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 1.4rem;
-            cursor: pointer;
-            color: var(--text-muted);
-            padding: 0;
-            line-height: 1;
-        }
+        .sticker { padding: 4px 8px; border-radius: 4px; font-weight: 800; font-size: 0.75rem; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 2px solid #fff; white-space: nowrap; display: inline-block; }
+        .season-sticker { background: linear-gradient(135deg, #FFD700, #DAA520); color: #000; transform: rotate(-3deg); margin-left: 10px; }
+        .clubs-sticker { background: #111 !important; color: #fff !important; transform: rotate(-2deg); margin-right: 0; flex-shrink: 0; }
+        .admin-icon-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); padding: 0; line-height: 1; }
 
         /* NAV STRUCTURE */
         .nav-container { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        
-        .clubs-container { 
-            display: flex; 
-            align-items: center; 
-            padding: 10px 15px; 
-            border-bottom: 1px solid var(--border);
-            gap: 10px; 
-            overflow-x: hidden; 
-        }
-
-        @media (min-width: 768px) {
-            .clubs-container { justify-content: center; }
-            .clubs-scroll-area { flex-grow: 0 !important; }
-        }
-
+        .clubs-container { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border); gap: 10px; overflow-x: hidden; }
+        @media (min-width: 768px) { .clubs-container { justify-content: center; } .clubs-scroll-area { flex-grow: 0 !important; } }
         .sticker-area { display: flex; align-items: center; flex-shrink: 0; }
-        
-        /* VERTICAL DIVIDER */
-        .nav-divider { 
-            width: 1px; 
-            height: 24px; 
-            background: var(--border); 
-            margin: 0 2px; 
-            flex-shrink: 0; 
-        }
-
-        /* SCROLLABLE AREA */
-        .clubs-scroll-area {
-            flex-grow: 1;
-            overflow-x: auto;
-            white-space: nowrap;
-            -webkit-overflow-scrolling: touch;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding-bottom: 2px;
-            scrollbar-width: none; 
-        }
+        .nav-divider { width: 1px; height: 24px; background: var(--border); margin: 0 2px; flex-shrink: 0; }
+        .clubs-scroll-area { flex-grow: 1; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; display: flex; align-items: center; gap: 8px; padding-bottom: 2px; scrollbar-width: none; }
         .clubs-scroll-area::-webkit-scrollbar { display: none; }
 
-        /* BUTTONS */
-        .nav-btn { 
-            padding: 6px 14px; 
-            border-radius: 20px; 
-            cursor: pointer; 
-            font-weight: 700; 
-            font-size: 0.85rem; 
-            white-space: nowrap; 
-            transition: 0.2s; 
-            border: 1px solid var(--border); 
-            background: var(--bg); 
-            color: var(--text-muted); 
-            opacity: 0.8;
-            flex-shrink: 0;
-        }
-        .nav-btn.active { 
-            transform: translateY(-1px); 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2); 
-            background: var(--primary);
-            color: var(--text-on-primary); 
-            border-color: transparent;
-            opacity: 1;
-        }
-
+        .nav-btn { padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 700; font-size: 0.85rem; white-space: nowrap; transition: 0.2s; border: 1px solid var(--border); background: var(--bg); color: var(--text-muted); opacity: 0.8; flex-shrink: 0; }
+        .nav-btn.active { transform: translateY(-1px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); background: var(--primary); color: var(--text-on-primary); border-color: transparent; opacity: 1; }
         .career-pill { border: 1px solid #DAA520; color: #B8860B; background: var(--card); }
         .career-pill.active { background: linear-gradient(135deg, #DAA520, #FFD700); color: #000; border-color: transparent; opacity: 1; }
 
         .container { max-width: 800px; margin: 25px auto; padding: 0 15px; flex-grow: 1; width: 100%; box-sizing: border-box; }
-        
-        /* FOOTER */
-        .app-footer {
-            margin-top: auto;
-            padding: 20px 15px 40px 15px;
-            text-align: center;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            opacity: 0.8;
-            border-top: 1px solid var(--border);
-            background: var(--bg);
-        }
-        .app-footer button {
-            background: var(--card);
-            border: 1px solid var(--border);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            box-shadow: var(--shadow);
-            font-size: 0.85rem;
-        }
+        .app-footer { margin-top: auto; padding: 20px 15px 40px 15px; text-align: center; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; opacity: 0.8; border-top: 1px solid var(--border); background: var(--bg); }
+        .app-footer button { background: var(--card); border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-weight: 600; color: var(--text); cursor: pointer; box-shadow: var(--shadow); font-size: 0.85rem; }
 
-        /* CARD STYLES */
         .card { background: var(--card); border-radius: 16px; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; transition: 0.3s; }
         .card-header { font-size: 1.1rem; font-weight: 800; padding: 15px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--primary-tint); color: var(--text-highlight) !important; border-bottom: 1px solid var(--border); transition: background 0.3s, color 0.3s; }
-        
         .neutral-card .card-header { background: var(--primary-tint) !important; color: var(--text-highlight) !important; }
-        
         .card-body { padding: 20px; }
-        
         details > summary { list-style: none; cursor: pointer; outline: none; font-weight: bold; font-size: 1.1rem; }
         details > summary::after { content: ' ▼'; float: right; font-size: 0.8em; opacity: 0.5; }
         details[open] > summary::after { transform: rotate(180deg); }
@@ -255,17 +124,14 @@
         .gh-top { display:flex; justify-content:space-between; align-items: center; margin-bottom: 5px; }
         .gh-date { font-size: 1rem; font-weight: 800; color: var(--text-highlight); }
         .gh-awards { font-size: 0.85rem; color: var(--text-muted); background: var(--bg); padding: 8px; border-radius: 8px; margin-top: 5px; border: 1px solid var(--border); }
-        
         .aw-tag { display: inline-block; background: var(--accent); color: #000; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.75rem; margin-right: 5px; margin-bottom: 2px; }
         
         .match-row { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; background: var(--card); gap: 12px; }
         .match-row:last-child { border-bottom: none; }
         .match-info { flex: 1; }
-        
         .detail-grid { display: grid; grid-template-columns: 70px 1fr; gap: 4px 10px; margin-top: 8px; font-size: 0.85rem; }
         .dt-label { color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; align-self: center; }
         .dt-val { font-weight: 500; }
-
         .result-badge { padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 1rem; min-width: 45px; text-align: center; }
         .res-w { background: rgba(40, 167, 69, 0.15); color: #28a745; }
         .res-l { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
@@ -280,29 +146,25 @@
         .btn-sm { font-size: 0.8rem; padding: 4px 8px; height: auto; width: auto; font-weight: 600; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
         .btn-google { background: #4285F4; color: white; margin-bottom: 10px; }
         .btn-guest { background: transparent; border: 2px solid var(--border); color: var(--text); }
-        
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+
         .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
-        
-        /* TABLE STYLES - Fixed for Dark Mode */
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; table-layout: fixed; }
-        th { 
-            background: var(--table-head-bg); 
-            color: var(--text-highlight); 
-            padding: 12px 6px; 
-            font-size: 0.75rem; 
-            text-transform: uppercase; 
-            border-bottom: 2px solid var(--border); 
-            text-align: center; 
-        }
+        th { background: var(--table-head-bg); color: var(--text-highlight); padding: 12px 6px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); text-align: center; }
         td { padding: 12px 6px; border-bottom: 1px solid var(--border); text-align: center; white-space: nowrap; }
         th:first-child, td:first-child { text-align: left; width: 35%; padding-left: 10px; white-space: normal; }
         .num-col { font-weight: bold; }
         .is-me { background: var(--primary-tint); font-weight: bold; }
 
+        /* LINEUP GRID STYLES */
+        .lineup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-top: 10px; }
+        .lineup-item { background: var(--bg); border: 1px solid var(--border); padding: 8px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .lineup-item input { width: auto; padding: 0; margin: 0; cursor: pointer; }
+        .lineup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+
         .hidden { display: none !important; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .modal-box { background: var(--card); padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); border: 1px solid var(--border); max-height: 90vh; overflow-y: auto; }
-        
         .version-tag { text-align: center; margin-top: 30px; font-size: 0.75rem; color: var(--text-muted); opacity: 0.5; font-weight: bold; }
 
         #toast { visibility: hidden; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 12px 24px; border-radius: 50px; display: flex; align-items: center; gap: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); z-index: 3000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
@@ -348,7 +210,6 @@
         </div>
         <button class="admin-icon-btn protected-area" onclick="ui.switchContext('Admin')">⚙️</button>
     </div>
-    
     <div class="clubs-container">
         <div class="sticker-area">
             <div id="clubsSticker" class="sticker clubs-sticker">Stats</div>
@@ -372,30 +233,9 @@
             </div>
         </div>
         
-        <div class="card">
-            <details open>
-                <summary class="card-header">🏆 League Table</summary>
-                <div class="card-body" style="padding:0;">
-                    <table id="teamLeagueTable"><thead><tr><th>Team</th><th class="num-col">P</th><th class="num-col">W</th><th class="num-col">D</th><th class="num-col">L</th><th class="num-col">GD</th><th class="num-col">Pts</th></tr></thead><tbody></tbody></table>
-                </div>
-            </details>
-        </div>
-
-        <div class="card">
-            <details>
-                <summary class="card-header">👟 Top Scorers</summary>
-                <div class="card-body" style="padding:0;">
-                    <table id="topScorerTable"><thead><tr><th>Player</th><th class="num-col">Goals</th></tr></thead><tbody></tbody></table>
-                </div>
-            </details>
-        </div>
-        
-        <div class="card">
-            <details>
-                <summary class="card-header">🕒 Match History</summary>
-                <div class="card-body" id="teamHistoryList" style="padding:10px;"></div>
-            </details>
-        </div>
+        <div class="card"><details open><summary class="card-header">🏆 League Table</summary><div class="card-body" style="padding:0;"><table id="teamLeagueTable"><thead><tr><th>Team</th><th class="num-col">P</th><th class="num-col">W</th><th class="num-col">D</th><th class="num-col">L</th><th class="num-col">GD</th><th class="num-col">Pts</th></tr></thead><tbody></tbody></table></div></details></div>
+        <div class="card"><details><summary class="card-header">👟 Top Scorers</summary><div class="card-body" style="padding:0;"><table id="topScorerTable"><thead><tr><th>Player</th><th class="num-col">Goals</th></tr></thead><tbody></tbody></table></div></details></div>
+        <div class="card"><details><summary class="card-header">🕒 Match History</summary><div class="card-body" id="teamHistoryList" style="padding:10px;"></div></details></div>
 
         <div class="card protected-area">
             <details>
@@ -404,6 +244,15 @@
                     <div class="form-group"><label>Date:</label><input type="date" id="mDate"></div>
                     <div class="form-group"><label>Competition:</label><select id="mTourn"><option value="League">League</option></select></div>
                     <div class="form-row"><div><label>Opponent:</label><select id="mOpp"></select></div><div><label>Manager:</label><select id="mCoach"></select></div></div>
+                    
+                    <div class="form-group" style="border:1px solid var(--border); padding:10px; border-radius:10px; background:var(--bg);">
+                        <div class="lineup-header">
+                            <label style="margin:0;">🏃‍♂️ Lineup (Who played?)</label>
+                            <button type="button" class="btn-sm" onclick="app.selectAllLineup('m')">Select All</button>
+                        </div>
+                        <div id="mLineupArea" class="lineup-grid"></div>
+                    </div>
+
                     <div class="form-row"><div><label>Us:</label><input type="number" id="mOur" value="0" oninput="ui.renderScorers('m')"></div><div><label>Them:</label><input type="number" id="mTheir" value="0"></div></div>
                     <div id="mScorerList" class="form-group"></div>
                     <div class="form-group"><label>Notes:</label><textarea id="mNotes" rows="2"></textarea></div>
@@ -419,23 +268,11 @@
                 <summary class="card-header">🏆 Tournament Hub</summary>
                 <div class="card-body">
                     <button type="button" class="btn-outline protected-area" style="width:auto; padding:5px 12px; font-size:0.8rem; float:right;" onclick="document.getElementById('addTournModal').classList.remove('hidden')">+ New Tournament</button>
-                    <div class="form-group" style="clear:both; padding-top:10px;">
-                        <label>Select Tournament:</label>
-                        <select id="tournSelector" onchange="ui.renderTournamentView()"></select>
-                    </div>
-                    
+                    <div class="form-group" style="clear:both; padding-top:10px;"><label>Select Tournament:</label><select id="tournSelector" onchange="ui.renderTournamentView()"></select></div>
                     <div id="tournStatsArea" class="hidden">
-                        <div class="stat-grid">
-                            <div class="stat-item"><span>Games</span><strong id="tr-p">0</strong></div>
-                            <div class="stat-item"><span>Wins</span><strong id="tr-w">0</strong></div>
-                            <div class="stat-item"><span>Goals</span><strong id="tr-g">0</strong></div>
-                            <div class="stat-item"><span>Awards</span><strong id="tr-a">0</strong></div>
-                        </div>
+                        <div class="stat-grid"><div class="stat-item"><span>Games</span><strong id="tr-p">0</strong></div><div class="stat-item"><span>Wins</span><strong id="tr-w">0</strong></div><div class="stat-item"><span>Goals</span><strong id="tr-g">0</strong></div><div class="stat-item"><span>Awards</span><strong id="tr-a">0</strong></div></div>
                         <div class="protected-area" style="margin-top:20px; text-align:right;"><button type="button" class="btn-edit" style="width:auto;" onclick="app.openEditActiveTourn()">⚙️ Manage</button></div>
-                        <div class="protected-area" style="background:var(--primary-tint); padding:15px; border-radius:10px; margin-top:20px; border:1px solid var(--border);">
-                            <label>🏆 Tournament Winner:</label>
-                            <div class="flex-row"><input type="text" id="tournWinnerInput" placeholder="Enter winner" class="flex-grow"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveTournWinner()">Save</button></div>
-                        </div>
+                        <div class="protected-area" style="background:var(--primary-tint); padding:15px; border-radius:10px; margin-top:20px; border:1px solid var(--border);"><label>🏆 Tournament Winner:</label><div class="flex-row"><input type="text" id="tournWinnerInput" placeholder="Enter winner" class="flex-grow"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveTournWinner()">Save</button></div></div>
                         <h3 style="margin-top:25px; border-bottom:2px solid var(--border);">🕒 Fixtures</h3>
                         <div id="tournHistoryList"></div>
                     </div>
@@ -451,45 +288,19 @@
                 <div class="stat-grid"><div class="stat-item"><span>Games</span><strong id="c-p">0</strong></div><div class="stat-item"><span>Wins</span><strong id="c-w">0</strong></div><div class="stat-item"><span>Goals</span><strong id="c-g">0</strong></div><div class="stat-item"><span>Awards</span><strong id="c-a">0</strong></div></div>
             </div>
         </div>
-        <div class="card">
-            <div class="card-header" style="background:rgba(218, 165, 32, 0.1);">🏆 Your Clubs Comparison</div>
-            <div class="card-body" style="padding:0;">
-                <table id="masterTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead><tbody></tbody></table>
-            </div>
-        </div>
+        <div class="card"><div class="card-header" style="background:rgba(218, 165, 32, 0.1);">🏆 Your Clubs Comparison</div><div class="card-body" style="padding:0;"><table id="masterTable"><thead><tr><th class="t-left">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead><tbody></tbody></table></div></div>
     </div>
 
     <div id="viewAdmin" class="hidden protected-area">
         <h2 style="margin-bottom:20px;">⚙️ Admin</h2>
-        <div class="card">
-            <div class="card-header">🛠 Select Team</div>
-            <div class="card-body">
-                <div class="flex-row">
-                    <select id="admTeamSelect" onchange="ui.renderAdminDetails()" class="flex-grow"></select>
-                    <button type="button" class="btn-edit" style="font-size:0.9rem; width:auto;" onclick="app.renameTeamPrompt()">Rename</button>
-                </div>
-            </div>
-        </div>
+        <div class="card"><div class="card-header">🛠 Select Team</div><div class="card-body"><div class="flex-row"><select id="admTeamSelect" onchange="ui.renderAdminDetails()" class="flex-grow"></select><button type="button" class="btn-edit" style="font-size:0.9rem; width:auto;" onclick="app.renameTeamPrompt()">Rename</button></div></div></div>
         <div class="card"><div class="card-header">📅 Season</div><div class="card-body"><div class="flex-row"><select id="admActiveSeason" onchange="app.switchActiveSeason()" class="flex-grow"></select><button type="button" class="btn-del" style="width:auto;" onclick="app.deleteSeason()">🗑</button></div><button type="button" class="btn btn-save" onclick="document.getElementById('newSeasonModal').classList.remove('hidden')">➕ New Season</button></div></div>
         <div class="card"><div class="card-header">🏃‍♂️ Squad</div><div class="card-body"><div class="form-group flex-row"><input type="text" id="admNewPlayer" placeholder="Add Player" class="flex-grow"><button type="button" class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddItem('players', 'admNewPlayer')">Add</button></div><ul id="admPlayerList" class="admin-list"></ul></div></div>
         <div class="card"><div class="card-header">🛡 Opponents</div><div class="card-body"><div class="form-group flex-row"><input type="text" id="admNewOpp" placeholder="Add Opponent" class="flex-grow"><button type="button" class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddItem('opps', 'admNewOpp')">Add</button></div><ul id="admOppList" class="admin-list"></ul></div></div>
         <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body"><div class="flex-row" style="margin-bottom:10px;"><input type="text" id="newAwardName" placeholder="Name" class="flex-grow"><input type="number" id="newAwardMax" placeholder="Max" style="width:70px;"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.addAwardConfig()">Add</button></div><ul id="admAwardList" class="admin-list"></ul></div></div>
-        <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body">
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">Note: Profile selection is now personal to each device (see footer). The setting below only sets a default for new visitors.</p>
-            <label style="display:block; margin-bottom:5px;">Default Profile Name:</label>
-            <div class="flex-row" style="margin-bottom:20px;">
-                <select id="adminProfileName" class="flex-grow"></select>
-                <button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button>
-            </div>
-            
-            <label style="display:block; margin-bottom:5px;">Add Club:</label>
-            <div class="flex-row" style="margin-bottom:15px;"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button type="button" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div>
-            
-            <label style="display:block; margin-bottom:5px;">Manage Clubs:</label>
-            <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
-        </div></div>
+        <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body"><p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">Note: Profile selection is now personal to each device (see footer). The setting below only sets a default for new visitors.</p><label style="display:block; margin-bottom:5px;">Default Profile Name:</label><div class="flex-row" style="margin-bottom:20px;"><select id="adminProfileName" class="flex-grow"></select><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button></div><label style="display:block; margin-bottom:5px;">Add Club:</label><div class="flex-row" style="margin-bottom:15px;"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button type="button" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div><label style="display:block; margin-bottom:5px;">Manage Clubs:</label><ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V107</div>
+    <div class="version-tag">V109</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -500,18 +311,7 @@
 
 <div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
 <div id="newSeasonModal" class="modal-overlay hidden"><div class="modal-box"><h3>New Season</h3><input type="text" id="newSeasonNameInput" placeholder="YYYY/YY"><button class="btn btn-save" onclick="app.startNewSeason()">Start</button><button class="btn" onclick="document.getElementById('newSeasonModal').classList.add('hidden')">Cancel</button></div></div>
-
-<div id="profileModal" class="modal-overlay hidden">
-    <div class="modal-box">
-        <h3>👤 Switch Profile</h3>
-        <p style="color:var(--text-muted); margin-bottom:15px; font-size:0.9rem;">Select your name to see your personal stats. This only affects this device.</p>
-        <div class="form-group">
-            <select id="profileSelect"></select>
-        </div>
-        <button class="btn btn-save" onclick="app.confirmProfileSwitch()">Switch</button>
-        <button class="btn" onclick="document.getElementById('profileModal').classList.add('hidden')">Cancel</button>
-    </div>
-</div>
+<div id="profileModal" class="modal-overlay hidden"><div class="modal-box"><h3>👤 Switch Profile</h3><p style="color:var(--text-muted); margin-bottom:15px; font-size:0.9rem;">Select your name to see your personal stats. This only affects this device.</p><div class="form-group"><select id="profileSelect"></select></div><button class="btn btn-save" onclick="app.confirmProfileSwitch()">Switch</button><button class="btn" onclick="document.getElementById('profileModal').classList.add('hidden')">Cancel</button></div></div>
 
 <div id="daySummaryModal" class="modal-overlay hidden">
     <div class="modal-box">
@@ -535,6 +335,15 @@
         <div class="form-group"><label>Date (Change to move Group)</label><input type="date" id="eDate"></div>
         <div class="form-group"><label>Tournament</label><select id="eTourn"></select></div>
         <div class="form-row"><div><label>Opponent</label><select id="eOpp"></select></div><div><label>Manager</label><select id="eCoach"></select></div></div>
+        
+        <div class="form-group" style="border:1px solid var(--border); padding:10px; border-radius:10px; background:var(--bg);">
+            <div class="lineup-header">
+                <label style="margin:0;">🏃‍♂️ Lineup (Who played?)</label>
+                <button type="button" class="btn-sm" onclick="app.selectAllLineup('e')">Select All</button>
+            </div>
+            <div id="eLineupArea" class="lineup-grid"></div>
+        </div>
+
         <div class="form-row"><div><label>Us</label><input type="number" id="eOur" oninput="ui.renderScorers('e')"></div><div><label>Them</label><input type="number" id="eTheir"></div></div>
         <div id="eScorerList"></div>
         <div class="form-group"><label>Notes</label><textarea id="eNotes"></textarea></div>
@@ -548,23 +357,11 @@
     import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAkhLB-XkffuTny8yJOw_FCtZSRIo5qQLE",
-        authDomain: "joeyfootball-875eb.firebaseapp.com",
-        databaseURL: "https://joeyfootball-875eb-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "joeyfootball-875eb",
-        storageBucket: "joeyfootball-875eb.firebasestorage.app",
-        messagingSenderId: "647816306796",
-        appId: "1:647816306796:web:686918e1d1c82b8a17f849",
-        measurementId: "G-PX5PH27CES"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyAkhLB-XkffuTny8yJOw_FCtZSRIo5qQLE", authDomain: "joeyfootball-875eb.firebaseapp.com", databaseURL: "https://joeyfootball-875eb-default-rtdb.europe-west1.firebasedatabase.app", projectId: "joeyfootball-875eb", storageBucket: "joeyfootball-875eb.firebasestorage.app", messagingSenderId: "647816306796", appId: "1:647816306796:web:686918e1d1c82b8a17f849", measurementId: "G-PX5PH27CES" };
     const ALLOWED_UIDS = ["QC6D1Smr9SVgpITffUTrRZSTQEq1", "Np9ZXcd2wNWvwsYA3X1QTcFpSIB3"];
     let fbApp, db, auth, rtdb, globalData, activeContext = "Career", sessionQueue = [], currentUser = null, isGuest = false;
     let lastDeleted = null; let undoTimer = null;
     let lastActiveTeam = "Llanelli Town"; 
-    
-    // NEW: Local Profile State
     let localProfileName = localStorage.getItem('userProfileName') || "Joey";
 
     try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
@@ -576,38 +373,20 @@
     window.app = window.app || {};
     window.app.enterAsGuest = () => { isGuest = true; currentUser = { uid: "GUEST" }; document.getElementById('authOverlay').classList.add('hidden'); document.getElementById('loadingOverlay').classList.remove('hidden'); document.body.classList.add('read-only-mode'); listenToData(); };
     window.app.doSignOut = () => { isGuest = false; signOut(auth).then(() => window.location.reload()); };
-    
-    window.app.toggleTheme = () => {
-        globalData.settings.theme = globalData.settings.theme === 'light' ? 'dark' : 'light';
-        document.body.setAttribute('data-theme', globalData.settings.theme);
-        // Only admins save theme to global
-        if (!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) saveToCloud();
-    };
+    window.app.toggleTheme = () => { globalData.settings.theme = globalData.settings.theme === 'light' ? 'dark' : 'light'; document.body.setAttribute('data-theme', globalData.settings.theme); if (!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) saveToCloud(); };
 
     onAuthStateChanged(auth, (user) => {
-        if (isGuest) return;
-        currentUser = user;
-        if (user) {
-            document.getElementById('authOverlay').classList.add('hidden');
-            if (ALLOWED_UIDS.includes(user.uid)) { document.body.classList.remove('read-only-mode'); document.querySelectorAll('.protected-area').forEach(el => el.classList.remove('hidden')); }
-            else { document.body.classList.add('read-only-mode'); document.querySelectorAll('.protected-area').forEach(el => el.classList.add('hidden')); }
-            listenToData();
-        } else {
-            document.getElementById('loadingOverlay').classList.add('hidden');
-            document.getElementById('authOverlay').classList.remove('hidden');
-            document.getElementById('mainNav').classList.add('hidden'); document.getElementById('mainApp').classList.add('hidden');
-            document.getElementById('appFooter').classList.add('hidden');
-        }
+        if (isGuest) return; currentUser = user;
+        if (user) { document.getElementById('authOverlay').classList.add('hidden'); if (ALLOWED_UIDS.includes(user.uid)) { document.body.classList.remove('read-only-mode'); document.querySelectorAll('.protected-area').forEach(el => el.classList.remove('hidden')); } else { document.body.classList.add('read-only-mode'); document.querySelectorAll('.protected-area').forEach(el => el.classList.add('hidden')); } listenToData(); } 
+        else { document.getElementById('loadingOverlay').classList.add('hidden'); document.getElementById('authOverlay').classList.remove('hidden'); document.getElementById('mainNav').classList.add('hidden'); document.getElementById('mainApp').classList.add('hidden'); document.getElementById('appFooter').classList.add('hidden'); }
     });
 
     function listenToData() {
         const dataRef = ref(rtdb, 'joey_v38');
         onValue(dataRef, (snapshot) => {
-            document.getElementById('loadingOverlay').classList.add('hidden');
-            document.getElementById('mainNav').classList.remove('hidden'); document.getElementById('mainApp').classList.remove('hidden'); document.getElementById('appFooter').classList.remove('hidden');
+            document.getElementById('loadingOverlay').classList.add('hidden'); document.getElementById('mainNav').classList.remove('hidden'); document.getElementById('mainApp').classList.remove('hidden'); document.getElementById('appFooter').classList.remove('hidden');
             const val = snapshot.val();
-            if (val) { globalData = val; initUI(); }
-            else { globalData = { teams: { "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: [], coaches: [], awards: [], tournaments: [], active: true } }, history: [], daySummaries: {}, settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"], profileName: "Joey" } }; if(!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) set(dataRef, globalData); initUI(); }
+            if (val) { globalData = val; initUI(); } else { globalData = { teams: { "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: [], coaches: [], awards: [], tournaments: [], active: true } }, history: [], daySummaries: {}, settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"], profileName: "Joey" } }; if(!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) set(dataRef, globalData); initUI(); }
         });
     }
 
@@ -616,134 +395,69 @@
     function initUI() {
         if(!globalData.daySummaries) globalData.daySummaries = {};
         if(!globalData.settings.profileName) globalData.settings.profileName = "Joey"; 
-        
-        // Use Global Default if Local is not set or empty
-        if (!localStorage.getItem('userProfileName')) {
-            localProfileName = globalData.settings.profileName;
-            localStorage.setItem('userProfileName', localProfileName);
-        } else {
-            localProfileName = localStorage.getItem('userProfileName');
-        }
-        
-        // Update Footer Button
+        if (!localStorage.getItem('userProfileName')) { localProfileName = globalData.settings.profileName; localStorage.setItem('userProfileName', localProfileName); } else { localProfileName = localStorage.getItem('userProfileName'); }
         document.getElementById('btnSwitchProfile').innerText = `👤 Profile: ${localProfileName}`;
-
         activeContext = "Career";
         if(globalData && !globalData.history) globalData.history = [];
         ui.switchContext(activeContext);
         document.body.setAttribute('data-theme', globalData?.settings?.theme || 'light');
     }
     
-    function showToast(msg) {
-        const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('visible');
-        if(undoTimer) clearTimeout(undoTimer); undoTimer = setTimeout(() => { t.classList.remove('visible'); lastDeleted = null; }, 5000);
-    }
-
-    const fmtDate = (ds) => {
-        if(!ds) return "";
-        const d = new Date(ds);
-        const day = d.getDate(); const m = d.toLocaleString('en-GB', { month: 'short' }); const y = d.getFullYear();
-        const s = ["th", "st", "nd", "rd"]; const v = day % 100; const suffix = s[(v - 20) % 10] || s[v] || s[0];
-        return `${day}${suffix} ${m} ${y}`;
-    };
-    
-    function hexToRgb(hex) {
-        let r = 0, g = 0, b = 0;
-        if(hex.startsWith('#')) hex = hex.slice(1);
-        if (hex.length === 3) { r = parseInt(hex[0]+hex[0], 16); g = parseInt(hex[1]+hex[1], 16); b = parseInt(hex[2]+hex[2], 16); } 
-        else if (hex.length === 6) { r = parseInt(hex.substring(0,2), 16); g = parseInt(hex.substring(2,4), 16); b = parseInt(hex.substring(4,6), 16); }
-        return `rgba(${r},${g},${b}, 0.08)`;
-    }
+    function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('visible'); if(undoTimer) clearTimeout(undoTimer); undoTimer = setTimeout(() => { t.classList.remove('visible'); lastDeleted = null; }, 5000); }
+    const fmtDate = (ds) => { if(!ds) return ""; const d = new Date(ds); const day = d.getDate(); const m = d.toLocaleString('en-GB', { month: 'short' }); const y = d.getFullYear(); const s = ["th", "st", "nd", "rd"]; const v = day % 100; const suffix = s[(v - 20) % 10] || s[v] || s[0]; return `${day}${suffix} ${m} ${y}`; };
+    function hexToRgb(hex) { let r = 0, g = 0, b = 0; if(hex.startsWith('#')) hex = hex.slice(1); if (hex.length === 3) { r = parseInt(hex[0]+hex[0], 16); g = parseInt(hex[1]+hex[1], 16); b = parseInt(hex[2]+hex[2], 16); } else if (hex.length === 6) { r = parseInt(hex.substring(0,2), 16); g = parseInt(hex.substring(2,4), 16); b = parseInt(hex.substring(4,6), 16); } return `rgba(${r},${g},${b}, 0.08)`; }
 
     Object.assign(window.app, {
-        // PROFILE SWITCHING LOGIC
         openProfileModal: () => {
-            const sel = document.getElementById('profileSelect');
-            sel.innerHTML = '';
-            
-            // Gather all unique players from all teams
-            let allPlayers = new Set();
-            Object.values(globalData.teams).forEach(t => {
-                if (t.players) t.players.forEach(p => allPlayers.add(p));
-            });
-            
-            // Sort and add to dropdown
-            Array.from(allPlayers).sort().forEach(p => {
-                sel.add(new Option(p, p));
-            });
-            
-            sel.value = localProfileName;
-            document.getElementById('profileModal').classList.remove('hidden');
+            const sel = document.getElementById('profileSelect'); sel.innerHTML = '';
+            let allPlayers = new Set(); Object.values(globalData.teams).forEach(t => { if (t.players) t.players.forEach(p => allPlayers.add(p)); });
+            Array.from(allPlayers).sort().forEach(p => { sel.add(new Option(p, p)); });
+            sel.value = localProfileName; document.getElementById('profileModal').classList.remove('hidden');
         },
         confirmProfileSwitch: () => {
             const newName = document.getElementById('profileSelect').value;
-            if (newName) {
-                localProfileName = newName;
-                localStorage.setItem('userProfileName', newName);
-                document.getElementById('btnSwitchProfile').innerText = `👤 Profile: ${localProfileName}`;
-                document.getElementById('profileModal').classList.add('hidden');
-                // Re-render current view with new profile
-                ui.renderNav();
-                ui.renderMainView();
-            }
+            if (newName) { localProfileName = newName; localStorage.setItem('userProfileName', newName); document.getElementById('btnSwitchProfile').innerText = `👤 Profile: ${localProfileName}`; document.getElementById('profileModal').classList.add('hidden'); ui.renderNav(); ui.renderMainView(); }
         },
-
         saveSession: () => { const batchId = Date.now(); sessionQueue.forEach(g => g.batchId = batchId); globalData.history.push(...sessionQueue); sessionQueue = []; saveToCloud().then(()=>{ui.renderQueue(); alert("Saved!");}); },
+        
+        selectAllLineup: (p) => {
+             const checks = document.querySelectorAll(`.${p}-lineup-chk`);
+             checks.forEach(c => c.checked = true);
+             ui.renderScorers(p);
+        },
+        
         addToQueue: () => {
             const opp = document.getElementById('mOpp').value; if(!opp) return alert("Select Opponent");
             let dVal = document.getElementById('mDate').value || new Date().toISOString().split('T')[0];
-            sessionQueue.push({ id: Date.now()+Math.random(), date:dVal, team:activeContext, opp:opp, tourn:document.getElementById('mTourn').value, our:parseInt(document.getElementById('mOur').value)||0, their:parseInt(document.getElementById('mTheir').value)||0, coach:document.getElementById('mCoach').value, scorers:Array.from(document.querySelectorAll('.m-sc-input')).map(s=>s.value), notes:document.getElementById('mNotes').value, season:globalData.settings.currentSeason });
-            ui.renderQueue(); document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; ui.renderScorers('m');
+            
+            // CAPTURE LINEUP
+            const lineup = [];
+            document.querySelectorAll('.m-lineup-chk:checked').forEach(c => lineup.push(c.value));
+            
+            sessionQueue.push({ 
+                id: Date.now()+Math.random(), 
+                date: dVal, 
+                team: activeContext, 
+                opp: opp, 
+                tourn: document.getElementById('mTourn').value, 
+                our: parseInt(document.getElementById('mOur').value)||0, 
+                their: parseInt(document.getElementById('mTheir').value)||0, 
+                coach: document.getElementById('mCoach').value, 
+                scorers: Array.from(document.querySelectorAll('.m-sc-input')).map(s=>s.value), 
+                notes: document.getElementById('mNotes').value, 
+                season: globalData.settings.currentSeason,
+                lineup: lineup // STORE LINEUP
+            });
+            ui.renderQueue(); 
+            document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; ui.renderScorers('m');
         },
-        saveProfileName: () => {
-             const newName = document.getElementById('adminProfileName').value;
-             if(newName) {
-                 globalData.settings.profileName = newName; // This saves the GLOBAL default
-                 saveToCloud().then(() => { alert("Global Default updated to " + newName); ui.renderMainView(); });
-             }
-        },
-        openDaySummary: (date) => {
-            document.getElementById('dsDate').value = date;
-            document.getElementById('dsDateDisplay').innerText = fmtDate(date);
-            const sum = globalData.daySummaries[date] || {};
-            const awContainer = document.getElementById('dsAwardList'); awContainer.innerHTML = '';
-            const currentAwards = sum.awards || [];
-            const matches = globalData.history.filter(m => m.date === date && m.team === activeContext);
-            matches.forEach(m => { if(m.awards && m.awards.length > 0) m.awards.forEach(a => currentAwards.push(a)); });
-            const uniqueAwards = currentAwards.filter((a, index, self) => index === self.findIndex((t) => (t.name === a.name && t.player === a.player)));
-            uniqueAwards.forEach(a => window.app.addDayAwardRow(a.name, a.player));
-            document.getElementById('daySummaryModal').classList.remove('hidden');
-        },
-        addDayAwardRow: (selAward, selPlayer) => {
-            const container = document.getElementById('dsAwardList');
-            const t = globalData.teams[activeContext];
-            const div = document.createElement('div'); div.className = 'flex-row'; div.style.marginBottom = '5px';
-            const s1 = document.createElement('select'); s1.className = 'ds-aw-name flex-grow'; s1.add(new Option("-- Award --", ""));
-            const awardsList = t.awards || []; awardsList.forEach(a => s1.add(new Option(a.name, a.name)));
-            if(selAward && !awardsList.some(a=>a.name===selAward)) s1.add(new Option(selAward, selAward)); if(selAward) s1.value = selAward;
-            const s2 = document.createElement('select'); s2.className = 'ds-aw-player flex-grow'; s2.add(new Option("-- Player --", ""));
-            const playerList = t.players || []; playerList.forEach(p => s2.add(new Option(p, p)));
-            if(selPlayer && !playerList.includes(selPlayer)) s2.add(new Option(selPlayer, selPlayer)); if(selPlayer) s2.value = selPlayer;
-            const btn = document.createElement('button'); btn.className = 'btn-del'; btn.innerHTML = '✕'; btn.onclick = () => div.remove();
-            div.appendChild(s1); div.appendChild(s2); div.appendChild(btn); container.appendChild(div);
-        },
-        saveDaySummary: () => {
-            const date = document.getElementById('dsDate').value;
-            const names = document.querySelectorAll('.ds-aw-name');
-            const players = document.querySelectorAll('.ds-aw-player');
-            let awards = [];
-            names.forEach((n, i) => { if(n.value && players[i].value) awards.push({ name: n.value, player: players[i].value }); });
-            globalData.daySummaries[date] = { awards: awards };
-            globalData.history.forEach(m => { if(m.date === date && m.team === activeContext) m.awards = []; });
-            saveToCloud().then(() => { document.getElementById('daySummaryModal').classList.add('hidden'); ui.renderMainView(); });
-        },
+        saveProfileName: () => { const newName = document.getElementById('adminProfileName').value; if(newName) { globalData.settings.profileName = newName; saveToCloud().then(() => { alert("Global Default updated to " + newName); ui.renderMainView(); }); } },
+        openDaySummary: (date) => { document.getElementById('dsDate').value = date; document.getElementById('dsDateDisplay').innerText = fmtDate(date); const sum = globalData.daySummaries[date] || {}; const awContainer = document.getElementById('dsAwardList'); awContainer.innerHTML = ''; const currentAwards = sum.awards || []; const matches = globalData.history.filter(m => m.date === date && m.team === activeContext); matches.forEach(m => { if(m.awards && m.awards.length > 0) m.awards.forEach(a => currentAwards.push(a)); }); const uniqueAwards = currentAwards.filter((a, index, self) => index === self.findIndex((t) => (t.name === a.name && t.player === a.player))); uniqueAwards.forEach(a => window.app.addDayAwardRow(a.name, a.player)); document.getElementById('daySummaryModal').classList.remove('hidden'); },
+        addDayAwardRow: (selAward, selPlayer) => { const container = document.getElementById('dsAwardList'); const t = globalData.teams[activeContext]; const div = document.createElement('div'); div.className = 'flex-row'; div.style.marginBottom = '5px'; const s1 = document.createElement('select'); s1.className = 'ds-aw-name flex-grow'; s1.add(new Option("-- Award --", "")); const awardsList = t.awards || []; awardsList.forEach(a => s1.add(new Option(a.name, a.name))); if(selAward && !awardsList.some(a=>a.name===selAward)) s1.add(new Option(selAward, selAward)); if(selAward) s1.value = selAward; const s2 = document.createElement('select'); s2.className = 'ds-aw-player flex-grow'; s2.add(new Option("-- Player --", "")); const playerList = t.players || []; playerList.forEach(p => s2.add(new Option(p, p))); if(selPlayer && !playerList.includes(selPlayer)) s2.add(new Option(selPlayer, selPlayer)); if(selPlayer) s2.value = selPlayer; const btn = document.createElement('button'); btn.className = 'btn-del'; btn.innerHTML = '✕'; btn.onclick = () => div.remove(); div.appendChild(s1); div.appendChild(s2); div.appendChild(btn); container.appendChild(div); },
+        saveDaySummary: () => { const date = document.getElementById('dsDate').value; const names = document.querySelectorAll('.ds-aw-name'); const players = document.querySelectorAll('.ds-aw-player'); let awards = []; names.forEach((n, i) => { if(n.value && players[i].value) awards.push({ name: n.value, player: players[i].value }); }); globalData.daySummaries[date] = { awards: awards }; globalData.history.forEach(m => { if(m.date === date && m.team === activeContext) m.awards = []; }); saveToCloud().then(() => { document.getElementById('daySummaryModal').classList.add('hidden'); ui.renderMainView(); }); },
         admDel: (k, i) => { const t = document.getElementById('admTeamSelect').value; const item = globalData.teams[t][k][i]; lastDeleted = { type: 'adminItem', key: k, index: i, data: item, team: t }; globalData.teams[t][k].splice(i,1); saveToCloud().then(()=>{ ui.renderAdminDetails(); showToast("Item Deleted"); }); },
         admDelAw: (i) => { const t = document.getElementById('admTeamSelect').value; const item = globalData.teams[t].awards[i]; lastDeleted = { type: 'award', index: i, data: item, team: t }; globalData.teams[t].awards.splice(i,1); saveToCloud().then(()=>{ ui.renderAdminDetails(); showToast("Award Deleted"); }); },
-        admDelClub: (name) => {
-            if(Object.keys(globalData.teams).length <= 1) return alert("Cannot delete the last team.");
-            if(name === activeContext) return alert("Cannot delete the active club. Switch to another club first.");
-            if(confirm(`Delete club ${name}? This cannot be undone.`)) { delete globalData.teams[name]; saveToCloud().then(() => { ui.renderAdminDetails(); showToast("Club Deleted"); }); }
-        },
+        admDelClub: (name) => { if(Object.keys(globalData.teams).length <= 1) return alert("Cannot delete the last team."); if(name === activeContext) return alert("Cannot delete the active club. Switch to another club first."); if(confirm(`Delete club ${name}? This cannot be undone.`)) { delete globalData.teams[name]; saveToCloud().then(() => { ui.renderAdminDetails(); showToast("Club Deleted"); }); } },
         deleteTeam: () => { app.admDelClub(document.getElementById('admTeamSelect').value); },
         deleteMatch: (id) => { if(confirm("Delete this match?")) { const m = globalData.history.find(x => x.id == id); lastDeleted = { type: 'match', data: m }; globalData.history = globalData.history.filter(x => x.id != id); saveToCloud().then(()=>{ ui.renderMainView(); showToast("Match Deleted"); }); } },
         performUndo: () => { if(!lastDeleted) return; const ld = lastDeleted; if(ld.type === 'match') { globalData.history.push(ld.data); } else if (ld.type === 'adminItem') { globalData.teams[ld.team][ld.key].splice(ld.index, 0, ld.data); } else if (ld.type === 'award') { globalData.teams[ld.team].awards.splice(ld.index, 0, ld.data); } saveToCloud().then(() => { ui.renderMainView(); document.getElementById('toast').classList.remove('visible'); lastDeleted = null; alert("Restored!"); }); },
@@ -756,66 +470,33 @@
         saveTournWinner: () => { const tName = activeContext, trName = document.getElementById('tournSelector').value, win = document.getElementById('tournWinnerInput').value, idx = globalData.teams[tName].tournaments.findIndex(t=>t.name===trName); if(idx !== -1) { globalData.teams[tName].tournaments[idx].winner = win; saveToCloud().then(()=>alert("Saved")); } },
         openEditActiveTourn: () => { alert("Use Admin panel to edit."); },
         deleteSeason: () => { if(confirm("Delete current season?")) { const c = globalData.settings.currentSeason; globalData.history = globalData.history.filter(m=>m.season!==c); globalData.settings.seasons = globalData.settings.seasons.filter(s=>s!==c); globalData.settings.currentSeason = globalData.settings.seasons[0] || "2025/26"; saveToCloud().then(()=>ui.renderMainView()); } },
-        saveEditedMatch: () => { const id=document.getElementById('editId').value, i=globalData.history.findIndex(x=>x.id==id); if(i===-1)return; globalData.history[i]={ ...globalData.history[i], date:document.getElementById('eDate').value, opp:document.getElementById('eOpp').value, tourn:document.getElementById('eTourn').value, coach:document.getElementById('eCoach').value, our:parseInt(document.getElementById('eOur').value)||0, their:parseInt(document.getElementById('eTheir').value)||0, scorers:Array.from(document.querySelectorAll('.e-sc-input')).map(s=>s.value), notes:document.getElementById('eNotes').value }; saveToCloud().then(()=>{document.getElementById('editModal').classList.add('hidden'); ui.renderMainView();}); },
+        
+        saveEditedMatch: () => { 
+            const id=document.getElementById('editId').value, i=globalData.history.findIndex(x=>x.id==id); if(i===-1)return; 
+            const lineup = []; document.querySelectorAll('.e-lineup-chk:checked').forEach(c => lineup.push(c.value));
+            
+            globalData.history[i]={ ...globalData.history[i], date:document.getElementById('eDate').value, opp:document.getElementById('eOpp').value, tourn:document.getElementById('eTourn').value, coach:document.getElementById('eCoach').value, our:parseInt(document.getElementById('eOur').value)||0, their:parseInt(document.getElementById('eTheir').value)||0, scorers:Array.from(document.querySelectorAll('.e-sc-input')).map(s=>s.value), notes:document.getElementById('eNotes').value, lineup: lineup }; 
+            saveToCloud().then(()=>{document.getElementById('editModal').classList.add('hidden'); ui.renderMainView();}); 
+        },
         renameTeamPrompt: () => { const oldName = document.getElementById('admTeamSelect').value; const newName = prompt(`Rename "${oldName}" to:`, oldName); if(newName && newName !== oldName && newName.trim() !== "") { if(globalData.teams[newName]) return alert("Team name already exists!"); globalData.teams[newName] = globalData.teams[oldName]; delete globalData.teams[oldName]; globalData.history.forEach(m => { if(m.team === oldName) m.team = newName; }); activeContext = newName; saveToCloud().then(()=>{ alert("Renamed successfully"); ui.initUI(); }); } }
     });
 
     window.ui = {
         renderNav: () => {
             document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
-            // UPDATE STICKER TO SHOW LOCAL PROFILE NAME
             document.getElementById('clubsSticker').innerText = (localProfileName || "Player") + "'s Stats";
-            
-            const r1 = document.getElementById('navRowTeams'); 
-            r1.innerHTML='';
-
-            // 1. Career Pill
-            const cBtn = document.createElement('div'); 
-            cBtn.className = `nav-btn career-pill ${activeContext==='Career'?'active':''}`; 
-            cBtn.innerText = 'Career'; 
-            cBtn.onclick = () => ui.switchContext('Career'); 
-            r1.appendChild(cBtn);
-
-            // 2. Divider
-            const div = document.createElement('div');
-            div.className = 'nav-divider';
-            r1.appendChild(div);
-
-            // 3. Clubs
-            Object.keys(globalData.teams).forEach(t => { 
-                const b = document.createElement('div'); 
-                b.className = `nav-btn ${activeContext===t?'active':''}`; 
-                b.innerText = t; 
-                b.onclick=()=>{ui.switchContext(t);}; 
-                r1.appendChild(b); 
-            });
+            const r1 = document.getElementById('navRowTeams'); r1.innerHTML='';
+            const cBtn = document.createElement('div'); cBtn.className = `nav-btn career-pill ${activeContext==='Career'?'active':''}`; cBtn.innerText = 'Career'; cBtn.onclick = () => ui.switchContext('Career'); r1.appendChild(cBtn);
+            const div = document.createElement('div'); div.className = 'nav-divider'; r1.appendChild(div);
+            Object.keys(globalData.teams).forEach(t => { const b = document.createElement('div'); b.className = `nav-btn ${activeContext===t?'active':''}`; b.innerText = t; b.onclick=()=>{ui.switchContext(t);}; r1.appendChild(b); });
         },
         switchContext: (c) => { 
             if (globalData.teams[c]) lastActiveTeam = c;
             activeContext = c; 
-
-            // DYNAMIC COLOR LOGIC
             const root = document.documentElement;
-            if(c === 'Career') { 
-                root.style.setProperty('--primary', '#333333'); 
-                root.style.setProperty('--primary-tint', '#f0f0f0'); 
-                root.style.setProperty('--text-on-primary', '#ffffff');
-                root.style.setProperty('--accent', '#DAA520'); // Gold
-            } 
-            else if (c === 'Admin') { 
-                root.style.setProperty('--primary', '#333'); 
-                root.style.setProperty('--primary-tint', '#e4e4e7'); 
-                root.style.setProperty('--text-on-primary', '#fff'); 
-                root.style.setProperty('--accent', '#666');
-            } 
-            else if(globalData.teams[c]) { 
-                const color = globalData.teams[c].color; 
-                root.style.setProperty('--primary', color); 
-                root.style.setProperty('--primary-tint', hexToRgb(color)); 
-                root.style.setProperty('--text-on-primary', '#fff'); 
-                root.style.setProperty('--accent', color); // Team Color as Accent
-            }
-
+            if(c === 'Career') { root.style.setProperty('--primary', '#333333'); root.style.setProperty('--primary-tint', '#f0f0f0'); root.style.setProperty('--text-on-primary', '#ffffff'); root.style.setProperty('--accent', '#DAA520'); } 
+            else if (c === 'Admin') { root.style.setProperty('--primary', '#333'); root.style.setProperty('--primary-tint', '#e4e4e7'); root.style.setProperty('--text-on-primary', '#fff'); root.style.setProperty('--accent', '#666'); } 
+            else if(globalData.teams[c]) { const color = globalData.teams[c].color; root.style.setProperty('--primary', color); root.style.setProperty('--primary-tint', hexToRgb(color)); root.style.setProperty('--text-on-primary', '#fff'); root.style.setProperty('--accent', color); }
             ui.renderNav(); ui.renderMainView(); 
         },
         renderMainView: () => {
@@ -835,30 +516,53 @@
                 const sSel = document.getElementById('admActiveSeason'); sSel.innerHTML=''; globalData.settings.seasons.forEach(s=>sSel.add(new Option(s,s))); sSel.value = globalData.settings.currentSeason; ui.renderAdminDetails(); 
             } 
             else { 
-                // CLUB VIEW (Merged Stats + Tournaments)
                 document.getElementById('viewMatchDay').classList.remove('hidden'); 
-                document.getElementById('teamStatTitle').innerText = activeContext + " Overview"; 
-                
-                ui.renderMatchDayInputs(); 
-                ui.renderTeamStats(); 
-                ui.renderLeagueTable(); 
-                ui.renderTopScorers(); 
+                const isInSquad = globalData.teams[activeContext].players.includes(localProfileName);
+                document.getElementById('teamStatTitle').innerText = activeContext + (isInSquad ? " Overview" : " (Not in Squad)");
+                ui.renderMatchDayInputs(); ui.renderTeamStats(); ui.renderLeagueTable(); ui.renderTopScorers(); 
                 ui.renderHistory(globalData.history.filter(m=>m.team===activeContext && m.season===globalData.settings.currentSeason)); 
-                
-                // Init Tournament Selector logic (but don't force it open)
-                const sel = document.getElementById('tournSelector'); 
-                sel.innerHTML = '<option value="">-- Select --</option>'; 
-                if(globalData.teams[activeContext].tournaments) {
-                    globalData.teams[activeContext].tournaments.forEach(tr => { 
-                        if(tr.active) sel.add(new Option(tr.name, tr.name)); 
-                    }); 
-                }
-                // Hide stats area initially until user selects something
+                const sel = document.getElementById('tournSelector'); sel.innerHTML = '<option value="">-- Select --</option>'; 
+                if(globalData.teams[activeContext].tournaments) { globalData.teams[activeContext].tournaments.forEach(tr => { if(tr.active) sel.add(new Option(tr.name, tr.name)); }); }
                 document.getElementById('tournStatsArea').classList.add('hidden');
             }
         },
-        renderMatchDayInputs: () => { const t = globalData.teams[activeContext]; const fill = (id, arr) => {const el=document.getElementById(id); el.innerHTML=""; arr.forEach(x=>el.add(new Option(x,x)))}; fill('mOpp', t.opps || []); fill('mCoach', t.coaches || []); const te = document.getElementById('mTourn'); te.innerHTML='<option value="League">League</option>'; if(t.tournaments) t.tournaments.forEach(tr => { if(tr.active) te.add(new Option("🏆 " + tr.name, tr.name)); }); document.getElementById('mDate').value = new Date().toISOString().split('T')[0]; ui.renderScorers('m'); },
-        renderScorers: (p) => { const c = parseInt(document.getElementById(p + 'Our').value) || 0; const d = document.getElementById(p + 'ScorerList'); d.innerHTML = c > 0 ? '<label>Goal Scorers:</label>' : ''; const pl = globalData.teams[activeContext].players; for(let i=0; i<c; i++) { const s = document.createElement('select'); s.className = p + '-sc-input'; s.style.marginBottom='5px'; pl.forEach(x => s.add(new Option(x,x))); d.appendChild(s); } },
+        renderMatchDayInputs: () => { 
+            const t = globalData.teams[activeContext]; 
+            const fill = (id, arr) => {const el=document.getElementById(id); el.innerHTML=""; arr.forEach(x=>el.add(new Option(x,x)))}; 
+            fill('mOpp', t.opps || []); fill('mCoach', t.coaches || []); 
+            const te = document.getElementById('mTourn'); te.innerHTML='<option value="League">League</option>'; 
+            if(t.tournaments) t.tournaments.forEach(tr => { if(tr.active) te.add(new Option("🏆 " + tr.name, tr.name)); }); 
+            document.getElementById('mDate').value = new Date().toISOString().split('T')[0];
+            
+            // RENDER LINEUP CHECKBOXES (MATCH DAY)
+            const luArea = document.getElementById('mLineupArea');
+            luArea.innerHTML = '';
+            (t.players || []).forEach(p => {
+                const div = document.createElement('div'); div.className='lineup-item';
+                // Check all by default (User Preference Assumption for quick entry)
+                div.innerHTML = `<input type="checkbox" class="m-lineup-chk" value="${p}" checked onchange="ui.renderScorers('m')"> ${p}`;
+                luArea.appendChild(div);
+            });
+
+            ui.renderScorers('m'); 
+        },
+        
+        renderScorers: (p) => { 
+            const c = parseInt(document.getElementById(p + 'Our').value) || 0; 
+            const d = document.getElementById(p + 'ScorerList'); 
+            d.innerHTML = c > 0 ? '<label>Goal Scorers:</label>' : ''; 
+            
+            // Filter players based on checked lineup boxes
+            const checkedBoxes = document.querySelectorAll(`.${p}-lineup-chk:checked`);
+            const availablePlayers = Array.from(checkedBoxes).map(cb => cb.value);
+
+            for(let i=0; i<c; i++) { 
+                const s = document.createElement('select'); 
+                s.className = p + '-sc-input'; s.style.marginBottom='5px'; 
+                availablePlayers.forEach(x => s.add(new Option(x,x))); 
+                d.appendChild(s); 
+            } 
+        },
         renderQueue: () => { const q=document.getElementById('matchQueue'); q.innerHTML=sessionQueue.map((g,i)=>`<div class="queue-item"><div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div><button class="btn-del" onclick="sessionQueue.splice(${i},1);ui.renderQueue()">✕</button></div>`).join(''); document.getElementById('btnFinalize').classList.toggle('hidden', sessionQueue.length===0); },
         
         renderHistory: (data, targetId) => { 
@@ -885,40 +589,71 @@
 
         renderTopScorers: () => { const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); const counts = {}; matches.forEach(m => (m.scorers || []).forEach(p => counts[p] = (counts[p] || 0) + 1)); const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]); const tbl = document.querySelector('#topScorerTable tbody'); tbl.innerHTML = sorted.length ? sorted.map(s => `<tr><td>${s[0]}</td><td class="num-col">${s[1]}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center">No goals yet</td></tr>'; },
         renderLeagueTable: () => { const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); let my = { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; matches.forEach(m => { my.p++; my.gf += m.our; my.ga += m.their; if(m.our > m.their) { my.w++; my.pts+=3; } else if(m.our < m.their) { my.l++; my.pts+=0; } else { my.d++; my.pts+=1; } }); let opp = { p: my.p, w: my.l, d: my.d, l: my.w, gf: my.ga, ga: my.gf, pts: (my.l * 3) + (my.d * 1) }; let data = [{ name: activeContext, ...my, isMe: true }, { name: "Opponents", ...opp, isMe: false }]; data.sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga))); document.querySelector('#teamLeagueTable tbody').innerHTML = data.map((d, i) => `<tr class="${d.isMe?'is-me':''}"><td class="t-left">${i+1}. ${d.name}</td><td>${d.p}</td><td>${d.w}</td><td>${d.d}</td><td>${d.l}</td><td>${d.gf-d.ga}</td><td><b>${d.pts}</b></td></tr>`).join(''); },
+        
         renderTeamStats: () => { 
+            const profile = localProfileName;
+            
+            // 1. Check if profile is even in the Squad
+            const t = globalData.teams[activeContext];
+            if (!t.players.includes(profile)) {
+                document.getElementById('st-p').innerText = 0; document.getElementById('st-w').innerText = 0; document.getElementById('st-g').innerText = 0; document.getElementById('st-a').innerText = "N/A"; return;
+            }
+
             const h = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); 
-            const uniqueDates = [...new Set(h.map(m => m.date))]; 
+            
+            // 2. Filter matches: Player must be in lineup OR lineup is missing (Legacy)
+            const playerMatches = h.filter(m => {
+                if (m.lineup) return m.lineup.includes(profile);
+                return true; // Legacy assumption (if in squad, played)
+            });
+
+            const uniqueDates = [...new Set(playerMatches.map(m => m.date))]; 
             const maxAwards = uniqueDates.length; 
-            const profile = localProfileName; // USE LOCAL PROFILE
+            
             let awardCount = 0; 
-            uniqueDates.forEach(d => { const sum = globalData.daySummaries[d]; if(sum && sum.awards && sum.awards.length > 0) { awardCount += sum.awards.filter(a => a.player === profile).length; } else { const matchesOnDay = h.filter(m => m.date === d); let legacyAwardsOnDay = 0; matchesOnDay.forEach(m => { if (m.awards) legacyAwardsOnDay += m.awards.filter(a => a.player === profile).length; }); awardCount += legacyAwardsOnDay; } }); 
-            document.getElementById('st-p').innerText = h.length; 
-            document.getElementById('st-w').innerText = h.filter(m=>m.our>m.their).length; 
-            document.getElementById('st-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
+            uniqueDates.forEach(d => { 
+                const sum = globalData.daySummaries[d]; 
+                if(sum && sum.awards && sum.awards.length > 0) { 
+                    awardCount += sum.awards.filter(a => a.player === profile).length; 
+                } else { 
+                    const matchesOnDay = playerMatches.filter(m => m.date === d); 
+                    let legacyAwardsOnDay = 0; 
+                    matchesOnDay.forEach(m => { if (m.awards) legacyAwardsOnDay += m.awards.filter(a => a.player === profile).length; }); 
+                    awardCount += legacyAwardsOnDay; 
+                } 
+            }); 
+            
+            document.getElementById('st-p').innerText = playerMatches.length; 
+            document.getElementById('st-w').innerText = playerMatches.filter(m=>m.our>m.their).length; 
+            document.getElementById('st-g').innerText = playerMatches.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
             if (awardCount === 0) { document.getElementById('st-a').innerText = "N/A"; } else { document.getElementById('st-a').innerText = `${awardCount} / ${maxAwards}`; } 
         },
         
-        // CAREER RENDER (PRESERVED FROM V105 + Local Profile Update)
         renderCareer: () => { 
             const f = document.getElementById('careerSeasonFilter').value; 
-            const profile = localProfileName; // USE LOCAL PROFILE
+            const profile = localProfileName; 
             
-            // 1. CALCULATE AGGREGATE STATS
             let totalGames = 0, totalWins = 0, totalGoals = 0;
             let totalAwardWins = 0, totalAwardOpps = 0;
 
-            // Iterate through every club to build the totals
             Object.keys(globalData.teams).forEach(teamName => {
+                // Squad check
+                if (!globalData.teams[teamName].players.includes(profile)) return;
+
                 let teamHistory = globalData.history.filter(m => m.team === teamName);
                 if(f !== 'All Time') teamHistory = teamHistory.filter(m => m.season === f);
                 
-                // Game Stats
-                totalGames += teamHistory.length;
-                totalWins += teamHistory.filter(m => m.our > m.their).length;
-                totalGoals += teamHistory.reduce((acc, m) => acc + (m.scorers||[]).filter(s => s === profile).length, 0);
+                // LINEUP CHECK
+                const playerMatches = teamHistory.filter(m => {
+                    if (m.lineup) return m.lineup.includes(profile);
+                    return true; // Legacy fallback
+                });
 
-                // Award Stats (Per Club Logic)
-                const teamUniqueDates = [...new Set(teamHistory.map(m => m.date))];
+                totalGames += playerMatches.length;
+                totalWins += playerMatches.filter(m => m.our > m.their).length;
+                totalGoals += playerMatches.reduce((acc, m) => acc + (m.scorers||[]).filter(s => s === profile).length, 0);
+
+                const teamUniqueDates = [...new Set(playerMatches.map(m => m.date))];
                 let teamAwards = 0;
                 
                 teamUniqueDates.forEach(d => {
@@ -926,26 +661,22 @@
                     if(sum && sum.awards && sum.awards.length > 0) {
                         teamAwards += sum.awards.filter(a => a.player === profile).length;
                     } else {
-                        // Fallback to legacy
-                        const matchesOnDay = teamHistory.filter(m => m.date === d);
+                        const matchesOnDay = playerMatches.filter(m => m.date === d);
                         matchesOnDay.forEach(m => { if (m.awards) teamAwards += m.awards.filter(a => a.player === profile).length; });
                     }
                 });
 
-                // ONLY ADD TO TOTAL IF AWARDS > 0 (Ignore "N/A" clubs)
                 if (teamAwards > 0) {
                     totalAwardWins += teamAwards;
                     totalAwardOpps += teamUniqueDates.length;
                 }
             });
 
-            // 2. RENDER TOP STATS
             document.getElementById('c-p').innerText = totalGames;
             document.getElementById('c-w').innerText = totalWins;
             document.getElementById('c-g').innerText = totalGoals;
             document.getElementById('c-a').innerText = totalAwardWins === 0 ? "N/A" : `${totalAwardWins} / ${totalAwardOpps}`;
 
-            // 3. RENDER COMPARISON TABLE (Existing Logic)
             let h = globalData.history; 
             if(f !== 'All Time') h = h.filter(m => m.season === f); 
             let stats={}; 
@@ -965,7 +696,41 @@
         },
         renderAdminDetails: () => { const t=globalData.teams[document.getElementById('admTeamSelect').value]; if(!t) return; const l=(id,k)=>document.getElementById(id).innerHTML=t[k].map((x,i)=>`<li>${x}<button class="btn-del" onclick="app.admDel('${k}',${i})">🗑</button></li>`).join(''); l('admPlayerList', 'players'); l('admOppList', 'opps'); document.getElementById('admAwardList').innerHTML = t.awards.map((a,i)=>`<li>${a.name} (Max:${a.max})<button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></li>`).join(''); const profSel = document.getElementById('adminProfileName'); profSel.innerHTML = ''; t.players.forEach(p => { profSel.add(new Option(p, p)); }); if(globalData.settings.profileName) profSel.value = globalData.settings.profileName; const clubList = document.getElementById('admClubList'); clubList.innerHTML = Object.keys(globalData.teams).map(teamName => { const isCurrent = teamName === activeContext; const deleteBtn = isCurrent ? '<span style="font-size:0.7em; opacity:0.5;">(Active)</span>' : `<button class="btn-del" onclick="app.admDelClub('${teamName}')">🗑</button>`; return `<li><span style="color:${globalData.teams[teamName].color}; font-weight:bold;">${teamName}</span>${deleteBtn}</li>`; }).join(''); },
         renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(!sel.value) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === sel.value && m.team === tName && m.season === globalData.settings.currentSeason); const profile = localProfileName; document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); ui.renderHistory(h, 'tournHistoryList'); },
-        openEditModal: (id) => { const m = globalData.history.find(x => x.id == id); document.getElementById('editId').value = id; document.getElementById('eDate').value = m.date; document.getElementById('eOur').value = m.our; document.getElementById('eTheir').value = m.their; document.getElementById('eNotes').value = m.notes || ""; const t = globalData.teams[m.team]; const fill = (eid, arr, val) => { const el = document.getElementById(eid); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); el.value = val || ""; }; fill('eOpp', t.opps, m.opp); fill('eCoach', t.coaches || [], m.coach); const te = document.getElementById('eTourn'); te.innerHTML='<option value="League">League</option>'; if(t.tournaments) t.tournaments.forEach(tr => te.add(new Option("🏆 "+tr.name, tr.name))); te.value = m.tourn; ui.renderScorers('e'); document.getElementById('editModal').classList.remove('hidden'); }
+        
+        openEditModal: (id) => { 
+            const m = globalData.history.find(x => x.id == id); 
+            document.getElementById('editId').value = id; 
+            document.getElementById('eDate').value = m.date; 
+            document.getElementById('eOur').value = m.our; 
+            document.getElementById('eTheir').value = m.their; 
+            document.getElementById('eNotes').value = m.notes || ""; 
+            const t = globalData.teams[m.team]; 
+            const fill = (eid, arr, val) => { const el = document.getElementById(eid); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); el.value = val || ""; }; 
+            fill('eOpp', t.opps, m.opp); fill('eCoach', t.coaches || [], m.coach); 
+            const te = document.getElementById('eTourn'); te.innerHTML='<option value="League">League</option>'; 
+            if(t.tournaments) t.tournaments.forEach(tr => te.add(new Option("🏆 "+tr.name, tr.name))); te.value = m.tourn; 
+            
+            // RENDER EDIT LINEUP
+            const luArea = document.getElementById('eLineupArea');
+            luArea.innerHTML = '';
+            (t.players || []).forEach(p => {
+                const div = document.createElement('div'); div.className='lineup-item';
+                // If m.lineup exists, use it. If not, assume Checked (Legacy)
+                const isChecked = m.lineup ? m.lineup.includes(p) : true;
+                div.innerHTML = `<input type="checkbox" class="e-lineup-chk" value="${p}" ${isChecked?'checked':''} onchange="ui.renderScorers('e')"> ${p}`;
+                luArea.appendChild(div);
+            });
+
+            ui.renderScorers('e'); 
+            
+            // Set scorer values *after* render
+            if (m.scorers) {
+                 const selects = document.querySelectorAll('.e-sc-input');
+                 m.scorers.forEach((s, idx) => { if (selects[idx]) selects[idx].value = s; });
+            }
+
+            document.getElementById('editModal').classList.remove('hidden'); 
+        }
     };
 </script>
 </body>
