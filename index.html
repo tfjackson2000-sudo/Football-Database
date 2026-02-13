@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V120</title>
+    <title>Football Tracker V121</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -24,6 +24,7 @@
         }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 40px; padding-top: env(safe-area-inset-top); min-height: 100vh; display: flex; flex-direction: column; }
         
+        /* HEADER & NAV ALIGNMENT */
         .app-header { text-align: center; padding: 10px 15px; background: var(--card); border-bottom: 1px solid var(--border); display: flex; justify-content: center; align-items: center; position: relative; }
         .logo-text { font-weight: 900; font-size: 1.5rem; letter-spacing: -0.5px; }
         .logo-wrapper { display: flex; align-items: center; gap: 10px; }
@@ -35,6 +36,13 @@
 
         .nav-container { background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .clubs-container { display: flex; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--border); gap: 10px; overflow-x: hidden; }
+        
+        /* DESKTOP CENTERING FIX */
+        @media (min-width: 768px) { 
+            .clubs-container { justify-content: center; } 
+            .clubs-scroll-area { flex-grow: 0 !important; } 
+        }
+
         .clubs-scroll-area { flex-grow: 1; overflow-x: auto; white-space: nowrap; display: flex; gap: 8px; padding-bottom: 2px; scrollbar-width: none; }
         .clubs-scroll-area::-webkit-scrollbar { display: none; }
 
@@ -58,6 +66,9 @@
         .flex-row { display: flex; gap: 10px; align-items: center; }
         .flex-grow { flex: 1; min-width: 0; }
         
+        /* FIX FOR ADD CLUB LAYOUT */
+        .color-picker { width: 50px !important; flex: none !important; padding: 2px; height: 45px; cursor: pointer; border-radius: 8px; border: 1px solid var(--border); }
+
         .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
         .admin-list li:last-child { border-bottom: none; }
         
@@ -253,7 +264,7 @@
 
         <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body"><p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">Note: Profile selection is now personal to each device (see footer). The setting below only sets a default for new visitors.</p><label style="display:block; margin-bottom:5px;">Default Profile Name:</label><div class="flex-row" style="margin-bottom:20px;"><select id="adminProfileName" class="flex-grow"></select><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button></div><label style="display:block; margin-bottom:5px;">Add Club:</label><div class="flex-row" style="margin-bottom:15px;"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button type="button" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div><label style="display:block; margin-bottom:5px;">Manage Clubs:</label><ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V120</div>
+    <div class="version-tag">V121</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -316,7 +327,7 @@
     let lastDeleted = null; let undoTimer = null;
     let lastActiveTeam = "Llanelli Town"; 
     let localProfileName = localStorage.getItem('userProfileName') || "Joey";
-    let editingPlayerIdx = -1; // NEW: Track player editing
+    let editingPlayerIdx = -1; 
 
     try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
     catch (e) { document.getElementById('loadingOverlay').innerHTML = "<h2>⚠️ Error</h2><p>Firebase Config Failed</p>"; }
@@ -352,7 +363,6 @@
         if (!localStorage.getItem('userProfileName')) { localProfileName = globalData.settings.profileName; localStorage.setItem('userProfileName', localProfileName); } else { localProfileName = localStorage.getItem('userProfileName'); }
         document.getElementById('btnSwitchProfile').innerText = `👤 Profile: ${localProfileName}`;
         
-        // RETAIN CONTEXT
         if (!activeContext || (activeContext !== 'Career' && activeContext !== 'Admin' && !globalData.teams[activeContext])) {
             activeContext = "Career";
         }
@@ -403,7 +413,6 @@
             const opp = document.getElementById('mOpp').value; if(!opp) return alert("Select Opponent");
             let dVal = document.getElementById('mDate').value || new Date().toISOString().split('T')[0];
             
-            // CAPTURE LINEUP
             const lineup = [];
             document.querySelectorAll('.m-lineup-chk:checked').forEach(c => lineup.push(c.value));
             
@@ -442,18 +451,15 @@
             const t = document.getElementById('admTeamSelect').value;
             const fullName = globalData.teams[t].players[i];
             
-            // Simple parser: "First Last (#10)" -> First, Last, 10
             let namePart = fullName;
             let numPart = "";
             
-            // Check for number
             if(fullName.includes(" (#")) {
                 const parts = fullName.split(" (#");
                 namePart = parts[0];
                 numPart = parts[1].replace(")", "");
             }
             
-            // Split name into first and last (assuming space)
             const lastSpace = namePart.lastIndexOf(" ");
             let first = namePart;
             let last = "";
@@ -489,11 +495,9 @@
              if(!globalData.teams[t].players) globalData.teams[t].players = [];
              
              if (editingPlayerIdx > -1) {
-                 // UPDATE MODE
                  const oldName = globalData.teams[t].players[editingPlayerIdx];
                  globalData.teams[t].players[editingPlayerIdx] = fullName;
                  
-                 // Update history if name changed? (Optional, but safe)
                  if (oldName !== fullName) {
                      globalData.history.forEach(m => {
                          if (m.team === t) {
@@ -509,7 +513,6 @@
                              }
                          }
                      });
-                     // Also check daySummaries
                      Object.values(globalData.daySummaries).forEach(ds => {
                          if(ds.awards) ds.awards.forEach(a => { if(a.player === oldName) a.player = fullName; });
                      });
@@ -522,7 +525,6 @@
                  btn.classList.add('btn-add');
                  
              } else {
-                 // ADD MODE
                  if (globalData.teams[t].players.includes(fullName)) return alert("Player already exists in this squad.");
                  globalData.teams[t].players.push(fullName);
              }
@@ -567,7 +569,8 @@
                 d.appendChild(s); 
             } 
         },
-
+        
+        // --- THIS WAS THE BUG: ENSURE RENDER LOGIC INCLUDES EDIT BUTTONS ---
         renderAdminDetails: () => { 
             const t=globalData.teams[document.getElementById('admTeamSelect').value]; 
             if(!t) return; 
@@ -577,7 +580,7 @@
             
             document.getElementById('admOppList').innerHTML=(t.opps||[]).map((x,i)=>`<li>${x}<button class="btn-del" onclick="app.admDel('opps',${i})">🗑</button></li>`).join('');
             
-            // Render Awards
+            // Render Awards (Fixed Visibility)
             document.getElementById('admAwardList').innerHTML = (t.awards||[]).map((a,i)=>`<li>${a.name} (Max: ${a.max})<button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></li>`).join('');
             
             const profSel = document.getElementById('adminProfileName'); 
@@ -609,10 +612,8 @@
                 const deleteBtn = isCurrent ? '<span style="font-size:0.7em; opacity:0.5;">(Active)</span>' : `<button class="btn-del" onclick="app.admDelClub('${teamName}')">🗑</button>`; 
                 return `<li><span style="color:${globalData.teams[teamName].color}; font-weight:bold;">${teamName}</span>${deleteBtn}</li>`; 
             }).join(''); 
-        }
-    });
+        },
 
-    window.ui = {
         renderNav: () => {
             document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
             document.getElementById('clubsSticker').innerText = (localProfileName || "Player") + "'s Stats";
@@ -815,7 +816,6 @@
                 return `<tr class="is-me"><td class="t-left" style="color:${color}">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf-t.ga}</td><td>${t.gf}</td><td><b>${t.pts}</b></td></tr>`; 
             }).join(''); 
         },
-        renderAdminDetails: () => { const t=globalData.teams[document.getElementById('admTeamSelect').value]; if(!t) return; const l=(id,k)=>document.getElementById(id).innerHTML=t[k].map((x,i)=>`<li>${x}<button class="btn-del" onclick="app.admDel('${k}',${i})">🗑</button></li>`).join(''); l('admPlayerList', 'players'); l('admOppList', 'opps'); document.getElementById('admAwardList').innerHTML = (t.awards||[]).map((a,i)=>`<li>${a.name} (Max:${a.max})<button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></li>`).join(''); const profSel = document.getElementById('adminProfileName'); profSel.innerHTML = ''; let allP = new Set(); Object.values(globalData.teams).forEach(tm => (tm.players||[]).forEach(p=>allP.add(p))); Array.from(allP).sort().forEach(p => profSel.add(new Option(p,p))); if(globalData.settings.profileName) profSel.value = globalData.settings.profileName; const clubList = document.getElementById('admClubList'); clubList.innerHTML = Object.keys(globalData.teams).map(teamName => { const isCurrent = teamName === activeContext; const deleteBtn = isCurrent ? '<span style="font-size:0.7em; opacity:0.5;">(Active)</span>' : `<button class="btn-del" onclick="app.admDelClub('${teamName}')">🗑</button>`; return `<li><span style="color:${globalData.teams[teamName].color}; font-weight:bold;">${teamName}</span>${deleteBtn}</li>`; }).join(''); },
         renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(!sel.value) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === sel.value && m.team === tName && m.season === globalData.settings.currentSeason); const profile = localProfileName; document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); ui.renderHistory(h, 'tournHistoryList'); },
         
         openEditModal: (id) => { 
