@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V106</title>
+    <title>Football Tracker V107</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -32,6 +32,7 @@
             --success: #28a745;
             --danger: #dc3545;
             --shadow: 0 4px 12px rgba(0,0,0,0.06);
+            --table-head-bg: #f0f0f0;
         }
         
         [data-theme="dark"] { 
@@ -42,6 +43,8 @@
             --border: #333333; 
             --shadow: 0 4px 12px rgba(0,0,0,0.4);
             --text-highlight: #ffffff;
+            --primary-tint: #2a2a2a; /* Darker tint for headers in dark mode */
+            --table-head-bg: #2d2d2d;
         }
 
         body { 
@@ -82,7 +85,6 @@
             color: var(--text); 
         }
         
-        /* New Icon Style (Emoji based) */
         .logo-icon {
             font-size: 1.6rem;
             line-height: 1;
@@ -206,9 +208,10 @@
             padding: 20px 15px 40px 15px;
             text-align: center;
             display: flex;
+            flex-wrap: wrap;
             justify-content: center;
-            gap: 15px;
-            opacity: 0.6;
+            gap: 10px;
+            opacity: 0.8;
             border-top: 1px solid var(--border);
             background: var(--bg);
         }
@@ -221,15 +224,15 @@
             color: var(--text);
             cursor: pointer;
             box-shadow: var(--shadow);
+            font-size: 0.85rem;
         }
 
         /* CARD STYLES */
         .card { background: var(--card); border-radius: 16px; margin-bottom: 25px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; transition: 0.3s; }
         .card-header { font-size: 1.1rem; font-weight: 800; padding: 15px 20px; display:flex; justify-content:space-between; align-items:center; background: var(--primary-tint); color: var(--text-highlight) !important; border-bottom: 1px solid var(--border); transition: background 0.3s, color 0.3s; }
         
-        .neutral-card .card-header { background: #f0f2f5 !important; color: #333 !important; }
-        [data-theme="dark"] .neutral-card .card-header { background: #2a2a2a !important; color: #eee !important; }
-
+        .neutral-card .card-header { background: var(--primary-tint) !important; color: var(--text-highlight) !important; }
+        
         .card-body { padding: 20px; }
         
         details > summary { list-style: none; cursor: pointer; outline: none; font-weight: bold; font-size: 1.1rem; }
@@ -279,8 +282,18 @@
         .btn-guest { background: transparent; border: 2px solid var(--border); color: var(--text); }
         
         .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
+        
+        /* TABLE STYLES - Fixed for Dark Mode */
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; table-layout: fixed; }
-        th { background: var(--primary-tint); color: var(--text-highlight); padding: 12px 6px; font-size: 0.75rem; text-transform: uppercase; border-bottom: 2px solid var(--border); text-align: center; }
+        th { 
+            background: var(--table-head-bg); 
+            color: var(--text-highlight); 
+            padding: 12px 6px; 
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            border-bottom: 2px solid var(--border); 
+            text-align: center; 
+        }
         td { padding: 12px 6px; border-bottom: 1px solid var(--border); text-align: center; white-space: nowrap; }
         th:first-child, td:first-child { text-align: left; width: 35%; padding-left: 10px; white-space: normal; }
         .num-col { font-weight: bold; }
@@ -340,9 +353,7 @@
         <div class="sticker-area">
             <div id="clubsSticker" class="sticker clubs-sticker">Stats</div>
         </div>
-        
         <div class="nav-divider"></div>
-
         <div id="navRowTeams" class="clubs-scroll-area"></div>
     </div>
 </div>
@@ -464,7 +475,8 @@
         <div class="card"><div class="card-header">🛡 Opponents</div><div class="card-body"><div class="form-group flex-row"><input type="text" id="admNewOpp" placeholder="Add Opponent" class="flex-grow"><button type="button" class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddItem('opps', 'admNewOpp')">Add</button></div><ul id="admOppList" class="admin-list"></ul></div></div>
         <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body"><div class="flex-row" style="margin-bottom:10px;"><input type="text" id="newAwardName" placeholder="Name" class="flex-grow"><input type="number" id="newAwardMax" placeholder="Max" style="width:70px;"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.addAwardConfig()">Add</button></div><ul id="admAwardList" class="admin-list"></ul></div></div>
         <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body">
-            <label style="display:block; margin-bottom:5px;">Profile Name (Select from Squad):</label>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">Note: Profile selection is now personal to each device (see footer). The setting below only sets a default for new visitors.</p>
+            <label style="display:block; margin-bottom:5px;">Default Profile Name:</label>
             <div class="flex-row" style="margin-bottom:20px;">
                 <select id="adminProfileName" class="flex-grow"></select>
                 <button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button>
@@ -477,16 +489,29 @@
             <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
         </div></div>
     </div>
-    <div class="version-tag">V106</div>
+    <div class="version-tag">V107</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
+    <button id="btnSwitchProfile" onclick="app.openProfileModal()">👤 Profile: Loading...</button>
     <button onclick="app.toggleTheme()">🌓 Theme</button>
     <button onclick="app.doSignOut()">🚪 Log Out</button>
 </footer>
 
 <div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
 <div id="newSeasonModal" class="modal-overlay hidden"><div class="modal-box"><h3>New Season</h3><input type="text" id="newSeasonNameInput" placeholder="YYYY/YY"><button class="btn btn-save" onclick="app.startNewSeason()">Start</button><button class="btn" onclick="document.getElementById('newSeasonModal').classList.add('hidden')">Cancel</button></div></div>
+
+<div id="profileModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3>👤 Switch Profile</h3>
+        <p style="color:var(--text-muted); margin-bottom:15px; font-size:0.9rem;">Select your name to see your personal stats. This only affects this device.</p>
+        <div class="form-group">
+            <select id="profileSelect"></select>
+        </div>
+        <button class="btn btn-save" onclick="app.confirmProfileSwitch()">Switch</button>
+        <button class="btn" onclick="document.getElementById('profileModal').classList.add('hidden')">Cancel</button>
+    </div>
+</div>
 
 <div id="daySummaryModal" class="modal-overlay hidden">
     <div class="modal-box">
@@ -538,6 +563,9 @@
     let fbApp, db, auth, rtdb, globalData, activeContext = "Career", sessionQueue = [], currentUser = null, isGuest = false;
     let lastDeleted = null; let undoTimer = null;
     let lastActiveTeam = "Llanelli Town"; 
+    
+    // NEW: Local Profile State
+    let localProfileName = localStorage.getItem('userProfileName') || "Joey";
 
     try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
     catch (e) { document.getElementById('loadingOverlay').innerHTML = "<h2>⚠️ Error</h2><p>Firebase Config Failed</p>"; }
@@ -552,7 +580,8 @@
     window.app.toggleTheme = () => {
         globalData.settings.theme = globalData.settings.theme === 'light' ? 'dark' : 'light';
         document.body.setAttribute('data-theme', globalData.settings.theme);
-        saveToCloud();
+        // Only admins save theme to global
+        if (!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) saveToCloud();
     };
 
     onAuthStateChanged(auth, (user) => {
@@ -587,6 +616,18 @@
     function initUI() {
         if(!globalData.daySummaries) globalData.daySummaries = {};
         if(!globalData.settings.profileName) globalData.settings.profileName = "Joey"; 
+        
+        // Use Global Default if Local is not set or empty
+        if (!localStorage.getItem('userProfileName')) {
+            localProfileName = globalData.settings.profileName;
+            localStorage.setItem('userProfileName', localProfileName);
+        } else {
+            localProfileName = localStorage.getItem('userProfileName');
+        }
+        
+        // Update Footer Button
+        document.getElementById('btnSwitchProfile').innerText = `👤 Profile: ${localProfileName}`;
+
         activeContext = "Career";
         if(globalData && !globalData.history) globalData.history = [];
         ui.switchContext(activeContext);
@@ -615,6 +656,38 @@
     }
 
     Object.assign(window.app, {
+        // PROFILE SWITCHING LOGIC
+        openProfileModal: () => {
+            const sel = document.getElementById('profileSelect');
+            sel.innerHTML = '';
+            
+            // Gather all unique players from all teams
+            let allPlayers = new Set();
+            Object.values(globalData.teams).forEach(t => {
+                if (t.players) t.players.forEach(p => allPlayers.add(p));
+            });
+            
+            // Sort and add to dropdown
+            Array.from(allPlayers).sort().forEach(p => {
+                sel.add(new Option(p, p));
+            });
+            
+            sel.value = localProfileName;
+            document.getElementById('profileModal').classList.remove('hidden');
+        },
+        confirmProfileSwitch: () => {
+            const newName = document.getElementById('profileSelect').value;
+            if (newName) {
+                localProfileName = newName;
+                localStorage.setItem('userProfileName', newName);
+                document.getElementById('btnSwitchProfile').innerText = `👤 Profile: ${localProfileName}`;
+                document.getElementById('profileModal').classList.add('hidden');
+                // Re-render current view with new profile
+                ui.renderNav();
+                ui.renderMainView();
+            }
+        },
+
         saveSession: () => { const batchId = Date.now(); sessionQueue.forEach(g => g.batchId = batchId); globalData.history.push(...sessionQueue); sessionQueue = []; saveToCloud().then(()=>{ui.renderQueue(); alert("Saved!");}); },
         addToQueue: () => {
             const opp = document.getElementById('mOpp').value; if(!opp) return alert("Select Opponent");
@@ -625,8 +698,8 @@
         saveProfileName: () => {
              const newName = document.getElementById('adminProfileName').value;
              if(newName) {
-                 globalData.settings.profileName = newName;
-                 saveToCloud().then(() => { alert("Profile updated to " + newName); ui.renderMainView(); });
+                 globalData.settings.profileName = newName; // This saves the GLOBAL default
+                 saveToCloud().then(() => { alert("Global Default updated to " + newName); ui.renderMainView(); });
              }
         },
         openDaySummary: (date) => {
@@ -690,7 +763,8 @@
     window.ui = {
         renderNav: () => {
             document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
-            document.getElementById('clubsSticker').innerText = (globalData.settings.profileName || "Player") + "'s Stats";
+            // UPDATE STICKER TO SHOW LOCAL PROFILE NAME
+            document.getElementById('clubsSticker').innerText = (localProfileName || "Player") + "'s Stats";
             
             const r1 = document.getElementById('navRowTeams'); 
             r1.innerHTML='';
@@ -811,12 +885,23 @@
 
         renderTopScorers: () => { const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); const counts = {}; matches.forEach(m => (m.scorers || []).forEach(p => counts[p] = (counts[p] || 0) + 1)); const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]); const tbl = document.querySelector('#topScorerTable tbody'); tbl.innerHTML = sorted.length ? sorted.map(s => `<tr><td>${s[0]}</td><td class="num-col">${s[1]}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center">No goals yet</td></tr>'; },
         renderLeagueTable: () => { const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); let my = { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; matches.forEach(m => { my.p++; my.gf += m.our; my.ga += m.their; if(m.our > m.their) { my.w++; my.pts+=3; } else if(m.our < m.their) { my.l++; my.pts+=0; } else { my.d++; my.pts+=1; } }); let opp = { p: my.p, w: my.l, d: my.d, l: my.w, gf: my.ga, ga: my.gf, pts: (my.l * 3) + (my.d * 1) }; let data = [{ name: activeContext, ...my, isMe: true }, { name: "Opponents", ...opp, isMe: false }]; data.sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga))); document.querySelector('#teamLeagueTable tbody').innerHTML = data.map((d, i) => `<tr class="${d.isMe?'is-me':''}"><td class="t-left">${i+1}. ${d.name}</td><td>${d.p}</td><td>${d.w}</td><td>${d.d}</td><td>${d.l}</td><td>${d.gf-d.ga}</td><td><b>${d.pts}</b></td></tr>`).join(''); },
-        renderTeamStats: () => { const h = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); const uniqueDates = [...new Set(h.map(m => m.date))]; const maxAwards = uniqueDates.length; const profile = globalData.settings.profileName; let awardCount = 0; uniqueDates.forEach(d => { const sum = globalData.daySummaries[d]; if(sum && sum.awards && sum.awards.length > 0) { awardCount += sum.awards.filter(a => a.player === profile).length; } else { const matchesOnDay = h.filter(m => m.date === d); let legacyAwardsOnDay = 0; matchesOnDay.forEach(m => { if (m.awards) legacyAwardsOnDay += m.awards.filter(a => a.player === profile).length; }); awardCount += legacyAwardsOnDay; } }); document.getElementById('st-p').innerText = h.length; document.getElementById('st-w').innerText = h.filter(m=>m.our>m.their).length; document.getElementById('st-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); if (awardCount === 0) { document.getElementById('st-a').innerText = "N/A"; } else { document.getElementById('st-a').innerText = `${awardCount} / ${maxAwards}`; } },
+        renderTeamStats: () => { 
+            const h = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); 
+            const uniqueDates = [...new Set(h.map(m => m.date))]; 
+            const maxAwards = uniqueDates.length; 
+            const profile = localProfileName; // USE LOCAL PROFILE
+            let awardCount = 0; 
+            uniqueDates.forEach(d => { const sum = globalData.daySummaries[d]; if(sum && sum.awards && sum.awards.length > 0) { awardCount += sum.awards.filter(a => a.player === profile).length; } else { const matchesOnDay = h.filter(m => m.date === d); let legacyAwardsOnDay = 0; matchesOnDay.forEach(m => { if (m.awards) legacyAwardsOnDay += m.awards.filter(a => a.player === profile).length; }); awardCount += legacyAwardsOnDay; } }); 
+            document.getElementById('st-p').innerText = h.length; 
+            document.getElementById('st-w').innerText = h.filter(m=>m.our>m.their).length; 
+            document.getElementById('st-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
+            if (awardCount === 0) { document.getElementById('st-a').innerText = "N/A"; } else { document.getElementById('st-a').innerText = `${awardCount} / ${maxAwards}`; } 
+        },
         
-        // CAREER RENDER (PRESERVED FROM V105)
+        // CAREER RENDER (PRESERVED FROM V105 + Local Profile Update)
         renderCareer: () => { 
             const f = document.getElementById('careerSeasonFilter').value; 
-            const profile = globalData.settings.profileName;
+            const profile = localProfileName; // USE LOCAL PROFILE
             
             // 1. CALCULATE AGGREGATE STATS
             let totalGames = 0, totalWins = 0, totalGoals = 0;
@@ -879,7 +964,7 @@
             }).join(''); 
         },
         renderAdminDetails: () => { const t=globalData.teams[document.getElementById('admTeamSelect').value]; if(!t) return; const l=(id,k)=>document.getElementById(id).innerHTML=t[k].map((x,i)=>`<li>${x}<button class="btn-del" onclick="app.admDel('${k}',${i})">🗑</button></li>`).join(''); l('admPlayerList', 'players'); l('admOppList', 'opps'); document.getElementById('admAwardList').innerHTML = t.awards.map((a,i)=>`<li>${a.name} (Max:${a.max})<button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></li>`).join(''); const profSel = document.getElementById('adminProfileName'); profSel.innerHTML = ''; t.players.forEach(p => { profSel.add(new Option(p, p)); }); if(globalData.settings.profileName) profSel.value = globalData.settings.profileName; const clubList = document.getElementById('admClubList'); clubList.innerHTML = Object.keys(globalData.teams).map(teamName => { const isCurrent = teamName === activeContext; const deleteBtn = isCurrent ? '<span style="font-size:0.7em; opacity:0.5;">(Active)</span>' : `<button class="btn-del" onclick="app.admDelClub('${teamName}')">🗑</button>`; return `<li><span style="color:${globalData.teams[teamName].color}; font-weight:bold;">${teamName}</span>${deleteBtn}</li>`; }).join(''); },
-        renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(!sel.value) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === sel.value && m.team === tName && m.season === globalData.settings.currentSeason); const profile = globalData.settings.profileName; document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); ui.renderHistory(h, 'tournHistoryList'); },
+        renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(!sel.value) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === sel.value && m.team === tName && m.season === globalData.settings.currentSeason); const profile = localProfileName; document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); ui.renderHistory(h, 'tournHistoryList'); },
         openEditModal: (id) => { const m = globalData.history.find(x => x.id == id); document.getElementById('editId').value = id; document.getElementById('eDate').value = m.date; document.getElementById('eOur').value = m.our; document.getElementById('eTheir').value = m.their; document.getElementById('eNotes').value = m.notes || ""; const t = globalData.teams[m.team]; const fill = (eid, arr, val) => { const el = document.getElementById(eid); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); el.value = val || ""; }; fill('eOpp', t.opps, m.opp); fill('eCoach', t.coaches || [], m.coach); const te = document.getElementById('eTourn'); te.innerHTML='<option value="League">League</option>'; if(t.tournaments) t.tournaments.forEach(tr => te.add(new Option("🏆 "+tr.name, tr.name))); te.value = m.tourn; ui.renderScorers('e'); document.getElementById('editModal').classList.remove('hidden'); }
     };
 </script>
