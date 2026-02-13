@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V123</title>
+    <title>Football Tracker V124</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -264,7 +264,7 @@
         </div></div>
         
         <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body">
-            <div class="flex-row" style="margin-bottom:10px;">
+            <div class="flex-row" style="margin-bottom:10px; align-items: flex-end;">
                 <input type="text" id="newAwardName" placeholder="Name" class="flex-grow">
                 <div style="width:100px;">
                     <label style="font-size:0.7rem; color:var(--text-muted); display:block;">Max Qty</label>
@@ -287,7 +287,7 @@
         </div>
         <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V123</div>
+    <div class="version-tag">V124</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -900,53 +900,6 @@
             document.querySelector('#masterTable tbody').innerHTML=d.map((t,i)=>{ 
                 const color = globalData.teams[t.name].color; 
                 return `<tr class="is-me"><td class="t-left" style="color:${color}">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf-t.ga}</td><td>${t.gf}</td><td><b>${t.pts}</b></td></tr>`; 
-            }).join(''); 
-        },
-        
-        renderAdminDetails: () => { 
-            const t=globalData.teams[document.getElementById('admTeamSelect').value]; 
-            if(!t) return; 
-            
-            document.getElementById('admPlayerList').innerHTML=(t.players||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditPlayer(${i})">✎</button> <button class="btn-del" onclick="app.admDel('players',${i})">🗑</button></div></li>`).join('');
-            
-            document.getElementById('admOppList').innerHTML=(t.opps||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditOpp(${i})">✎</button> <button class="btn-del" onclick="app.admDel('opps',${i})">🗑</button></div></li>`).join('');
-            
-            document.getElementById('admAwardList').innerHTML = (t.awards||[]).map((a,i)=>`<li>${a.name} (Max: ${a.max}) <div><button class="btn-edit" onclick="app.admEditAward(${i})">✎</button> <button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></div></li>`).join('');
-            
-            const profSel = document.getElementById('adminProfileName'); 
-            profSel.innerHTML = '';
-            
-            let playerMap = {};
-            Object.keys(globalData.teams).forEach(teamName => {
-                const team = globalData.teams[teamName];
-                if (team.players) {
-                    team.players.forEach(p => {
-                        if (!playerMap[p]) playerMap[p] = [];
-                        playerMap[p].push(teamName);
-                    });
-                }
-            });
-
-            const sortedNames = Object.keys(playerMap).sort();
-            sortedNames.forEach(p => {
-                const teamList = playerMap[p].join(', ');
-                const label = `${p} (${teamList})`;
-                profSel.add(new Option(label, p));
-            });
-
-            if(globalData.settings.profileName) profSel.value = globalData.settings.profileName;
-            
-            const clubList = document.getElementById('admClubList'); 
-            clubList.innerHTML = Object.keys(globalData.teams).map(teamName => { 
-                const isCurrent = teamName === activeContext; 
-                const color = globalData.teams[teamName].color;
-                
-                // Add Edit Button for Club
-                const editBtn = `<button class="btn-edit" onclick="app.admEditClub('${teamName}')">✎</button>`;
-                
-                const deleteBtn = isCurrent ? '<span style="font-size:0.7em; opacity:0.5;">(Active)</span>' : `<button class="btn-del" onclick="app.admDelClub('${teamName}')">🗑</button>`; 
-                
-                return `<li><span style="color:${color}; font-weight:bold;">${teamName}</span> <div>${editBtn} ${deleteBtn}</div></li>`; 
             }).join(''); 
         },
         renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(!sel.value) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === sel.value && m.team === tName && m.season === globalData.settings.currentSeason); const profile = localProfileName; document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); ui.renderHistory(h, 'tournHistoryList'); },
