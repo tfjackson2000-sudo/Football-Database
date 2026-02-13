@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V130</title>
+    <title>Football Tracker V131</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -98,18 +98,23 @@
         #authOverlay, #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; padding: 20px; text-align: center; }
         .auth-card { background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 400px; width: 100%; border: 1px solid var(--border); }
         
-        /* MATCH HISTORY FIXES */
-        .match-row { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--card); gap: 12px; }
+        /* MATCH HISTORY LAYOUT FIX */
+        .match-row { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--card); gap: 10px; }
         .match-info { flex-grow: 1; min-width: 0; }
-        .match-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; min-width: 70px; }
-        .result-badge { padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 1rem; min-width: 45px; text-align: center; }
+        .match-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 80px; }
+        
+        .result-badge { padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 1rem; min-width: 45px; text-align: center; display: inline-block; }
         .res-w { background: rgba(40, 167, 69, 0.15); color: #28a745; }
         .res-l { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
         .res-d { background: rgba(255, 193, 7, 0.15); color: #d39e00; }
         
-        /* AWARD TAGS Styling */
-        .gh-awards { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; margin-bottom: 10px; padding-left: 15px; }
-        .aw-tag { background: linear-gradient(135deg, #FFD700, #DAA520); color: #000; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: inline-flex; align-items: center; }
+        .detail-grid { margin-top: 5px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
+        .dt-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; font-weight: bold; margin-top: 4px; }
+        .dt-val { font-weight: 500; }
+        
+        /* GOLD AWARD TAGS */
+        .gh-awards { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; margin-bottom: 12px; padding-left: 10px; }
+        .aw-tag { background: linear-gradient(135deg, #FFD700, #DAA520); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-flex; align-items: center; gap: 4px; border: 1px solid #B8860B; }
         
         details > summary { list-style: none; cursor: pointer; outline: none; font-weight: bold; font-size: 1.1rem; }
         details > summary::after { content: ' ▼'; float: right; font-size: 0.8em; opacity: 0.5; }
@@ -285,7 +290,7 @@
         </div>
         <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V130</div>
+    <div class="version-tag">V131</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -386,7 +391,24 @@
     function initUI() {
         if(!globalData.daySummaries) globalData.daySummaries = {};
         if(!globalData.settings.profileName) globalData.settings.profileName = "Joey"; 
-        if (!localStorage.getItem('userProfileName')) { localProfileName = globalData.settings.profileName; localStorage.setItem('userProfileName', localProfileName); } else { localProfileName = localStorage.getItem('userProfileName'); }
+        
+        // AUTO-CORRECT PROFILE
+        const allPlayers = [];
+        if(globalData.teams) Object.values(globalData.teams).forEach(t => { if(t.players) allPlayers.push(...t.players); });
+        
+        if (!localStorage.getItem('userProfileName')) { 
+            localProfileName = globalData.settings.profileName; 
+            localStorage.setItem('userProfileName', localProfileName); 
+        } else { 
+            localProfileName = localStorage.getItem('userProfileName'); 
+        }
+        
+        // If current profile is not in the data, default to the first player found
+        if(allPlayers.length > 0 && !allPlayers.includes(localProfileName)) {
+             localProfileName = allPlayers[0];
+             localStorage.setItem('userProfileName', localProfileName);
+        }
+
         document.getElementById('btnSwitchProfile').innerText = `👤 Profile: ${localProfileName}`;
         
         if (!activeContext || (activeContext !== 'Career' && activeContext !== 'Admin' && !globalData.teams[activeContext])) {
@@ -394,7 +416,7 @@
         }
         
         if(globalData && !globalData.history) globalData.history = [];
-        ui.switchContext(activeContext);
+        try { ui.switchContext(activeContext); } catch(e) { console.error(e); }
         document.body.setAttribute('data-theme', globalData?.settings?.theme || 'light');
     }
     
@@ -745,8 +767,76 @@
                 
                 return `<li><span style="color:${color}; font-weight:bold;">${teamName}</span> <div>${editBtn} ${deleteBtn}</div></li>`; 
             }).join(''); 
-        },
+        }
+    });
 
+    window.ui = {
+        renderNav: () => {
+            document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
+            document.getElementById('clubsSticker').innerText = (localProfileName || "Player") + "'s Stats";
+            const r1 = document.getElementById('navRowTeams'); r1.innerHTML='';
+            const cBtn = document.createElement('div'); cBtn.className = `nav-btn career-pill ${activeContext==='Career'?'active':''}`; cBtn.innerText = 'Career'; cBtn.onclick = () => ui.switchContext('Career'); r1.appendChild(cBtn);
+            const div = document.createElement('div'); div.className = 'nav-divider'; r1.appendChild(div);
+            Object.keys(globalData.teams).forEach(t => { const b = document.createElement('div'); b.className = `nav-btn ${activeContext===t?'active':''}`; b.innerText = t; b.onclick=()=>{ui.switchContext(t);}; r1.appendChild(b); });
+        },
+        switchContext: (c) => { 
+            if (globalData.teams[c]) lastActiveTeam = c;
+            activeContext = c; 
+            const root = document.documentElement;
+            if(c === 'Career') { root.style.setProperty('--primary', '#333333'); root.style.setProperty('--primary-tint', '#f0f0f0'); root.style.setProperty('--text-on-primary', '#ffffff'); root.style.setProperty('--accent', '#DAA520'); } 
+            else if (c === 'Admin') { root.style.setProperty('--primary', '#333'); root.style.setProperty('--primary-tint', '#e4e4e7'); root.style.setProperty('--text-on-primary', '#fff'); root.style.setProperty('--accent', '#666'); } 
+            else if(globalData.teams[c]) { const color = globalData.teams[c].color; root.style.setProperty('--primary', color); root.style.setProperty('--primary-tint', hexToRgb(color)); root.style.setProperty('--text-on-primary', '#fff'); root.style.setProperty('--accent', color); }
+            ui.renderNav(); ui.renderMainView(); 
+        },
+        renderMainView: () => {
+            window.scrollTo(0, 0); 
+            ['viewMatchDay','viewCareer','viewAdmin'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+            
+            if(activeContext === 'Career') { 
+                document.getElementById('viewCareer').classList.remove('hidden');
+                const cs = document.getElementById('careerSeasonFilter'); const currentVal = cs.value; cs.innerHTML = '<option value="All Time">All Time</option>';
+                globalData.settings.seasons.forEach(s => { cs.add(new Option(s, s)); }); cs.value = currentVal; 
+                ui.renderCareer(); 
+            } 
+            else if(activeContext === 'Admin') { 
+                document.getElementById('viewAdmin').classList.remove('hidden'); 
+                const sel = document.getElementById('admTeamSelect'); sel.innerHTML=''; 
+                Object.keys(globalData.teams).forEach(t=>sel.add(new Option(t,t))); 
+                if(lastActiveTeam && globalData.teams[lastActiveTeam]) sel.value = lastActiveTeam;
+                const sSel = document.getElementById('admActiveSeason'); sSel.innerHTML=''; globalData.settings.seasons.forEach(s=>sSel.add(new Option(s,s))); sSel.value = globalData.settings.currentSeason; ui.renderAdminDetails(); 
+            } 
+            else { 
+                document.getElementById('viewMatchDay').classList.remove('hidden'); 
+                const isInSquad = globalData.teams[activeContext].players.includes(localProfileName);
+                document.getElementById('teamStatTitle').innerText = activeContext + (isInSquad ? " Overview" : " (Not in Squad)");
+                ui.renderMatchDayInputs(); ui.renderTeamStats(); ui.renderLeagueTable(); ui.renderTopScorers(); 
+                ui.renderHistory(globalData.history.filter(m=>m.team===activeContext && m.season===globalData.settings.currentSeason)); 
+                const sel = document.getElementById('tournSelector'); sel.innerHTML = '<option value="">-- Select --</option>'; 
+                if(globalData.teams[activeContext].tournaments) { globalData.teams[activeContext].tournaments.forEach(tr => { if(tr.active) sel.add(new Option(tr.name, tr.name)); }); }
+                document.getElementById('tournStatsArea').classList.add('hidden');
+            }
+        },
+        renderMatchDayInputs: () => { 
+            const t = globalData.teams[activeContext]; 
+            const fill = (id, arr) => {const el=document.getElementById(id); el.innerHTML=""; arr.forEach(x=>el.add(new Option(x,x)))}; 
+            fill('mOpp', t.opps || []); fill('mCoach', t.coaches || []); 
+            const te = document.getElementById('mTourn'); te.innerHTML='<option value="League">League</option>'; 
+            if(t.tournaments) t.tournaments.forEach(tr => { if(tr.active) te.add(new Option("🏆 " + tr.name, tr.name)); }); 
+            document.getElementById('mDate').value = new Date().toISOString().split('T')[0];
+            
+            const luArea = document.getElementById('mLineupArea');
+            luArea.innerHTML = '';
+            (t.players || []).forEach(p => {
+                const div = document.createElement('div'); div.className='lineup-item';
+                div.innerHTML = `<input type="checkbox" class="m-lineup-chk" value="${p}" checked onchange="app.renderScorers('m')"> ${p}`;
+                luArea.appendChild(div);
+            });
+
+            app.renderScorers('m'); 
+        },
+        
+        renderQueue: () => { const q=document.getElementById('matchQueue'); q.innerHTML=sessionQueue.map((g,i)=>`<div class="queue-item"><div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div><button class="btn-del" onclick="sessionQueue.splice(${i},1);ui.renderQueue()">✕</button></div>`).join(''); document.getElementById('btnFinalize').classList.toggle('hidden', sessionQueue.length===0); },
+        
         renderHistory: (data, targetId) => { 
             const list = document.getElementById(targetId || 'teamHistoryList'); 
             if(!data || !data.length) { list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">No matches yet</div>'; return; }
@@ -811,6 +901,201 @@
             if(!ALLOWED_UIDS.includes(currentUser?.uid) || isGuest) {
                 document.querySelectorAll('.protected-area').forEach(el=>el.classList.add('hidden')); 
             }
+        },
+
+        renderTopScorers: () => { 
+            const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); 
+            const counts = {}; 
+            matches.forEach(m => (m.scorers || []).forEach(p => counts[p] = (counts[p] || 0) + 1)); 
+            const sorted = Object.entries(counts)
+                .filter(([name, count]) => name !== 'O.G.') 
+                .sort((a,b) => b[1] - a[1]); 
+            const tbl = document.querySelector('#topScorerTable tbody'); 
+            tbl.innerHTML = sorted.length ? sorted.map(s => `<tr><td>${s[0]}</td><td class="num-col">${s[1]}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center">No goals yet</td></tr>'; 
+        },
+        renderLeagueTable: () => { const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); let my = { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; matches.forEach(m => { my.p++; my.gf += m.our; my.ga += m.their; if(m.our > m.their) { my.w++; my.pts+=3; } else if(m.our < m.their) { my.l++; my.pts+=0; } else { my.d++; my.pts+=1; } }); let opp = { p: my.p, w: my.l, d: my.d, l: my.w, gf: my.ga, ga: my.gf, pts: (my.l * 3) + (my.d * 1) }; let data = [{ name: activeContext, ...my, isMe: true }, { name: "Opponents", ...opp, isMe: false }]; data.sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga))); document.querySelector('#teamLeagueTable tbody').innerHTML = data.map((d, i) => `<tr class="${d.isMe?'is-me':''}"><td class="t-left">${i+1}. ${d.name}</td><td>${d.p}</td><td>${d.w}</td><td>${d.d}</td><td>${d.l}</td><td>${d.gf-d.ga}</td><td><b>${d.pts}</b></td></tr>`).join(''); },
+        
+        renderTeamStats: () => { 
+            const profile = localProfileName;
+            
+            const t = globalData.teams[activeContext];
+            if (!t.players.includes(profile)) {
+                document.getElementById('st-p').innerText = 0; document.getElementById('st-w').innerText = 0; document.getElementById('st-g').innerText = 0; document.getElementById('st-a').innerText = "N/A"; return;
+            }
+
+            const h = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); 
+            
+            const playerMatches = h.filter(m => {
+                if (m.lineup) return m.lineup.includes(profile);
+                return true; 
+            });
+
+            const uniqueDates = [...new Set(playerMatches.map(m => m.date))]; 
+            const maxAwards = uniqueDates.length; 
+            
+            let awardCount = 0; 
+            uniqueDates.forEach(d => { 
+                const sum = globalData.daySummaries[d]; 
+                if(sum && sum.awards && sum.awards.length > 0) { 
+                    awardCount += sum.awards.filter(a => a.player === profile).length; 
+                } else { 
+                    const matchesOnDay = playerMatches.filter(m => m.date === d); 
+                    let legacyAwardsOnDay = 0; 
+                    matchesOnDay.forEach(m => { 
+                        if (m.awards) legacyAwardsOnDay += m.awards.filter(a => a.player === profile).length; 
+                    }); 
+                    awardCount += legacyAwardsOnDay; 
+                } 
+            }); 
+            
+            document.getElementById('st-p').innerText = playerMatches.length; 
+            document.getElementById('st-w').innerText = playerMatches.filter(m=>m.our>m.their).length; 
+            document.getElementById('st-g').innerText = playerMatches.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
+            if (awardCount === 0) { document.getElementById('st-a').innerText = "N/A"; } else { document.getElementById('st-a').innerText = `${awardCount} / ${maxAwards}`; } 
+        },
+        
+        renderCareer: () => { 
+            const f = document.getElementById('careerSeasonFilter').value; 
+            const profile = localProfileName; 
+            
+            let totalGames = 0, totalWins = 0, totalGoals = 0;
+            let totalAwardWins = 0, totalAwardOpps = 0;
+
+            Object.keys(globalData.teams).forEach(teamName => {
+                if (!globalData.teams[teamName].players.includes(profile)) return;
+
+                let teamHistory = globalData.history.filter(m => m.team === teamName);
+                if(f !== 'All Time') teamHistory = teamHistory.filter(m => m.season === f);
+                
+                const playerMatches = teamHistory.filter(m => {
+                    if (m.lineup) return m.lineup.includes(profile);
+                    return true; 
+                });
+
+                totalGames += playerMatches.length;
+                totalWins += playerMatches.filter(m => m.our > m.their).length;
+                totalGoals += playerMatches.reduce((acc, m) => acc + (m.scorers||[]).filter(s => s === profile).length, 0);
+
+                const teamUniqueDates = [...new Set(playerMatches.map(m => m.date))];
+                let teamAwards = 0;
+                
+                teamUniqueDates.forEach(d => {
+                    const sum = globalData.daySummaries[d];
+                    if(sum && sum.awards && sum.awards.length > 0) {
+                        teamAwards += sum.awards.filter(a => a.player === profile).length;
+                    } else {
+                        const matchesOnDay = playerMatches.filter(m => m.date === d);
+                        matchesOnDay.forEach(m => { if (m.awards) teamAwards += m.awards.filter(a => a.player === profile).length; });
+                    }
+                });
+
+                if (teamAwards > 0) {
+                    totalAwardWins += teamAwards;
+                    totalAwardOpps += teamUniqueDates.length;
+                }
+            });
+
+            document.getElementById('c-p').innerText = totalGames;
+            document.getElementById('c-w').innerText = totalWins;
+            document.getElementById('c-g').innerText = totalGoals;
+            document.getElementById('c-a').innerText = totalAwardWins === 0 ? "N/A" : `${totalAwardWins} / ${totalAwardOpps}`;
+
+            let h = globalData.history; 
+            if(f !== 'All Time') h = h.filter(m => m.season === f); 
+            let stats={}; 
+            h.forEach(m=>{
+                const u=(n,gf,ga)=>{
+                    if(!stats[n]) stats[n]={name:n,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};
+                    const st=stats[n]; st.p++; st.gf+=gf; st.ga+=ga;
+                    if(gf>ga){st.w++; st.pts+=3;} else if(gf<ga){st.l++; st.pts+=0;} else{st.d++; st.pts+=1;}
+                };
+                u(m.team,m.our,m.their);
+            }); 
+            const d = Object.values(stats).filter(t => globalData.teams[t.name] !== undefined).sort((a,b)=>b.pts-a.pts); 
+            document.querySelector('#masterTable tbody').innerHTML=d.map((t,i)=>{ 
+                const color = globalData.teams[t.name].color; 
+                return `<tr class="is-me"><td class="t-left" style="color:${color}">${i+1}. ${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf-t.ga}</td><td>${t.gf}</td><td><b>${t.pts}</b></td></tr>`; 
+            }).join(''); 
+        },
+        renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(!sel.value) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === sel.value && m.team === tName && m.season === globalData.settings.currentSeason); const profile = localProfileName; document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); ui.renderHistory(h, 'tournHistoryList'); },
+        
+        openEditModal: (id) => { 
+            const m = globalData.history.find(x => x.id == id); 
+            document.getElementById('editId').value = id; 
+            document.getElementById('eDate').value = m.date; 
+            document.getElementById('eOur').value = m.our; 
+            document.getElementById('eTheir').value = m.their; 
+            document.getElementById('eNotes').value = m.notes || ""; 
+            const t = globalData.teams[m.team]; 
+            const fill = (eid, arr, val) => { const el = document.getElementById(eid); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); el.value = val || ""; }; 
+            fill('eOpp', t.opps, m.opp); fill('eCoach', t.coaches || [], m.coach); 
+            const te = document.getElementById('eTourn'); te.innerHTML='<option value="League">League</option>'; 
+            if(t.tournaments) t.tournaments.forEach(tr => te.add(new Option("🏆 "+tr.name, tr.name))); te.value = m.tourn; 
+            
+            const luArea = document.getElementById('eLineupArea');
+            luArea.innerHTML = '';
+            (t.players || []).forEach(p => {
+                const div = document.createElement('div'); div.className='lineup-item';
+                const isChecked = m.lineup ? m.lineup.includes(p) : true;
+                div.innerHTML = `<input type="checkbox" class="e-lineup-chk" value="${p}" ${isChecked?'checked':''} onchange="app.renderScorers('e')"> ${p}`;
+                luArea.appendChild(div);
+            });
+
+            app.renderScorers('e'); 
+            
+            if (m.scorers) {
+                 const selects = document.querySelectorAll('.e-sc-input');
+                 m.scorers.forEach((s, idx) => { if (selects[idx]) selects[idx].value = s; });
+            }
+
+            document.getElementById('editModal').classList.remove('hidden'); 
+        },
+        
+        renderAdminDetails: () => { 
+            const t=globalData.teams[document.getElementById('admTeamSelect').value]; 
+            if(!t) return; 
+            
+            document.getElementById('admPlayerList').innerHTML=(t.players||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditPlayer(${i})">✎</button> <button class="btn-del" onclick="app.admDel('players',${i})">🗑</button></div></li>`).join('');
+            
+            document.getElementById('admOppList').innerHTML=(t.opps||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditOpp(${i})">✎</button> <button class="btn-del" onclick="app.admDel('opps',${i})">🗑</button></div></li>`).join('');
+            
+            document.getElementById('admAwardList').innerHTML = (t.awards||[]).map((a,i)=>`<li>${a.name} (Max: ${a.max}) <div><button class="btn-edit" onclick="app.admEditAward(${i})">✎</button> <button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></div></li>`).join('');
+            
+            const profSel = document.getElementById('adminProfileName'); 
+            profSel.innerHTML = '';
+            
+            let playerMap = {};
+            Object.keys(globalData.teams).forEach(teamName => {
+                const team = globalData.teams[teamName];
+                if (team.players) {
+                    team.players.forEach(p => {
+                        if (!playerMap[p]) playerMap[p] = [];
+                        playerMap[p].push(teamName);
+                    });
+                }
+            });
+
+            const sortedNames = Object.keys(playerMap).sort();
+            sortedNames.forEach(p => {
+                const teamList = playerMap[p].join(', ');
+                const label = `${p} (${teamList})`;
+                profSel.add(new Option(label, p));
+            });
+
+            if(globalData.settings.profileName) profSel.value = globalData.settings.profileName;
+            
+            const clubList = document.getElementById('admClubList'); 
+            clubList.innerHTML = Object.keys(globalData.teams).map(teamName => { 
+                const isCurrent = teamName === activeContext; 
+                const color = globalData.teams[teamName].color;
+                
+                // Add Edit Button for Club
+                const editBtn = `<button class="btn-edit" onclick="app.admEditClub('${teamName}')">✎</button>`;
+                
+                const deleteBtn = isCurrent ? '<span style="font-size:0.7em; opacity:0.5;">(Active)</span>' : `<button class="btn-del" onclick="app.admDelClub('${teamName}')">🗑</button>`; 
+                
+                return `<li><span style="color:${color}; font-weight:bold;">${teamName}</span> <div>${editBtn} ${deleteBtn}</div></li>`; 
+            }).join(''); 
         }
     };
 </script>
