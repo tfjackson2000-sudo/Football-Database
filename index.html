@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V111</title>
+    <title>Football Tracker V112</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -300,7 +300,7 @@
         <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body"><div class="flex-row" style="margin-bottom:10px;"><input type="text" id="newAwardName" placeholder="Name" class="flex-grow"><input type="number" id="newAwardMax" placeholder="Max" style="width:70px;"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.addAwardConfig()">Add</button></div><ul id="admAwardList" class="admin-list"></ul></div></div>
         <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body"><p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">Note: Profile selection is now personal to each device (see footer). The setting below only sets a default for new visitors.</p><label style="display:block; margin-bottom:5px;">Default Profile Name:</label><div class="flex-row" style="margin-bottom:20px;"><select id="adminProfileName" class="flex-grow"></select><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button></div><label style="display:block; margin-bottom:5px;">Add Club:</label><div class="flex-row" style="margin-bottom:15px;"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button type="button" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div><label style="display:block; margin-bottom:5px;">Manage Clubs:</label><ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V111</div>
+    <div class="version-tag">V112</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -397,7 +397,13 @@
         if(!globalData.settings.profileName) globalData.settings.profileName = "Joey"; 
         if (!localStorage.getItem('userProfileName')) { localProfileName = globalData.settings.profileName; localStorage.setItem('userProfileName', localProfileName); } else { localProfileName = localStorage.getItem('userProfileName'); }
         document.getElementById('btnSwitchProfile').innerText = `👤 Profile: ${localProfileName}`;
-        activeContext = "Career";
+        
+        // --- FIX: RETAIN CONTEXT ---
+        // Only default to 'Career' if activeContext is invalid (e.g. initial load or deleted team)
+        if (!activeContext || (activeContext !== 'Career' && activeContext !== 'Admin' && !globalData.teams[activeContext])) {
+            activeContext = "Career";
+        }
+        
         if(globalData && !globalData.history) globalData.history = [];
         ui.switchContext(activeContext);
         document.body.setAttribute('data-theme', globalData?.settings?.theme || 'light');
@@ -592,7 +598,7 @@
             const counts = {}; 
             matches.forEach(m => (m.scorers || []).forEach(p => counts[p] = (counts[p] || 0) + 1)); 
             const sorted = Object.entries(counts)
-                .filter(([name, count]) => name !== 'O.G.') // FILTER OUT O.G.
+                .filter(([name, count]) => name !== 'O.G.') 
                 .sort((a,b) => b[1] - a[1]); 
             const tbl = document.querySelector('#topScorerTable tbody'); 
             tbl.innerHTML = sorted.length ? sorted.map(s => `<tr><td>${s[0]}</td><td class="num-col">${s[1]}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center">No goals yet</td></tr>'; 
