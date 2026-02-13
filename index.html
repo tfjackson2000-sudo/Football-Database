@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V129</title>
+    <title>Football Tracker V130</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -98,23 +98,18 @@
         #authOverlay, #loadingOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index:9999; display:flex; justify-content:center; align-items:center; flex-direction:column; padding: 20px; text-align: center; }
         .auth-card { background: var(--card); padding: 30px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); max-width: 400px; width: 100%; border: 1px solid var(--border); }
         
-        /* MATCH HISTORY LAYOUT FIX */
-        .match-row { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--card); gap: 10px; }
+        /* MATCH HISTORY FIXES */
+        .match-row { padding: 15px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--card); gap: 12px; }
         .match-info { flex-grow: 1; min-width: 0; }
-        .match-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; min-width: 80px; }
-        
-        .result-badge { padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 1rem; min-width: 45px; text-align: center; display: inline-block; }
+        .match-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; min-width: 70px; }
+        .result-badge { padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 1rem; min-width: 45px; text-align: center; }
         .res-w { background: rgba(40, 167, 69, 0.15); color: #28a745; }
         .res-l { background: rgba(220, 53, 69, 0.15); color: #dc3545; }
         .res-d { background: rgba(255, 193, 7, 0.15); color: #d39e00; }
         
-        .detail-grid { margin-top: 5px; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
-        .dt-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; font-weight: bold; margin-top: 4px; }
-        .dt-val { font-weight: 500; }
-        
-        /* GOLD AWARD TAGS */
-        .gh-awards { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; margin-bottom: 12px; padding-left: 10px; }
-        .aw-tag { background: linear-gradient(135deg, #FFD700, #DAA520); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-flex; align-items: center; gap: 4px; border: 1px solid #B8860B; }
+        /* AWARD TAGS Styling */
+        .gh-awards { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; margin-bottom: 10px; padding-left: 15px; }
+        .aw-tag { background: linear-gradient(135deg, #FFD700, #DAA520); color: #000; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: inline-flex; align-items: center; }
         
         details > summary { list-style: none; cursor: pointer; outline: none; font-weight: bold; font-size: 1.1rem; }
         details > summary::after { content: ' ▼'; float: right; font-size: 0.8em; opacity: 0.5; }
@@ -290,7 +285,7 @@
         </div>
         <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V129</div>
+    <div class="version-tag">V130</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -391,24 +386,7 @@
     function initUI() {
         if(!globalData.daySummaries) globalData.daySummaries = {};
         if(!globalData.settings.profileName) globalData.settings.profileName = "Joey"; 
-        
-        // AUTO-CORRECT PROFILE
-        const allPlayers = [];
-        if(globalData.teams) Object.values(globalData.teams).forEach(t => { if(t.players) allPlayers.push(...t.players); });
-        
-        if (!localStorage.getItem('userProfileName')) { 
-            localProfileName = globalData.settings.profileName; 
-            localStorage.setItem('userProfileName', localProfileName); 
-        } else { 
-            localProfileName = localStorage.getItem('userProfileName'); 
-        }
-        
-        // If current profile is not in the data, default to the first player found
-        if(allPlayers.length > 0 && !allPlayers.includes(localProfileName)) {
-             localProfileName = allPlayers[0];
-             localStorage.setItem('userProfileName', localProfileName);
-        }
-
+        if (!localStorage.getItem('userProfileName')) { localProfileName = globalData.settings.profileName; localStorage.setItem('userProfileName', localProfileName); } else { localProfileName = localStorage.getItem('userProfileName'); }
         document.getElementById('btnSwitchProfile').innerText = `👤 Profile: ${localProfileName}`;
         
         if (!activeContext || (activeContext !== 'Career' && activeContext !== 'Admin' && !globalData.teams[activeContext])) {
@@ -416,7 +394,7 @@
         }
         
         if(globalData && !globalData.history) globalData.history = [];
-        try { ui.switchContext(activeContext); } catch(e) { console.error(e); }
+        ui.switchContext(activeContext);
         document.body.setAttribute('data-theme', globalData?.settings?.theme || 'light');
     }
     
@@ -736,17 +714,15 @@
             profSel.innerHTML = '';
             
             let playerMap = {};
-            if(globalData.teams) {
-                Object.keys(globalData.teams).forEach(teamName => {
-                    const team = globalData.teams[teamName];
-                    if (team.players) {
-                        team.players.forEach(p => {
-                            if (!playerMap[p]) playerMap[p] = [];
-                            playerMap[p].push(teamName);
-                        });
-                    }
-                });
-            }
+            Object.keys(globalData.teams).forEach(teamName => {
+                const team = globalData.teams[teamName];
+                if (team.players) {
+                    team.players.forEach(p => {
+                        if (!playerMap[p]) playerMap[p] = [];
+                        playerMap[p].push(teamName);
+                    });
+                }
+            });
 
             const sortedNames = Object.keys(playerMap).sort();
             sortedNames.forEach(p => {
@@ -820,7 +796,7 @@
                     </div>
                     <div class="match-actions">
                         <div class="result-badge ${resClass}">${m.our}-${m.their}</div>
-                        <div class="protected-area flex-row" style="gap:5px;">
+                        <div class="protected-area flex-row" style="gap:5px; margin-top:5px;">
                             <button class="btn-edit" onclick="ui.openEditModal('${m.id}')">✎</button>
                             <button class="btn-del" onclick="app.deleteMatch('${m.id}')">🗑</button>
                         </div>
