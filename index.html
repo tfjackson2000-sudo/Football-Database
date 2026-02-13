@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V109</title>
+    <title>Football Tracker V110</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -300,7 +300,7 @@
         <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body"><div class="flex-row" style="margin-bottom:10px;"><input type="text" id="newAwardName" placeholder="Name" class="flex-grow"><input type="number" id="newAwardMax" placeholder="Max" style="width:70px;"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.addAwardConfig()">Add</button></div><ul id="admAwardList" class="admin-list"></ul></div></div>
         <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body"><p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">Note: Profile selection is now personal to each device (see footer). The setting below only sets a default for new visitors.</p><label style="display:block; margin-bottom:5px;">Default Profile Name:</label><div class="flex-row" style="margin-bottom:20px;"><select id="adminProfileName" class="flex-grow"></select><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button></div><label style="display:block; margin-bottom:5px;">Add Club:</label><div class="flex-row" style="margin-bottom:15px;"><input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow"><input type="color" id="newTeamColor" value="#333333" class="color-picker"><button type="button" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.addTeam()">Create</button></div><label style="display:block; margin-bottom:5px;">Manage Clubs:</label><ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V109</div>
+    <div class="version-tag">V110</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -446,7 +446,7 @@
                 scorers: Array.from(document.querySelectorAll('.m-sc-input')).map(s=>s.value), 
                 notes: document.getElementById('mNotes').value, 
                 season: globalData.settings.currentSeason,
-                lineup: lineup // STORE LINEUP
+                lineup: lineup 
             });
             ui.renderQueue(); 
             document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; ui.renderScorers('m');
@@ -478,7 +478,30 @@
             globalData.history[i]={ ...globalData.history[i], date:document.getElementById('eDate').value, opp:document.getElementById('eOpp').value, tourn:document.getElementById('eTourn').value, coach:document.getElementById('eCoach').value, our:parseInt(document.getElementById('eOur').value)||0, their:parseInt(document.getElementById('eTheir').value)||0, scorers:Array.from(document.querySelectorAll('.e-sc-input')).map(s=>s.value), notes:document.getElementById('eNotes').value, lineup: lineup }; 
             saveToCloud().then(()=>{document.getElementById('editModal').classList.add('hidden'); ui.renderMainView();}); 
         },
-        renameTeamPrompt: () => { const oldName = document.getElementById('admTeamSelect').value; const newName = prompt(`Rename "${oldName}" to:`, oldName); if(newName && newName !== oldName && newName.trim() !== "") { if(globalData.teams[newName]) return alert("Team name already exists!"); globalData.teams[newName] = globalData.teams[oldName]; delete globalData.teams[oldName]; globalData.history.forEach(m => { if(m.team === oldName) m.team = newName; }); activeContext = newName; saveToCloud().then(()=>{ alert("Renamed successfully"); ui.initUI(); }); } }
+        renameTeamPrompt: () => { const oldName = document.getElementById('admTeamSelect').value; const newName = prompt(`Rename "${oldName}" to:`, oldName); if(newName && newName !== oldName && newName.trim() !== "") { if(globalData.teams[newName]) return alert("Team name already exists!"); globalData.teams[newName] = globalData.teams[oldName]; delete globalData.teams[oldName]; globalData.history.forEach(m => { if(m.team === oldName) m.team = newName; }); activeContext = newName; saveToCloud().then(()=>{ alert("Renamed successfully"); ui.initUI(); }); } },
+
+        // --- UPDATED RENDER SCORERS TO INCLUDE O.G. ---
+        renderScorers: (p) => { 
+            const c = parseInt(document.getElementById(p + 'Our').value) || 0; 
+            const d = document.getElementById(p + 'ScorerList'); 
+            d.innerHTML = c > 0 ? '<label>Goal Scorers:</label>' : ''; 
+            
+            // Filter players based on checked lineup boxes
+            const checkedBoxes = document.querySelectorAll(`.${p}-lineup-chk:checked`);
+            const availablePlayers = Array.from(checkedBoxes).map(cb => cb.value);
+
+            for(let i=0; i<c; i++) { 
+                const s = document.createElement('select'); 
+                s.className = p + '-sc-input'; s.style.marginBottom='5px'; 
+                // Add Squad
+                availablePlayers.forEach(x => s.add(new Option(x,x))); 
+                // Add Separator and O.G.
+                s.add(new Option("---", ""));
+                s.add(new Option("O.G. (Own Goal)", "O.G."));
+                
+                d.appendChild(s); 
+            } 
+        }
     });
 
     window.ui = {
@@ -539,30 +562,13 @@
             luArea.innerHTML = '';
             (t.players || []).forEach(p => {
                 const div = document.createElement('div'); div.className='lineup-item';
-                // Check all by default (User Preference Assumption for quick entry)
-                div.innerHTML = `<input type="checkbox" class="m-lineup-chk" value="${p}" checked onchange="ui.renderScorers('m')"> ${p}`;
+                div.innerHTML = `<input type="checkbox" class="m-lineup-chk" value="${p}" checked onchange="app.renderScorers('m')"> ${p}`;
                 luArea.appendChild(div);
             });
 
-            ui.renderScorers('m'); 
+            app.renderScorers('m'); 
         },
         
-        renderScorers: (p) => { 
-            const c = parseInt(document.getElementById(p + 'Our').value) || 0; 
-            const d = document.getElementById(p + 'ScorerList'); 
-            d.innerHTML = c > 0 ? '<label>Goal Scorers:</label>' : ''; 
-            
-            // Filter players based on checked lineup boxes
-            const checkedBoxes = document.querySelectorAll(`.${p}-lineup-chk:checked`);
-            const availablePlayers = Array.from(checkedBoxes).map(cb => cb.value);
-
-            for(let i=0; i<c; i++) { 
-                const s = document.createElement('select'); 
-                s.className = p + '-sc-input'; s.style.marginBottom='5px'; 
-                availablePlayers.forEach(x => s.add(new Option(x,x))); 
-                d.appendChild(s); 
-            } 
-        },
         renderQueue: () => { const q=document.getElementById('matchQueue'); q.innerHTML=sessionQueue.map((g,i)=>`<div class="queue-item"><div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div><button class="btn-del" onclick="sessionQueue.splice(${i},1);ui.renderQueue()">✕</button></div>`).join(''); document.getElementById('btnFinalize').classList.toggle('hidden', sessionQueue.length===0); },
         
         renderHistory: (data, targetId) => { 
@@ -618,7 +624,9 @@
                 } else { 
                     const matchesOnDay = playerMatches.filter(m => m.date === d); 
                     let legacyAwardsOnDay = 0; 
-                    matchesOnDay.forEach(m => { if (m.awards) legacyAwardsOnDay += m.awards.filter(a => a.player === profile).length; }); 
+                    matchesOnDay.forEach(m => { 
+                        if (m.awards) legacyAwardsOnDay += m.awards.filter(a => a.player === profile).length; 
+                    }); 
                     awardCount += legacyAwardsOnDay; 
                 } 
             }); 
@@ -717,11 +725,11 @@
                 const div = document.createElement('div'); div.className='lineup-item';
                 // If m.lineup exists, use it. If not, assume Checked (Legacy)
                 const isChecked = m.lineup ? m.lineup.includes(p) : true;
-                div.innerHTML = `<input type="checkbox" class="e-lineup-chk" value="${p}" ${isChecked?'checked':''} onchange="ui.renderScorers('e')"> ${p}`;
+                div.innerHTML = `<input type="checkbox" class="e-lineup-chk" value="${p}" ${isChecked?'checked':''} onchange="app.renderScorers('e')"> ${p}`;
                 luArea.appendChild(div);
             });
 
-            ui.renderScorers('e'); 
+            app.renderScorers('e'); 
             
             // Set scorer values *after* render
             if (m.scorers) {
