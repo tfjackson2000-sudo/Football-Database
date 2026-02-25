@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V133</title>
+    <title>Football Tracker V134</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -220,10 +220,34 @@
                 <div class="card-body">
                     <button type="button" class="btn-outline protected-area" style="width:auto; padding:5px 12px; font-size:0.8rem; float:right;" onclick="document.getElementById('addTournModal').classList.remove('hidden')">+ New Tournament</button>
                     <div class="form-group" style="clear:both; padding-top:10px;"><label>Select Tournament:</label><select id="tournSelector" onchange="ui.renderTournamentView()"></select></div>
+                    
                     <div id="tournStatsArea" class="hidden">
                         <div class="stat-grid"><div class="stat-item"><span>Games</span><strong id="tr-p">0</strong></div><div class="stat-item"><span>Wins</span><strong id="tr-w">0</strong></div><div class="stat-item"><span>Goals</span><strong id="tr-g">0</strong></div><div class="stat-item"><span>Awards</span><strong id="tr-a">0</strong></div></div>
-                        <div class="protected-area" style="margin-top:20px; text-align:right;"><button type="button" class="btn-edit" style="width:auto;" onclick="app.openEditActiveTourn()">⚙️ Manage</button></div>
-                        <div class="protected-area" style="background:var(--primary-tint); padding:15px; border-radius:10px; margin-top:20px; border:1px solid var(--border);"><label>🏆 Tournament Winner:</label><div class="flex-row"><input type="text" id="tournWinnerInput" placeholder="Enter winner" class="flex-grow"><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveTournWinner()">Save</button></div></div>
+                        
+                        <div class="protected-area" style="margin-top:20px; text-align:right;">
+                            <button type="button" class="btn-edit" style="width:auto;" onclick="app.openEditActiveTourn()">⚙️ Manage in Admin</button>
+                        </div>
+                        
+                        <div class="protected-area" style="background:var(--primary-tint); padding:15px; border-radius:10px; margin-top:20px; border:1px solid var(--border);">
+                            <label>🏆 Tournament Winner:</label>
+                            <div class="flex-row">
+                                <input type="text" id="tournWinnerInput" placeholder="Enter winner" class="flex-grow">
+                                <button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveTournWinner()">Save</button>
+                            </div>
+                        </div>
+
+                        <div class="card" style="box-shadow:none; border:none; padding:0; margin-top:25px; margin-bottom: 0;">
+                            <details open>
+                                <summary class="card-header" style="border-radius:10px; padding: 10px 15px; font-size: 1rem;">📊 Tournament Table</summary>
+                                <div class="card-body" style="padding:0;">
+                                    <table id="tournLeagueTable">
+                                        <thead><tr><th>Team</th><th class="num-col">P</th><th class="num-col">W</th><th class="num-col">D</th><th class="num-col">L</th><th class="num-col">GD</th><th class="num-col">Pts</th></tr></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </details>
+                        </div>
+
                         <h3 style="margin-top:25px; border-bottom:2px solid var(--border);">🕒 Fixtures</h3>
                         <div id="tournHistoryList"></div>
                     </div>
@@ -280,6 +304,15 @@
             <ul id="admOppList" class="admin-list"></ul>
         </div></div>
         
+        <div class="card"><div class="card-header">🏆 Tournaments</div><div class="card-body">
+            <div class="form-group flex-row">
+                <input type="text" id="admNewTourn" placeholder="Tournament Name" class="flex-grow">
+                <button type="button" id="btnAddUpdateTourn" class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddTourn()">Add</button>
+                <button type="button" id="btnCancelTourn" class="btn btn-cancel hidden" style="width:auto; margin-top:0;" onclick="app.cancelEdit('tourn')">✕</button>
+            </div>
+            <ul id="admTournList" class="admin-list"></ul>
+        </div></div>
+
         <div class="card"><div class="card-header">🏅 Awards</div><div class="card-body">
             <div class="flex-row" style="margin-bottom:10px; align-items:flex-end;">
                 <input type="text" id="newAwardName" placeholder="Name" class="flex-grow">
@@ -304,7 +337,7 @@
         </div>
         <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V133</div>
+    <div class="version-tag">V134</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -373,6 +406,7 @@
     let editingOppIdx = -1;
     let editingCoachIdx = -1;
     let editingAwardIdx = -1;
+    let editingTournIdx = -1; // NEW: Tournaments
     let editingClubName = null;
 
     try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
@@ -548,6 +582,12 @@
                  const btn = document.getElementById('btnAddUpdateAward');
                  btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-save');
                  document.getElementById('btnCancelAward').classList.add('hidden');
+             } else if (type === 'tourn') {
+                 editingTournIdx = -1;
+                 document.getElementById('admNewTourn').value = "";
+                 const btn = document.getElementById('btnAddUpdateTourn');
+                 btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
+                 document.getElementById('btnCancelTourn').classList.add('hidden');
              } else if (type === 'club') {
                  editingClubName = null;
                  document.getElementById('newTeamName').value = "";
@@ -558,18 +598,22 @@
              }
         },
 
+        // --- PLAYERS ---
         admEditPlayer: (i) => {
             editingPlayerIdx = i;
             const t = document.getElementById('admTeamSelect').value;
             const fullName = globalData.teams[t].players[i];
+            
             let namePart = fullName; let numPart = "";
             if(fullName.includes(" (#")) { const parts = fullName.split(" (#"); namePart = parts[0]; numPart = parts[1].replace(")", ""); }
             const lastSpace = namePart.lastIndexOf(" ");
             let first = namePart; let last = "";
             if (lastSpace !== -1) { first = namePart.substring(0, lastSpace); last = namePart.substring(lastSpace + 1); } else { first = namePart; }
+            
             document.getElementById('admNewPlayerFirst').value = first;
             document.getElementById('admNewPlayerLast').value = last;
             document.getElementById('admNewPlayerNum').value = numPart;
+            
             const btn = document.getElementById('btnAddUpdatePlayer');
             btn.innerText = "Update Player"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
             document.getElementById('btnCancelPlayer').classList.remove('hidden');
@@ -580,12 +624,16 @@
              const f = document.getElementById('admNewPlayerFirst').value.trim();
              const l = document.getElementById('admNewPlayerLast').value.trim();
              const n = document.getElementById('admNewPlayerNum').value.trim();
+
              if (!f || !l) return alert("First Name and Surname are mandatory.");
              let fullName = `${f} ${l}`; if (n) fullName += ` (#${n})`;
+
              if(!globalData.teams[t].players) globalData.teams[t].players = [];
+             
              if (editingPlayerIdx > -1) {
                  const oldName = globalData.teams[t].players[editingPlayerIdx];
                  globalData.teams[t].players[editingPlayerIdx] = fullName;
+                 
                  if (oldName !== fullName) {
                      globalData.history.forEach(m => {
                          if (m.team === t) {
@@ -607,6 +655,7 @@
              saveToCloud().then(() => ui.renderAdminDetails());
         },
 
+        // --- MANAGERS ---
         admEditCoach: (i) => {
             editingCoachIdx = i;
             const t = document.getElementById('admTeamSelect').value;
@@ -630,6 +679,7 @@
              saveToCloud().then(() => ui.renderAdminDetails());
         },
 
+        // --- OPPONENTS ---
         admEditOpp: (i) => {
             editingOppIdx = i;
             const t = document.getElementById('admTeamSelect').value;
@@ -642,7 +692,9 @@
              const t = document.getElementById('admTeamSelect').value;
              const v = document.getElementById('admNewOpp').value.trim();
              if(!v) return;
+             
              if(!globalData.teams[t].opps) globalData.teams[t].opps = [];
+
              if (editingOppIdx > -1) {
                  globalData.teams[t].opps[editingOppIdx] = v;
                  app.cancelEdit('opp');
@@ -653,6 +705,40 @@
              saveToCloud().then(() => ui.renderAdminDetails());
         },
 
+        // --- TOURNAMENTS ---
+        admEditTourn: (i) => {
+            editingTournIdx = i;
+            const t = document.getElementById('admTeamSelect').value;
+            document.getElementById('admNewTourn').value = globalData.teams[t].tournaments[i].name;
+            const btn = document.getElementById('btnAddUpdateTourn');
+            btn.innerText = "Update"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
+            document.getElementById('btnCancelTourn').classList.remove('hidden');
+        },
+        adminAddTourn: () => {
+             const t = document.getElementById('admTeamSelect').value;
+             const v = document.getElementById('admNewTourn').value.trim();
+             if(!v) return;
+             
+             if(!globalData.teams[t].tournaments) globalData.teams[t].tournaments = [];
+
+             if (editingTournIdx > -1) {
+                 const oldName = globalData.teams[t].tournaments[editingTournIdx].name;
+                 globalData.teams[t].tournaments[editingTournIdx].name = v;
+                 if (oldName !== v) {
+                     globalData.history.forEach(m => {
+                         if (m.team === t && m.tourn === oldName) m.tourn = v;
+                     });
+                 }
+                 app.cancelEdit('tourn');
+             } else {
+                 if (globalData.teams[t].tournaments.some(tr => tr.name === v)) return alert("Tournament already exists.");
+                 globalData.teams[t].tournaments.push({name:v, active:true, winner:""});
+                 document.getElementById('admNewTourn').value = "";
+             }
+             saveToCloud().then(() => ui.renderAdminDetails());
+        },
+
+        // --- AWARDS ---
         admEditAward: (i) => {
             editingAwardIdx = i;
             const t = document.getElementById('admTeamSelect').value;
@@ -668,7 +754,9 @@
              const n = document.getElementById('newAwardName').value.trim();
              const m = parseInt(document.getElementById('newAwardMax').value) || 1;
              if(!n) return;
+             
              if(!globalData.teams[t].awards) globalData.teams[t].awards = [];
+
              if (editingAwardIdx > -1) {
                  globalData.teams[t].awards[editingAwardIdx] = {name:n, max:m};
                  app.cancelEdit('award');
@@ -680,6 +768,7 @@
              saveToCloud().then(() => ui.renderAdminDetails());
         },
 
+        // --- CLUBS ---
         admEditClub: (name) => {
             editingClubName = name;
             document.getElementById('newTeamName').value = name;
@@ -693,6 +782,7 @@
             const n = document.getElementById('newTeamName').value.trim();
             const c = document.getElementById('newTeamColor').value;
             if(!n) return;
+
             if (editingClubName) {
                 const oldName = editingClubName;
                 if (n !== oldName) {
@@ -719,7 +809,15 @@
         switchActiveSeason: () => { globalData.settings.currentSeason = document.getElementById('admActiveSeason').value; saveToCloud().then(()=>{ui.renderNav(); ui.renderMainView();}); },
         createTournamentFromHub: () => { const n = document.getElementById('newTournNameModal').value; if(n) { if(!globalData.teams[activeContext].tournaments) globalData.teams[activeContext].tournaments = []; globalData.teams[activeContext].tournaments.push({name:n, active:true, winner:""}); saveToCloud().then(()=>{document.getElementById('addTournModal').classList.add('hidden'); ui.renderTournamentView();}); } },
         saveTournWinner: () => { const tName = activeContext, trName = document.getElementById('tournSelector').value, win = document.getElementById('tournWinnerInput').value, idx = globalData.teams[tName].tournaments.findIndex(t=>t.name===trName); if(idx !== -1) { globalData.teams[tName].tournaments[idx].winner = win; saveToCloud().then(()=>alert("Saved")); } },
-        openEditActiveTourn: () => { alert("Use Admin panel to edit."); },
+        
+        openEditActiveTourn: () => { 
+            ui.switchContext('Admin'); 
+            setTimeout(() => {
+                window.scrollTo(0, document.body.scrollHeight / 1.5);
+                showToast("Scroll to Tournaments to edit.");
+            }, 300);
+        },
+        
         deleteSeason: () => { if(confirm("Delete current season?")) { const c = globalData.settings.currentSeason; globalData.history = globalData.history.filter(m=>m.season!==c); globalData.settings.seasons = globalData.settings.seasons.filter(s=>s!==c); globalData.settings.currentSeason = globalData.settings.seasons[0] || "2025/26"; saveToCloud().then(()=>ui.renderMainView()); } },
         
         saveEditedMatch: () => { 
@@ -752,7 +850,6 @@
     Object.assign(window.ui, {
         renderNav: () => {
             document.getElementById('headerSeasonBadge').innerText = globalData.settings.currentSeason;
-            // STICKER: First Name Only
             const firstName = (localProfileName || "Player").split(' ')[0];
             document.getElementById('clubsSticker').innerText = firstName + "'s Stats";
             
@@ -785,7 +882,6 @@
             else if(activeContext === 'Admin') { 
                 document.getElementById('viewAdmin').classList.remove('hidden'); 
                 const sel = document.getElementById('admTeamSelect');
-                // Preserve selection if valid
                 if(sel.options.length === 0) {
                      Object.keys(globalData.teams).forEach(t=>sel.add(new Option(t,t)));
                      if(lastActiveTeam && globalData.teams[lastActiveTeam]) sel.value = lastActiveTeam;
@@ -822,8 +918,6 @@
             app.renderScorers('m'); 
         },
 
-        renderQueue: () => { const q=document.getElementById('matchQueue'); q.innerHTML=sessionQueue.map((g,i)=>`<div class="queue-item"><div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div><button class="btn-del" onclick="sessionQueue.splice(${i},1);ui.renderQueue()">✕</button></div>`).join(''); document.getElementById('btnFinalize').classList.toggle('hidden', sessionQueue.length===0); },
-        
         renderHistory: (data, targetId) => { 
             const list = document.getElementById(targetId || 'teamHistoryList'); 
             if(!data || !data.length) { list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">No matches yet</div>'; return; }
@@ -843,7 +937,6 @@
                     if(sum.awards && sum.awards.length > 0) { 
                         sum.awards.forEach(a => { awardsHtml += `<span class="aw-tag">🏅 ${a.name}: ${a.player}</span>`; }); 
                     }
-                    // Legacy support
                     const legacyAwards = data.filter(mx => mx.date === m.date && mx.awards && mx.awards.length > 0);
                     if(legacyAwards.length > 0 && (!sum.awards || sum.awards.length === 0)) { 
                         legacyAwards.forEach(mx => mx.awards.forEach(a => { awardsHtml += `<span class="aw-tag">🏅 ${a.name}: ${a.player}</span>`; })); 
@@ -852,7 +945,6 @@
                     html += `</div>`; // Close Header
                 }
 
-                // Match Row
                 const coachHtml = m.coach ? `<div class="dt-label">Manager</div><div class="dt-val">${m.coach}</div>` : '';
                 const scorers = m.scorers || [];
                 const goalsHtml = scorers.length ? `<div class="dt-label">Goals</div><div class="dt-val">${scorers.join(', ')}</div>` : '';
@@ -969,37 +1061,45 @@
             }).join(''); 
         },
         
-        renderTournamentView: () => { const tName = activeContext; const sel = document.getElementById('tournSelector'); if(!sel.value) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } document.getElementById('tournStatsArea').classList.remove('hidden'); const h = globalData.history.filter(m => m.tourn === sel.value && m.team === tName && m.season === globalData.settings.currentSeason); const profile = localProfileName; document.getElementById('tr-p').innerText = h.length; document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); ui.renderHistory(h, 'tournHistoryList'); },
-        
-        openEditModal: (id) => { 
-            const m = globalData.history.find(x => x.id == id); 
-            document.getElementById('editId').value = id; 
-            document.getElementById('eDate').value = m.date; 
-            document.getElementById('eOur').value = m.our; 
-            document.getElementById('eTheir').value = m.their; 
-            document.getElementById('eNotes').value = m.notes || ""; 
-            const t = globalData.teams[m.team]; 
-            const fill = (eid, arr, val) => { const el = document.getElementById(eid); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); el.value = val || ""; }; 
-            fill('eOpp', t.opps, m.opp); fill('eCoach', t.coaches || [], m.coach); 
-            const te = document.getElementById('eTourn'); te.innerHTML='<option value="League">League</option>'; 
-            if(t.tournaments) t.tournaments.forEach(tr => te.add(new Option("🏆 "+tr.name, tr.name))); te.value = m.tourn; 
+        renderTournamentView: () => { 
+            const tName = activeContext; 
+            const sel = document.getElementById('tournSelector'); 
+            if(!sel.value) { document.getElementById('tournStatsArea').classList.add('hidden'); return; } 
             
-            const luArea = document.getElementById('eLineupArea');
-            luArea.innerHTML = '';
-            (t.players || []).forEach(p => {
-                const div = document.createElement('div'); div.className='lineup-item';
-                const isChecked = m.lineup ? m.lineup.includes(p) : true;
-                div.innerHTML = `<input type="checkbox" class="e-lineup-chk" value="${p}" ${isChecked?'checked':''} onchange="app.renderScorers('e')"> ${p}`;
-                luArea.appendChild(div);
-            });
+            document.getElementById('tournStatsArea').classList.remove('hidden'); 
+            const h = globalData.history.filter(m => m.tourn === sel.value && m.team === tName && m.season === globalData.settings.currentSeason); 
+            const profile = localProfileName; 
+            
+            document.getElementById('tr-p').innerText = h.length; 
+            document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; 
+            document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
+            document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); 
+            
+            const tournData = globalData.teams[tName].tournaments.find(t=>t.name===sel.value);
+            document.getElementById('tournWinnerInput').value = tournData ? tournData.winner : "";
 
-            app.renderScorers('e'); 
+            ui.renderHistory(h, 'tournHistoryList'); 
+
+            // RENDER TOURNAMENT LEAGUE TABLE
+            let tableData = {};
+            tableData[tName] = { name: tName, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, isMe: true };
             
-            if (m.scorers) {
-                 const selects = document.querySelectorAll('.e-sc-input');
-                 m.scorers.forEach((s, idx) => { if (selects[idx]) selects[idx].value = s; });
-            }
-            document.getElementById('editModal').classList.remove('hidden'); 
+            h.forEach(m => {
+                if(!tableData[m.opp]) tableData[m.opp] = { name: m.opp, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, isMe: false };
+                let me = tableData[tName];
+                let op = tableData[m.opp];
+                
+                me.p++; op.p++;
+                me.gf += m.our; me.ga += m.their;
+                op.gf += m.their; op.ga += m.our;
+                
+                if(m.our > m.their) { me.w++; me.pts+=3; op.l++; }
+                else if(m.our < m.their) { me.l++; op.w++; op.pts+=3; }
+                else { me.d++; op.d++; me.pts+=1; op.pts+=1; }
+            });
+            
+            let rows = Object.values(tableData).sort((a,b) => (b.pts - a.pts) || ((b.gf-b.ga) - (a.gf-a.ga)));
+            document.querySelector('#tournLeagueTable tbody').innerHTML = rows.map((d, i) => `<tr class="${d.isMe?'is-me':''}"><td class="t-left">${i+1}. ${d.name}</td><td>${d.p}</td><td>${d.w}</td><td>${d.d}</td><td>${d.l}</td><td>${d.gf-d.ga}</td><td><b>${d.pts}</b></td></tr>`).join('');
         },
         
         renderAdminDetails: () => { 
@@ -1016,6 +1116,7 @@
             document.getElementById('admPlayerList').innerHTML=(t.players||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditPlayer(${i})">✎</button> <button class="btn-del" onclick="app.admDel('players',${i})">🗑</button></div></li>`).join('');
             document.getElementById('admCoachList').innerHTML=(t.coaches||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditCoach(${i})">✎</button> <button class="btn-del" onclick="app.admDel('coaches',${i})">🗑</button></div></li>`).join('');
             document.getElementById('admOppList').innerHTML=(t.opps||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditOpp(${i})">✎</button> <button class="btn-del" onclick="app.admDel('opps',${i})">🗑</button></div></li>`).join('');
+            document.getElementById('admTournList').innerHTML=(t.tournaments||[]).map((tr,i)=>`<li>${tr.name} <div><button class="btn-edit" onclick="app.admEditTourn(${i})">✎</button> <button class="btn-del" onclick="app.admDel('tournaments',${i})">🗑</button></div></li>`).join('');
             document.getElementById('admAwardList').innerHTML = (t.awards||[]).map((a,i)=>`<li>${a.name} (Max: ${a.max}) <div><button class="btn-edit" onclick="app.admEditAward(${i})">✎</button> <button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></div></li>`).join('');
             
             const profSel = document.getElementById('adminProfileName'); 
