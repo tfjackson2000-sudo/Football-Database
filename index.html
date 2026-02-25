@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V136</title>
+    <title>Football Tracker V137</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -387,7 +387,7 @@
         </div>
         <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V136</div>
+    <div class="version-tag">V137</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -410,10 +410,13 @@
             <input type="date" id="tcDate">
         </div>
         
-        <div class="form-group">
-            <label>Other Teams Participating:</label>
-            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0;">Type names separated by commas.</p>
-            <textarea id="tcTeams" rows="2" placeholder="e.g. Red FC, Blue Utd, Green City"></textarea>
+        <div class="form-group" style="border:1px solid var(--border); padding:10px; border-radius:10px; background:var(--bg);">
+            <div class="lineup-header">
+                <label style="margin:0;">🛡 Opponents Participating:</label>
+                <button type="button" class="btn-sm" onclick="app.tcSelectAllOpps()">Select All</button>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:5px; margin-bottom:10px;">(Add missing teams in Admin > Opponents first)</p>
+            <div id="tcOpponentsArea" class="lineup-grid" style="max-height:150px; overflow-y:auto;"></div>
         </div>
         
         <div class="form-group" style="border:1px solid var(--border); padding:10px; border-radius:10px; background:var(--bg);">
@@ -635,7 +638,6 @@
         deleteMatch: (id) => { if(confirm("Delete this match?")) { const m = globalData.history.find(x => x.id == id); lastDeleted = { type: 'match', data: m }; globalData.history = globalData.history.filter(x => x.id != id); saveToCloud().then(()=>{ ui.renderMainView(); showToast("Match Deleted"); }); } },
         performUndo: () => { if(!lastDeleted) return; const ld = lastDeleted; if(ld.type === 'match') { globalData.history.push(ld.data); } else if (ld.type === 'adminItem') { globalData.teams[ld.team][ld.key].splice(ld.index, 0, ld.data); } else if (ld.type === 'award') { globalData.teams[ld.team].awards.splice(ld.index, 0, ld.data); } saveToCloud().then(() => { ui.renderMainView(); document.getElementById('toast').classList.remove('visible'); lastDeleted = null; showToast("Restored!"); }); },
         
-        // --- EDIT LOGIC START ---
         cancelEdit: (type) => {
              if(type === 'player') {
                  editingPlayerIdx = -1;
@@ -659,9 +661,7 @@
                  document.getElementById('btnCancelAward').classList.add('hidden');
              } else if (type === 'tourn') {
                  editingTournIdx = -1;
-                 document.getElementById('admNewTourn').value = "";
-                 const btn = document.getElementById('btnAddUpdateTourn'); btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
-                 document.getElementById('btnCancelTourn').classList.add('hidden');
+                 document.getElementById('tcName').value = "";
              } else if (type === 'club') {
                  editingClubName = null;
                  document.getElementById('newTeamName').value = ""; document.getElementById('newTeamColor').value = "#333333";
@@ -779,7 +779,9 @@
             }
         },
         
-        // --- NEW TOURNAMENT CONFIG LOGIC V136 ---
+        tcSelectAllOpps: () => { document.querySelectorAll('.tc-opp-chk').forEach(c => c.checked = true); },
+        tcSelectAllSquad: () => { document.querySelectorAll('.tc-lineup-chk').forEach(c => c.checked = true); },
+        
         openTournConfigModal: (idx) => {
             const tName = activeContext === 'Admin' ? document.getElementById('admTeamSelect').value : activeContext;
             if (!tName || !globalData.teams[tName]) return;
@@ -795,28 +797,39 @@
                 luArea.appendChild(div);
             });
 
+            const oppArea = document.getElementById('tcOpponentsArea');
+            oppArea.innerHTML = '';
+            let allOpps = [...(globalData.teams[tName].opps || [])];
+            let savedTeams = [];
+
             if (idx > -1) {
                 document.getElementById('tcTitle').innerText = "Edit Tournament";
                 const tourn = globalData.teams[tName].tournaments[idx];
                 document.getElementById('tcName').value = tourn.name;
                 if(tourn.date) document.getElementById('tcDate').value = tourn.date;
-                if(tourn.teams) document.getElementById('tcTeams').value = tourn.teams.join(', ');
                 
                 if(tourn.squad) {
                     document.querySelectorAll('.tc-lineup-chk').forEach(c => {
                         c.checked = tourn.squad.includes(c.value);
                     });
                 }
+                if(tourn.teams) {
+                    savedTeams = tourn.teams;
+                    savedTeams.forEach(t => { if(!allOpps.includes(t)) allOpps.push(t); });
+                }
             } else {
                 document.getElementById('tcTitle').innerText = "Tournament Setup";
                 document.getElementById('tcName').value = "";
-                document.getElementById('tcTeams').value = "";
             }
+            
+            allOpps.forEach(opp => {
+                const div = document.createElement('div'); div.className='lineup-item';
+                const isChecked = savedTeams.includes(opp) ? 'checked' : '';
+                div.innerHTML = `<input type="checkbox" class="tc-opp-chk" value="${opp}" ${isChecked}> ${opp}`;
+                oppArea.appendChild(div);
+            });
+
             document.getElementById('tournConfigModal').classList.remove('hidden');
-        },
-        
-        tcSelectAllSquad: () => {
-            document.querySelectorAll('.tc-lineup-chk').forEach(c => c.checked = true);
         },
         
         saveTournConfig: () => {
@@ -826,11 +839,11 @@
             const idx = parseInt(document.getElementById('tcIndex').value);
             const n = document.getElementById('tcName').value.trim();
             const d = document.getElementById('tcDate').value;
-            const teamsRaw = document.getElementById('tcTeams').value;
             
             if(!n) return alert("Please enter a tournament name.");
             
-            let parsedTeams = teamsRaw.split(',').map(s=>s.trim()).filter(s=>s!=="");
+            const parsedTeams = [];
+            document.querySelectorAll('.tc-opp-chk:checked').forEach(c => parsedTeams.push(c.value));
             
             const squad = [];
             document.querySelectorAll('.tc-lineup-chk:checked').forEach(c => squad.push(c.value));
@@ -1334,8 +1347,7 @@
             document.getElementById('admCoachList').innerHTML=(t.coaches||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditCoach(${i})">✎</button> <button class="btn-del" onclick="app.admDel('coaches',${i})">🗑</button></div></li>`).join('');
             document.getElementById('admOppList').innerHTML=(t.opps||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditOpp(${i})">✎</button> <button class="btn-del" onclick="app.admDel('opps',${i})">🗑</button></div></li>`).join('');
             
-            // TOURNAMENTS LIST
-            document.getElementById('admTournList').innerHTML = (t.tournaments||[]).map((tr,i)=>`<li>${tr.name} <div><button class="btn-edit" onclick="app.openTournConfigModal(${i})">✎</button> <button class="btn-del" onclick="app.admDelTourn(${i})">🗑</button></div></li>`).join('');
+            document.getElementById('admTournList').innerHTML=(t.tournaments||[]).map((tr,i)=>`<li>${tr.name} <div><button class="btn-edit" onclick="app.openTournConfigModal(${i})">✎</button> <button class="btn-del" onclick="app.admDelTourn(${i})">🗑</button></div></li>`).join('');
             
             document.getElementById('admAwardList').innerHTML = (t.awards||[]).map((a,i)=>`<li>${a.name} (Max: ${a.max}) <div><button class="btn-edit" onclick="app.admEditAward(${i})">✎</button> <button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></div></li>`).join('');
             
