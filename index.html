@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V134</title>
+    <title>Football Tracker V135</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -118,12 +118,20 @@
         .dt-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; font-weight: bold; margin-top: 4px; }
         .dt-val { font-weight: 500; }
         
+        /* GOLD AWARD TAGS */
         .gh-awards { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
         .aw-tag { background: linear-gradient(135deg, #FFD700, #DAA520); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-flex; align-items: center; gap: 4px; border: 1px solid #B8860B; }
         
         details > summary { list-style: none; cursor: pointer; outline: none; font-weight: bold; font-size: 1.1rem; }
         details > summary::after { content: ' ▼'; float: right; font-size: 0.8em; opacity: 0.5; }
         details[open] > summary::after { transform: rotate(180deg); }
+        
+        /* RADIO TOGGLE BUTTONS */
+        .toggle-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .toggle-group label { flex: 1; text-align: center; padding: 10px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.9rem; background: var(--bg); color: var(--text-muted); transition: 0.2s; }
+        .toggle-group input { display: none; }
+        .toggle-group input:checked + span { color: var(--text-highlight); }
+        .toggle-group label:has(input:checked) { background: var(--primary-tint); border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
     </style>
 </head>
 <body>
@@ -171,6 +179,7 @@
 </div>
 
 <div class="container hidden" id="mainApp">
+    
     <div id="viewMatchDay" class="hidden">
         <div class="card">
             <div class="card-header"><span>📊 <span id="teamStatTitle">Stats</span></span></div>
@@ -190,7 +199,7 @@
 
         <div class="card protected-area">
             <details>
-                <summary class="card-header">⚽ Match Day Input</summary>
+                <summary class="card-header">⚽ Standard Match Input</summary>
                 <div class="card-body">
                     <div class="form-group"><label>Date:</label><input type="date" id="mDate"></div>
                     <div class="form-group"><label>Competition:</label><select id="mTourn"><option value="League">League</option></select></div>
@@ -218,25 +227,64 @@
             <details>
                 <summary class="card-header">🏆 Tournament Hub</summary>
                 <div class="card-body">
-                    <button type="button" class="btn-outline protected-area" style="width:auto; padding:5px 12px; font-size:0.8rem; float:right;" onclick="document.getElementById('addTournModal').classList.remove('hidden')">+ New Tournament</button>
+                    <button type="button" class="btn-outline protected-area" style="width:auto; padding:5px 12px; font-size:0.8rem; float:right;" onclick="app.openTournConfigModal(-1)">+ New Tournament</button>
                     <div class="form-group" style="clear:both; padding-top:10px;"><label>Select Tournament:</label><select id="tournSelector" onchange="ui.renderTournamentView()"></select></div>
                     
                     <div id="tournStatsArea" class="hidden">
-                        <div class="stat-grid"><div class="stat-item"><span>Games</span><strong id="tr-p">0</strong></div><div class="stat-item"><span>Wins</span><strong id="tr-w">0</strong></div><div class="stat-item"><span>Goals</span><strong id="tr-g">0</strong></div><div class="stat-item"><span>Awards</span><strong id="tr-a">0</strong></div></div>
                         
-                        <div class="protected-area" style="margin-top:20px; text-align:right;">
-                            <button type="button" class="btn-edit" style="width:auto;" onclick="app.openEditActiveTourn()">⚙️ Manage in Admin</button>
+                        <div class="stat-grid" style="margin-bottom:20px;">
+                            <div class="stat-item"><span>Games</span><strong id="tr-p">0</strong></div>
+                            <div class="stat-item"><span>Wins</span><strong id="tr-w">0</strong></div>
+                            <div class="stat-item"><span>Goals</span><strong id="tr-g">0</strong></div>
+                            <div class="stat-item"><span>Awards</span><strong id="tr-a">0</strong></div>
                         </div>
                         
-                        <div class="protected-area" style="background:var(--primary-tint); padding:15px; border-radius:10px; margin-top:20px; border:1px solid var(--border);">
-                            <label>🏆 Tournament Winner:</label>
-                            <div class="flex-row">
-                                <input type="text" id="tournWinnerInput" placeholder="Enter winner" class="flex-grow">
-                                <button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveTournWinner()">Save</button>
+                        <div class="protected-area flex-row" style="justify-content: flex-end; margin-bottom: 20px;">
+                            <button type="button" class="btn-edit" style="width:auto; border:1px solid var(--border);" onclick="app.openEditActiveTourn()">⚙️ Manage Configuration</button>
+                        </div>
+                        
+                        <div class="card protected-area" style="border: 2px solid var(--accent); box-shadow: none;">
+                            <div class="card-header" style="background:rgba(218, 165, 32, 0.1);">⚽ Log Tournament Game</div>
+                            <div class="card-body">
+                                
+                                <div class="toggle-group">
+                                    <label><input type="radio" name="tmType" value="us" checked onchange="ui.toggleTournInput()"><span>Our Match</span></label>
+                                    <label><input type="radio" name="tmType" value="other" onchange="ui.toggleTournInput()"><span>Other Teams</span></label>
+                                </div>
+                                
+                                <div id="tmUsInput">
+                                    <div class="form-row">
+                                        <div><label>Opponent:</label><select id="tmOpp"></select></div>
+                                        <div><label>Manager:</label><select id="tmCoach"></select></div>
+                                    </div>
+                                    <div class="form-group" style="border:1px solid var(--border); padding:10px; border-radius:10px; background:var(--bg);">
+                                        <div class="lineup-header"><label style="margin:0;">🏃‍♂️ Squad</label><button type="button" class="btn-sm" onclick="app.selectAllLineup('tm')">Select All</button></div>
+                                        <div id="tmLineupArea" class="lineup-grid"></div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div><label>Us:</label><input type="number" id="tmOur" value="0" oninput="app.renderScorers('tm')"></div>
+                                        <div><label>Them:</label><input type="number" id="tmTheir" value="0"></div>
+                                    </div>
+                                    <div id="tmScorerList" class="form-group"></div>
+                                </div>
+
+                                <div id="tmOtherInput" class="hidden">
+                                    <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">Log games between other teams to update the tournament league table.</p>
+                                    <div class="form-row">
+                                        <div><label>Team 1:</label><select id="tmTeamA"></select></div>
+                                        <div><label>Score:</label><input type="number" id="tmScoreA" value="0"></div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div><label>Team 2:</label><select id="tmTeamB"></select></div>
+                                        <div><label>Score:</label><input type="number" id="tmScoreB" value="0"></div>
+                                    </div>
+                                </div>
+                                
+                                <button type="button" class="btn btn-save" onclick="app.saveTournMatch()">💾 Save Game</button>
                             </div>
                         </div>
 
-                        <div class="card" style="box-shadow:none; border:none; padding:0; margin-top:25px; margin-bottom: 0;">
+                        <div class="card" style="box-shadow:none; border:none; padding:0; margin-bottom: 0;">
                             <details open>
                                 <summary class="card-header" style="border-radius:10px; padding: 10px 15px; font-size: 1rem;">📊 Tournament Table</summary>
                                 <div class="card-body" style="padding:0;">
@@ -246,6 +294,14 @@
                                     </table>
                                 </div>
                             </details>
+                        </div>
+                        
+                        <div class="protected-area" style="background:var(--primary-tint); padding:15px; border-radius:10px; margin-top:20px; border:1px solid var(--border);">
+                            <label>🏆 Tournament Winner:</label>
+                            <div class="flex-row">
+                                <input type="text" id="tournWinnerInput" placeholder="Enter winner" class="flex-grow">
+                                <button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveTournWinner()">Save</button>
+                            </div>
                         </div>
 
                         <h3 style="margin-top:25px; border-bottom:2px solid var(--border);">🕒 Fixtures</h3>
@@ -305,11 +361,7 @@
         </div></div>
         
         <div class="card"><div class="card-header">🏆 Tournaments</div><div class="card-body">
-            <div class="form-group flex-row">
-                <input type="text" id="admNewTourn" placeholder="Tournament Name" class="flex-grow">
-                <button type="button" id="btnAddUpdateTourn" class="btn btn-add" style="width:auto; margin-top:0;" onclick="app.adminAddTourn()">Add</button>
-                <button type="button" id="btnCancelTourn" class="btn btn-cancel hidden" style="width:auto; margin-top:0;" onclick="app.cancelEdit('tourn')">✕</button>
-            </div>
+            <button type="button" class="btn btn-add" style="margin-bottom:15px;" onclick="app.openTournConfigModal(-1)">+ Create Tournament</button>
             <ul id="admTournList" class="admin-list"></ul>
         </div></div>
 
@@ -337,7 +389,7 @@
         </div>
         <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V134</div>
+    <div class="version-tag">V135</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -346,9 +398,41 @@
     <button onclick="app.doSignOut()">🚪 Log Out</button>
 </footer>
 
-<div id="addTournModal" class="modal-overlay hidden"><div class="modal-box"><h3>Create Tournament</h3><input type="text" id="newTournNameModal" placeholder="Name"><button class="btn btn-save" onclick="app.createTournamentFromHub()">Create</button><button class="btn" onclick="document.getElementById('addTournModal').classList.add('hidden')">Cancel</button></div></div>
+<div id="tournConfigModal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3 id="tcTitle">Tournament Setup</h3>
+        <input type="hidden" id="tcIndex" value="-1">
+        
+        <div class="form-group">
+            <label>Tournament Name:</label>
+            <input type="text" id="tcName" placeholder="e.g., Summer Cup 2026">
+        </div>
+        <div class="form-group">
+            <label>Tournament Date:</label>
+            <input type="date" id="tcDate">
+        </div>
+        
+        <div class="form-group">
+            <label>Other Teams Participating:</label>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0;">Type names separated by commas.</p>
+            <textarea id="tcTeams" rows="2" placeholder="e.g. Red FC, Blue Utd, Green City"></textarea>
+        </div>
+        
+        <div class="form-group" style="border:1px solid var(--border); padding:10px; border-radius:10px; background:var(--bg);">
+            <div class="lineup-header">
+                <label style="margin:0;">🏃‍♂️ Our Tournament Squad:</label>
+                <button type="button" class="btn-sm" onclick="app.tcSelectAllSquad()">Select All</button>
+            </div>
+            <div id="tcSquadArea" class="lineup-grid" style="max-height:150px; overflow-y:auto;"></div>
+        </div>
+
+        <button class="btn btn-save" onclick="app.saveTournConfig()">💾 Save Tournament</button>
+        <button class="btn btn-outline" onclick="document.getElementById('tournConfigModal').classList.add('hidden')">Cancel</button>
+    </div>
+</div>
+
 <div id="newSeasonModal" class="modal-overlay hidden"><div class="modal-box"><h3>New Season</h3><input type="text" id="newSeasonNameInput" placeholder="YYYY/YY"><button class="btn btn-save" onclick="app.startNewSeason()">Start</button><button class="btn" onclick="document.getElementById('newSeasonModal').classList.add('hidden')">Cancel</button></div></div>
-<div id="profileModal" class="modal-overlay hidden"><div class="modal-box"><h3>👤 Switch Profile</h3><p style="color:var(--text-muted); margin-bottom:15px; font-size:0.9rem;">Select your name to see your personal stats. This only affects this device.</p><div class="form-group"><select id="profileSelect"></select></div><button class="btn btn-save" onclick="app.confirmProfileSwitch()">Switch</button><button class="btn" onclick="document.getElementById('profileModal').classList.add('hidden')">Cancel</button></div></div>
+<div id="profileModal" class="modal-overlay hidden"><div class="modal-box"><h3>👤 Switch Profile</h3><p style="color:var(--text-muted); margin-bottom:15px; font-size:0.9rem;">Select your name to see your personal stats. This only affects this device.</p><div class="form-group"><select id="profileSelect"></select></div><button class="btn btn-save" onclick="app.confirmProfileSwitch()">Switch</button><button class="btn btn-outline" onclick="document.getElementById('profileModal').classList.add('hidden')">Cancel</button></div></div>
 
 <div id="daySummaryModal" class="modal-overlay hidden">
     <div class="modal-box">
@@ -361,7 +445,7 @@
             <button class="btn-sm" style="margin-top:5px;" onclick="window.app.addDayAwardRow()">+ Add Award</button>
         </div>
         <button class="btn btn-save" onclick="app.saveDaySummary()">Save Group Info</button>
-        <button class="btn" onclick="document.getElementById('daySummaryModal').classList.add('hidden')">Cancel</button>
+        <button class="btn btn-outline" onclick="document.getElementById('daySummaryModal').classList.add('hidden')">Cancel</button>
     </div>
 </div>
 
@@ -385,7 +469,7 @@
         <div id="eScorerList"></div>
         <div class="form-group"><label>Notes</label><textarea id="eNotes"></textarea></div>
         <button class="btn btn-save" onclick="app.saveEditedMatch()">Save</button>
-        <button class="btn" onclick="document.getElementById('editModal').classList.add('hidden')">Cancel</button>
+        <button class="btn btn-outline" onclick="document.getElementById('editModal').classList.add('hidden')">Cancel</button>
     </div>
 </div>
 
@@ -396,26 +480,20 @@
 
     const firebaseConfig = { apiKey: "AIzaSyAkhLB-XkffuTny8yJOw_FCtZSRIo5qQLE", authDomain: "joeyfootball-875eb.firebaseapp.com", databaseURL: "https://joeyfootball-875eb-default-rtdb.europe-west1.firebasedatabase.app", projectId: "joeyfootball-875eb", storageBucket: "joeyfootball-875eb.firebasestorage.app", messagingSenderId: "647816306796", appId: "1:647816306796:web:686918e1d1c82b8a17f849", measurementId: "G-PX5PH27CES" };
     const ALLOWED_UIDS = ["QC6D1Smr9SVgpITffUTrRZSTQEq1", "Np9ZXcd2wNWvwsYA3X1QTcFpSIB3"];
+    
     let fbApp, db, auth, rtdb, globalData, activeContext = "Career", sessionQueue = [], currentUser = null, isGuest = false;
-    let lastDeleted = null; let undoTimer = null;
+    let lastDeleted = null, undoTimer = null;
     let lastActiveTeam = "Llanelli Town"; 
     let localProfileName = localStorage.getItem('userProfileName') || "Joey";
     
-    // Edit States
-    let editingPlayerIdx = -1;
-    let editingOppIdx = -1;
-    let editingCoachIdx = -1;
-    let editingAwardIdx = -1;
-    let editingTournIdx = -1; // NEW: Tournaments
-    let editingClubName = null;
+    let editingPlayerIdx = -1, editingOppIdx = -1, editingCoachIdx = -1, editingAwardIdx = -1, editingClubName = null;
 
     try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
     catch (e) { document.getElementById('loadingOverlay').innerHTML = "<h2>⚠️ Error</h2><p>Firebase Config Failed</p>"; }
 
     const btnLogin = document.getElementById('btnLogin');
-    btnLogin.onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+    if(btnLogin) btnLogin.onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
 
-    // --- APP & UI OBJECTS ---
     window.app = window.app || {};
     window.ui = window.ui || {};
 
@@ -511,7 +589,7 @@
                 ui.renderMainView(); 
             }
         },
-        saveSession: () => { const batchId = Date.now(); sessionQueue.forEach(g => g.batchId = batchId); globalData.history.push(...sessionQueue); sessionQueue = []; saveToCloud().then(()=>{ui.renderQueue(); alert("Saved!");}); },
+        saveSession: () => { const batchId = Date.now(); sessionQueue.forEach(g => g.batchId = batchId); globalData.history.push(...sessionQueue); sessionQueue = []; saveToCloud().then(()=>{ui.renderQueue(); showToast("Saved!");}); },
         
         selectAllLineup: (p) => {
              const checks = document.querySelectorAll(`.${p}-lineup-chk`);
@@ -538,102 +616,76 @@
                 scorers: Array.from(document.querySelectorAll('.m-sc-input')).map(s=>s.value), 
                 notes: document.getElementById('mNotes').value, 
                 season: globalData.settings.currentSeason,
-                lineup: lineup 
+                lineup: lineup,
+                type: 'regular'
             });
             ui.renderQueue(); 
             document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; app.renderScorers('m');
         },
-        saveProfileName: () => { const newName = document.getElementById('adminProfileName').value; if(newName) { globalData.settings.profileName = newName; saveToCloud().then(() => { alert("Global Default updated to " + newName); ui.renderMainView(); }); } },
+        
+        saveProfileName: () => { const newName = document.getElementById('adminProfileName').value; if(newName) { globalData.settings.profileName = newName; saveToCloud().then(() => { showToast("Global Default updated to " + newName); ui.renderMainView(); }); } },
         openDaySummary: (date) => { document.getElementById('dsDate').value = date; document.getElementById('dsDateDisplay').innerText = fmtDate(date); const sum = globalData.daySummaries[date] || {}; const awContainer = document.getElementById('dsAwardList'); awContainer.innerHTML = ''; const currentAwards = sum.awards || []; const matches = globalData.history.filter(m => m.date === date && m.team === activeContext); matches.forEach(m => { if(m.awards && m.awards.length > 0) m.awards.forEach(a => currentAwards.push(a)); }); const uniqueAwards = currentAwards.filter((a, index, self) => index === self.findIndex((t) => (t.name === a.name && t.player === a.player))); uniqueAwards.forEach(a => window.app.addDayAwardRow(a.name, a.player)); document.getElementById('daySummaryModal').classList.remove('hidden'); },
         addDayAwardRow: (selAward, selPlayer) => { const container = document.getElementById('dsAwardList'); const t = globalData.teams[activeContext]; const div = document.createElement('div'); div.className = 'flex-row'; div.style.marginBottom = '5px'; const s1 = document.createElement('select'); s1.className = 'ds-aw-name flex-grow'; s1.add(new Option("-- Award --", "")); const awardsList = t.awards || []; awardsList.forEach(a => s1.add(new Option(a.name, a.name))); if(selAward && !awardsList.some(a=>a.name===selAward)) s1.add(new Option(selAward, selAward)); if(selAward) s1.value = selAward; const s2 = document.createElement('select'); s2.className = 'ds-aw-player flex-grow'; s2.add(new Option("-- Player --", "")); const playerList = t.players || []; playerList.forEach(p => s2.add(new Option(p, p))); if(selPlayer && !playerList.includes(selPlayer)) s2.add(new Option(selPlayer, selPlayer)); if(selPlayer) s2.value = selPlayer; const btn = document.createElement('button'); btn.className = 'btn-del'; btn.innerHTML = '✕'; btn.onclick = () => div.remove(); div.appendChild(s1); div.appendChild(s2); div.appendChild(btn); container.appendChild(div); },
         saveDaySummary: () => { const date = document.getElementById('dsDate').value; const names = document.querySelectorAll('.ds-aw-name'); const players = document.querySelectorAll('.ds-aw-player'); let awards = []; names.forEach((n, i) => { if(n.value && players[i].value) awards.push({ name: n.value, player: players[i].value }); }); globalData.daySummaries[date] = { awards: awards }; globalData.history.forEach(m => { if(m.date === date && m.team === activeContext) m.awards = []; }); saveToCloud().then(() => { document.getElementById('daySummaryModal').classList.add('hidden'); ui.renderMainView(); }); },
+        
         admDel: (k, i) => { const t = document.getElementById('admTeamSelect').value; const item = globalData.teams[t][k][i]; lastDeleted = { type: 'adminItem', key: k, index: i, data: item, team: t }; globalData.teams[t][k].splice(i,1); saveToCloud().then(()=>{ ui.renderAdminDetails(); showToast("Item Deleted"); }); },
         admDelAw: (i) => { const t = document.getElementById('admTeamSelect').value; const item = globalData.teams[t].awards[i]; lastDeleted = { type: 'award', index: i, data: item, team: t }; globalData.teams[t].awards.splice(i,1); saveToCloud().then(()=>{ ui.renderAdminDetails(); showToast("Award Deleted"); }); },
         admDelClub: (name) => { if(Object.keys(globalData.teams).length <= 1) return alert("Cannot delete the last team."); if(name === activeContext) return alert("Cannot delete the active club. Switch to another club first."); if(confirm(`Delete club ${name}? This cannot be undone.`)) { delete globalData.teams[name]; saveToCloud().then(() => { ui.renderAdminDetails(); showToast("Club Deleted"); }); } },
+        
         deleteTeam: () => { app.admDelClub(document.getElementById('admTeamSelect').value); },
         deleteMatch: (id) => { if(confirm("Delete this match?")) { const m = globalData.history.find(x => x.id == id); lastDeleted = { type: 'match', data: m }; globalData.history = globalData.history.filter(x => x.id != id); saveToCloud().then(()=>{ ui.renderMainView(); showToast("Match Deleted"); }); } },
-        performUndo: () => { if(!lastDeleted) return; const ld = lastDeleted; if(ld.type === 'match') { globalData.history.push(ld.data); } else if (ld.type === 'adminItem') { globalData.teams[ld.team][ld.key].splice(ld.index, 0, ld.data); } else if (ld.type === 'award') { globalData.teams[ld.team].awards.splice(ld.index, 0, ld.data); } saveToCloud().then(() => { ui.renderMainView(); document.getElementById('toast').classList.remove('visible'); lastDeleted = null; alert("Restored!"); }); },
+        performUndo: () => { if(!lastDeleted) return; const ld = lastDeleted; if(ld.type === 'match') { globalData.history.push(ld.data); } else if (ld.type === 'adminItem') { globalData.teams[ld.team][ld.key].splice(ld.index, 0, ld.data); } else if (ld.type === 'award') { globalData.teams[ld.team].awards.splice(ld.index, 0, ld.data); } saveToCloud().then(() => { ui.renderMainView(); document.getElementById('toast').classList.remove('visible'); lastDeleted = null; showToast("Restored!"); }); },
         
+        // --- EDIT LOGIC START ---
         cancelEdit: (type) => {
              if(type === 'player') {
                  editingPlayerIdx = -1;
-                 document.getElementById('admNewPlayerFirst').value = "";
-                 document.getElementById('admNewPlayerLast').value = "";
-                 document.getElementById('admNewPlayerNum').value = "";
-                 const btn = document.getElementById('btnAddUpdatePlayer');
-                 btn.innerText = "+ Add Player"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
+                 document.getElementById('admNewPlayerFirst').value = ""; document.getElementById('admNewPlayerLast').value = ""; document.getElementById('admNewPlayerNum').value = "";
+                 const btn = document.getElementById('btnAddUpdatePlayer'); btn.innerText = "+ Add Player"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
                  document.getElementById('btnCancelPlayer').classList.add('hidden');
              } else if (type === 'opp') {
                  editingOppIdx = -1;
                  document.getElementById('admNewOpp').value = "";
-                 const btn = document.getElementById('btnAddUpdateOpp');
-                 btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
+                 const btn = document.getElementById('btnAddUpdateOpp'); btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
                  document.getElementById('btnCancelOpp').classList.add('hidden');
              } else if (type === 'coach') {
                  editingCoachIdx = -1;
                  document.getElementById('admNewCoach').value = "";
-                 const btn = document.getElementById('btnAddUpdateCoach');
-                 btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
+                 const btn = document.getElementById('btnAddUpdateCoach'); btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
                  document.getElementById('btnCancelCoach').classList.add('hidden');
              } else if (type === 'award') {
                  editingAwardIdx = -1;
-                 document.getElementById('newAwardName').value = "";
-                 document.getElementById('newAwardMax').value = "";
-                 const btn = document.getElementById('btnAddUpdateAward');
-                 btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-save');
+                 document.getElementById('newAwardName').value = ""; document.getElementById('newAwardMax').value = "";
+                 const btn = document.getElementById('btnAddUpdateAward'); btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-save');
                  document.getElementById('btnCancelAward').classList.add('hidden');
-             } else if (type === 'tourn') {
-                 editingTournIdx = -1;
-                 document.getElementById('admNewTourn').value = "";
-                 const btn = document.getElementById('btnAddUpdateTourn');
-                 btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
-                 document.getElementById('btnCancelTourn').classList.add('hidden');
              } else if (type === 'club') {
                  editingClubName = null;
-                 document.getElementById('newTeamName').value = "";
-                 document.getElementById('newTeamColor').value = "#333333";
-                 const btn = document.getElementById('btnAddUpdateClub');
-                 btn.innerText = "Create"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
+                 document.getElementById('newTeamName').value = ""; document.getElementById('newTeamColor').value = "#333333";
+                 const btn = document.getElementById('btnAddUpdateClub'); btn.innerText = "Create"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
                  document.getElementById('btnCancelClub').classList.add('hidden');
              }
         },
 
-        // --- PLAYERS ---
         admEditPlayer: (i) => {
-            editingPlayerIdx = i;
-            const t = document.getElementById('admTeamSelect').value;
-            const fullName = globalData.teams[t].players[i];
-            
+            editingPlayerIdx = i; const t = document.getElementById('admTeamSelect').value; const fullName = globalData.teams[t].players[i];
             let namePart = fullName; let numPart = "";
             if(fullName.includes(" (#")) { const parts = fullName.split(" (#"); namePart = parts[0]; numPart = parts[1].replace(")", ""); }
-            const lastSpace = namePart.lastIndexOf(" ");
-            let first = namePart; let last = "";
+            const lastSpace = namePart.lastIndexOf(" "); let first = namePart; let last = "";
             if (lastSpace !== -1) { first = namePart.substring(0, lastSpace); last = namePart.substring(lastSpace + 1); } else { first = namePart; }
-            
-            document.getElementById('admNewPlayerFirst').value = first;
-            document.getElementById('admNewPlayerLast').value = last;
-            document.getElementById('admNewPlayerNum').value = numPart;
-            
-            const btn = document.getElementById('btnAddUpdatePlayer');
-            btn.innerText = "Update Player"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
+            document.getElementById('admNewPlayerFirst').value = first; document.getElementById('admNewPlayerLast').value = last; document.getElementById('admNewPlayerNum').value = numPart;
+            const btn = document.getElementById('btnAddUpdatePlayer'); btn.innerText = "Update Player"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
             document.getElementById('btnCancelPlayer').classList.remove('hidden');
         },
         
         adminAddPlayer: () => {
              const t = document.getElementById('admTeamSelect').value;
-             const f = document.getElementById('admNewPlayerFirst').value.trim();
-             const l = document.getElementById('admNewPlayerLast').value.trim();
-             const n = document.getElementById('admNewPlayerNum').value.trim();
-
+             const f = document.getElementById('admNewPlayerFirst').value.trim(); const l = document.getElementById('admNewPlayerLast').value.trim(); const n = document.getElementById('admNewPlayerNum').value.trim();
              if (!f || !l) return alert("First Name and Surname are mandatory.");
              let fullName = `${f} ${l}`; if (n) fullName += ` (#${n})`;
-
              if(!globalData.teams[t].players) globalData.teams[t].players = [];
              
              if (editingPlayerIdx > -1) {
-                 const oldName = globalData.teams[t].players[editingPlayerIdx];
-                 globalData.teams[t].players[editingPlayerIdx] = fullName;
-                 
+                 const oldName = globalData.teams[t].players[editingPlayerIdx]; globalData.teams[t].players[editingPlayerIdx] = fullName;
                  if (oldName !== fullName) {
                      globalData.history.forEach(m => {
                          if (m.team === t) {
@@ -648,184 +700,239 @@
              } else {
                  if (globalData.teams[t].players.includes(fullName)) return alert("Player already exists.");
                  globalData.teams[t].players.push(fullName);
-                 document.getElementById('admNewPlayerFirst').value = "";
-                 document.getElementById('admNewPlayerLast').value = "";
-                 document.getElementById('admNewPlayerNum').value = "";
+                 document.getElementById('admNewPlayerFirst').value = ""; document.getElementById('admNewPlayerLast').value = ""; document.getElementById('admNewPlayerNum').value = "";
              }
              saveToCloud().then(() => ui.renderAdminDetails());
         },
 
-        // --- MANAGERS ---
         admEditCoach: (i) => {
-            editingCoachIdx = i;
-            const t = document.getElementById('admTeamSelect').value;
+            editingCoachIdx = i; const t = document.getElementById('admTeamSelect').value;
             document.getElementById('admNewCoach').value = globalData.teams[t].coaches[i];
-            const btn = document.getElementById('btnAddUpdateCoach');
-            btn.innerText = "Update"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
+            const btn = document.getElementById('btnAddUpdateCoach'); btn.innerText = "Update"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
             document.getElementById('btnCancelCoach').classList.remove('hidden');
         },
         adminAddCoach: () => {
-             const t = document.getElementById('admTeamSelect').value;
-             const v = document.getElementById('admNewCoach').value.trim();
+             const t = document.getElementById('admTeamSelect').value; const v = document.getElementById('admNewCoach').value.trim();
              if(!v) return;
              if(!globalData.teams[t].coaches) globalData.teams[t].coaches = [];
-             if (editingCoachIdx > -1) {
-                 globalData.teams[t].coaches[editingCoachIdx] = v;
-                 app.cancelEdit('coach');
-             } else {
-                 globalData.teams[t].coaches.push(v);
-                 document.getElementById('admNewCoach').value = "";
-             }
+             if (editingCoachIdx > -1) { globalData.teams[t].coaches[editingCoachIdx] = v; app.cancelEdit('coach'); } 
+             else { globalData.teams[t].coaches.push(v); document.getElementById('admNewCoach').value = ""; }
              saveToCloud().then(() => ui.renderAdminDetails());
         },
 
-        // --- OPPONENTS ---
         admEditOpp: (i) => {
-            editingOppIdx = i;
-            const t = document.getElementById('admTeamSelect').value;
+            editingOppIdx = i; const t = document.getElementById('admTeamSelect').value;
             document.getElementById('admNewOpp').value = globalData.teams[t].opps[i];
-            const btn = document.getElementById('btnAddUpdateOpp');
-            btn.innerText = "Update"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
+            const btn = document.getElementById('btnAddUpdateOpp'); btn.innerText = "Update"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
             document.getElementById('btnCancelOpp').classList.remove('hidden');
         },
         adminAddOpp: () => {
-             const t = document.getElementById('admTeamSelect').value;
-             const v = document.getElementById('admNewOpp').value.trim();
+             const t = document.getElementById('admTeamSelect').value; const v = document.getElementById('admNewOpp').value.trim();
              if(!v) return;
-             
              if(!globalData.teams[t].opps) globalData.teams[t].opps = [];
-
-             if (editingOppIdx > -1) {
-                 globalData.teams[t].opps[editingOppIdx] = v;
-                 app.cancelEdit('opp');
-             } else {
-                 globalData.teams[t].opps.push(v);
-                 document.getElementById('admNewOpp').value = "";
-             }
+             if (editingOppIdx > -1) { globalData.teams[t].opps[editingOppIdx] = v; app.cancelEdit('opp'); } 
+             else { globalData.teams[t].opps.push(v); document.getElementById('admNewOpp').value = ""; }
              saveToCloud().then(() => ui.renderAdminDetails());
         },
 
-        // --- TOURNAMENTS ---
-        admEditTourn: (i) => {
-            editingTournIdx = i;
-            const t = document.getElementById('admTeamSelect').value;
-            document.getElementById('admNewTourn').value = globalData.teams[t].tournaments[i].name;
-            const btn = document.getElementById('btnAddUpdateTourn');
-            btn.innerText = "Update"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
-            document.getElementById('btnCancelTourn').classList.remove('hidden');
-        },
-        adminAddTourn: () => {
-             const t = document.getElementById('admTeamSelect').value;
-             const v = document.getElementById('admNewTourn').value.trim();
-             if(!v) return;
-             
-             if(!globalData.teams[t].tournaments) globalData.teams[t].tournaments = [];
-
-             if (editingTournIdx > -1) {
-                 const oldName = globalData.teams[t].tournaments[editingTournIdx].name;
-                 globalData.teams[t].tournaments[editingTournIdx].name = v;
-                 if (oldName !== v) {
-                     globalData.history.forEach(m => {
-                         if (m.team === t && m.tourn === oldName) m.tourn = v;
-                     });
-                 }
-                 app.cancelEdit('tourn');
-             } else {
-                 if (globalData.teams[t].tournaments.some(tr => tr.name === v)) return alert("Tournament already exists.");
-                 globalData.teams[t].tournaments.push({name:v, active:true, winner:""});
-                 document.getElementById('admNewTourn').value = "";
-             }
-             saveToCloud().then(() => ui.renderAdminDetails());
-        },
-
-        // --- AWARDS ---
         admEditAward: (i) => {
-            editingAwardIdx = i;
-            const t = document.getElementById('admTeamSelect').value;
-            const aw = globalData.teams[t].awards[i];
-            document.getElementById('newAwardName').value = aw.name;
-            document.getElementById('newAwardMax').value = aw.max;
-            const btn = document.getElementById('btnAddUpdateAward');
-            btn.innerText = "Update"; btn.classList.remove('btn-save'); btn.classList.add('btn-update');
+            editingAwardIdx = i; const t = document.getElementById('admTeamSelect').value; const aw = globalData.teams[t].awards[i];
+            document.getElementById('newAwardName').value = aw.name; document.getElementById('newAwardMax').value = aw.max;
+            const btn = document.getElementById('btnAddUpdateAward'); btn.innerText = "Update"; btn.classList.remove('btn-save'); btn.classList.add('btn-update');
             document.getElementById('btnCancelAward').classList.remove('hidden');
         },
         adminAddAward: () => {
-             const t = document.getElementById('admTeamSelect').value;
-             const n = document.getElementById('newAwardName').value.trim();
-             const m = parseInt(document.getElementById('newAwardMax').value) || 1;
+             const t = document.getElementById('admTeamSelect').value; const n = document.getElementById('newAwardName').value.trim(); const m = parseInt(document.getElementById('newAwardMax').value) || 1;
              if(!n) return;
-             
              if(!globalData.teams[t].awards) globalData.teams[t].awards = [];
-
-             if (editingAwardIdx > -1) {
-                 globalData.teams[t].awards[editingAwardIdx] = {name:n, max:m};
-                 app.cancelEdit('award');
-             } else {
-                 globalData.teams[t].awards.push({name:n, max:m});
-                 document.getElementById('newAwardName').value = "";
-                 document.getElementById('newAwardMax').value = "";
-             }
+             if (editingAwardIdx > -1) { globalData.teams[t].awards[editingAwardIdx] = {name:n, max:m}; app.cancelEdit('award'); } 
+             else { globalData.teams[t].awards.push({name:n, max:m}); document.getElementById('newAwardName').value = ""; document.getElementById('newAwardMax').value = ""; }
              saveToCloud().then(() => ui.renderAdminDetails());
         },
 
-        // --- CLUBS ---
         admEditClub: (name) => {
             editingClubName = name;
-            document.getElementById('newTeamName').value = name;
-            document.getElementById('newTeamColor').value = globalData.teams[name].color;
-            const btn = document.getElementById('btnAddUpdateClub');
-            btn.innerText = "Update Club"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
-            document.getElementById('btnCancelClub').classList.remove('hidden');
-            window.scrollTo(0, document.body.scrollHeight);
+            document.getElementById('newTeamName').value = name; document.getElementById('newTeamColor').value = globalData.teams[name].color;
+            const btn = document.getElementById('btnAddUpdateClub'); btn.innerText = "Update Club"; btn.classList.remove('btn-add'); btn.classList.add('btn-update');
+            document.getElementById('btnCancelClub').classList.remove('hidden'); window.scrollTo(0, document.body.scrollHeight);
         },
         adminAddClub: () => {
-            const n = document.getElementById('newTeamName').value.trim();
-            const c = document.getElementById('newTeamColor').value;
+            const n = document.getElementById('newTeamName').value.trim(); const c = document.getElementById('newTeamColor').value;
             if(!n) return;
-
             if (editingClubName) {
                 const oldName = editingClubName;
                 if (n !== oldName) {
                      if(globalData.teams[n]) return alert("Club Name already exists!");
-                     globalData.teams[n] = globalData.teams[oldName];
-                     globalData.teams[n].color = c;
-                     delete globalData.teams[oldName];
+                     globalData.teams[n] = globalData.teams[oldName]; globalData.teams[n].color = c; delete globalData.teams[oldName];
                      globalData.history.forEach(m => { if(m.team === oldName) m.team = n; });
                      if (activeContext === oldName) activeContext = n;
-                } else {
-                     globalData.teams[n].color = c;
-                }
-                app.cancelEdit('club');
-                saveToCloud().then(() => { ui.renderNav(); ui.renderAdminDetails(); });
+                } else { globalData.teams[n].color = c; }
+                app.cancelEdit('club'); saveToCloud().then(() => { ui.renderNav(); ui.renderAdminDetails(); });
             } else {
                 if(globalData.teams[n]) return alert("Club already exists.");
                 globalData.teams[n]={color:c, players:["Joey"], opps:[], coaches:[], awards:[], tournaments:[], active:true};
-                document.getElementById('newTeamName').value = "";
-                saveToCloud().then(() => { ui.renderNav(); ui.renderAdminDetails(); });
+                document.getElementById('newTeamName').value = ""; saveToCloud().then(() => { ui.renderNav(); ui.renderAdminDetails(); });
             }
         },
 
         startNewSeason: () => { const n = document.getElementById('newSeasonNameInput').value; if(n) { globalData.settings.seasons.push(n); globalData.settings.currentSeason = n; saveToCloud().then(()=>{document.getElementById('newSeasonModal').classList.add('hidden')}); } },
         switchActiveSeason: () => { globalData.settings.currentSeason = document.getElementById('admActiveSeason').value; saveToCloud().then(()=>{ui.renderNav(); ui.renderMainView();}); },
-        createTournamentFromHub: () => { const n = document.getElementById('newTournNameModal').value; if(n) { if(!globalData.teams[activeContext].tournaments) globalData.teams[activeContext].tournaments = []; globalData.teams[activeContext].tournaments.push({name:n, active:true, winner:""}); saveToCloud().then(()=>{document.getElementById('addTournModal').classList.add('hidden'); ui.renderTournamentView();}); } },
-        saveTournWinner: () => { const tName = activeContext, trName = document.getElementById('tournSelector').value, win = document.getElementById('tournWinnerInput').value, idx = globalData.teams[tName].tournaments.findIndex(t=>t.name===trName); if(idx !== -1) { globalData.teams[tName].tournaments[idx].winner = win; saveToCloud().then(()=>alert("Saved")); } },
         
-        openEditActiveTourn: () => { 
-            ui.switchContext('Admin'); 
-            setTimeout(() => {
-                window.scrollTo(0, document.body.scrollHeight / 1.5);
-                showToast("Scroll to Tournaments to edit.");
-            }, 300);
+        // --- NEW TOURNAMENT CONFIG LOGIC V135 ---
+        openTournConfigModal: (idx) => {
+            const tName = activeContext;
+            document.getElementById('tcIndex').value = idx;
+            document.getElementById('tcDate').value = new Date().toISOString().split('T')[0];
+            
+            // Build Checkboxes
+            const luArea = document.getElementById('tcSquadArea');
+            luArea.innerHTML = '';
+            (globalData.teams[tName].players || []).forEach(p => {
+                const div = document.createElement('div'); div.className='lineup-item';
+                div.innerHTML = `<input type="checkbox" class="tc-lineup-chk" value="${p}" checked> ${p}`;
+                luArea.appendChild(div);
+            });
+
+            if (idx > -1) {
+                document.getElementById('tcTitle').innerText = "Edit Tournament";
+                const tourn = globalData.teams[tName].tournaments[idx];
+                document.getElementById('tcName').value = tourn.name;
+                if(tourn.date) document.getElementById('tcDate').value = tourn.date;
+                if(tourn.teams) document.getElementById('tcTeams').value = tourn.teams.join(', ');
+                
+                // Set checked state based on saved squad
+                if(tourn.squad) {
+                    document.querySelectorAll('.tc-lineup-chk').forEach(c => {
+                        c.checked = tourn.squad.includes(c.value);
+                    });
+                }
+            } else {
+                document.getElementById('tcTitle').innerText = "Tournament Setup";
+                document.getElementById('tcName').value = "";
+                document.getElementById('tcTeams').value = "";
+            }
+            document.getElementById('tournConfigModal').classList.remove('hidden');
         },
         
-        deleteSeason: () => { if(confirm("Delete current season?")) { const c = globalData.settings.currentSeason; globalData.history = globalData.history.filter(m=>m.season!==c); globalData.settings.seasons = globalData.settings.seasons.filter(s=>s!==c); globalData.settings.currentSeason = globalData.settings.seasons[0] || "2025/26"; saveToCloud().then(()=>ui.renderMainView()); } },
+        tcSelectAllSquad: () => {
+            document.querySelectorAll('.tc-lineup-chk').forEach(c => c.checked = true);
+        },
         
+        saveTournConfig: () => {
+            const tName = activeContext;
+            const idx = parseInt(document.getElementById('tcIndex').value);
+            const n = document.getElementById('tcName').value.trim();
+            const d = document.getElementById('tcDate').value;
+            const teamsRaw = document.getElementById('tcTeams').value;
+            
+            if(!n) return alert("Please enter a tournament name.");
+            
+            // Parse comma separated teams, clean spaces, remove empty
+            let parsedTeams = teamsRaw.split(',').map(s=>s.trim()).filter(s=>s!=="");
+            
+            // Get checked squad
+            const squad = [];
+            document.querySelectorAll('.tc-lineup-chk:checked').forEach(c => squad.push(c.value));
+            
+            if(!globalData.teams[tName].tournaments) globalData.teams[tName].tournaments = [];
+            
+            if (idx > -1) {
+                const oldName = globalData.teams[tName].tournaments[idx].name;
+                globalData.teams[tName].tournaments[idx] = { ...globalData.teams[tName].tournaments[idx], name: n, date: d, teams: parsedTeams, squad: squad };
+                if (oldName !== n) {
+                     globalData.history.forEach(m => { if (m.team === tName && m.tourn === oldName) m.tourn = n; });
+                }
+            } else {
+                if (globalData.teams[tName].tournaments.some(tr => tr.name === n)) return alert("Tournament name already exists.");
+                globalData.teams[tName].tournaments.push({name: n, date: d, teams: parsedTeams, squad: squad, active: true, winner: ""});
+            }
+            
+            saveToCloud().then(() => {
+                document.getElementById('tournConfigModal').classList.add('hidden');
+                // Re-render wherever they came from
+                if(activeContext === 'Admin') ui.renderAdminDetails();
+                else ui.renderMainView();
+                showToast("Tournament Saved");
+            });
+        },
+        
+        admDelTourn: (i) => {
+             const t = document.getElementById('admTeamSelect').value;
+             if(confirm("Delete this tournament? This will NOT delete the matches, just the configuration.")) {
+                 globalData.teams[t].tournaments.splice(i,1);
+                 saveToCloud().then(() => { ui.renderAdminDetails(); showToast("Tournament Deleted"); });
+             }
+        },
+
+        saveTournWinner: () => { const tName = activeContext, trName = document.getElementById('tournSelector').value, win = document.getElementById('tournWinnerInput').value, idx = globalData.teams[tName].tournaments.findIndex(t=>t.name===trName); if(idx !== -1) { globalData.teams[tName].tournaments[idx].winner = win; saveToCloud().then(()=>showToast("Saved")); } },
+        openEditActiveTourn: () => { 
+            const tName = activeContext;
+            const trName = document.getElementById('tournSelector').value;
+            const idx = globalData.teams[tName].tournaments.findIndex(t=>t.name===trName);
+            if(idx !== -1) app.openTournConfigModal(idx);
+        },
+        
+        saveTournMatch: () => {
+            const tName = activeContext;
+            const tournName = document.getElementById('tournSelector').value;
+            if(!tournName) return;
+            const type = document.querySelector('input[name="tmType"]:checked').value;
+            const tournData = globalData.teams[tName].tournaments.find(t=>t.name === tournName);
+            const tDate = tournData && tournData.date ? tournData.date : new Date().toISOString().split('T')[0];
+
+            let matchObj = { id: Date.now()+Math.random(), tourn: tournName, season: globalData.settings.currentSeason };
+
+            if(type === 'us') {
+                const opp = document.getElementById('tmOpp').value;
+                if(!opp) return alert("Select Opponent");
+                const lineup = [];
+                document.querySelectorAll('.tm-lineup-chk:checked').forEach(c => lineup.push(c.value));
+                
+                matchObj = {
+                    ...matchObj,
+                    team: tName,
+                    opp: opp,
+                    date: tDate,
+                    our: parseInt(document.getElementById('tmOur').value)||0,
+                    their: parseInt(document.getElementById('tmTheir').value)||0,
+                    coach: document.getElementById('tmCoach').value,
+                    scorers: Array.from(document.querySelectorAll('.tm-sc-input')).map(s=>s.value),
+                    lineup: lineup,
+                    type: 'regular'
+                };
+            } else {
+                const tA = document.getElementById('tmTeamA').value;
+                const tB = document.getElementById('tmTeamB').value;
+                if(!tA || !tB || tA === tB) return alert("Select two different valid teams.");
+                
+                matchObj = {
+                    ...matchObj,
+                    team: tName, 
+                    date: tDate,
+                    teamA: tA,
+                    teamB: tB,
+                    scoreA: parseInt(document.getElementById('tmScoreA').value)||0,
+                    scoreB: parseInt(document.getElementById('tmScoreB').value)||0,
+                    type: 'neutral'
+                };
+            }
+            
+            globalData.history.push(matchObj);
+            saveToCloud().then(() => {
+                ui.renderTournamentView();
+                document.getElementById('tmOur').value = 0; document.getElementById('tmTheir').value = 0;
+                document.getElementById('tmScoreA').value = 0; document.getElementById('tmScoreB').value = 0;
+                app.renderScorers('tm');
+                showToast("Tournament Match Saved");
+            });
+        },
+
         saveEditedMatch: () => { 
             const id=document.getElementById('editId').value, i=globalData.history.findIndex(x=>x.id==id); if(i===-1)return; 
             const lineup = []; document.querySelectorAll('.e-lineup-chk:checked').forEach(c => lineup.push(c.value));
             
             globalData.history[i]={ ...globalData.history[i], date:document.getElementById('eDate').value, opp:document.getElementById('eOpp').value, tourn:document.getElementById('eTourn').value, coach:document.getElementById('eCoach').value, our:parseInt(document.getElementById('eOur').value)||0, their:parseInt(document.getElementById('eTheir').value)||0, scorers:Array.from(document.querySelectorAll('.e-sc-input')).map(s=>s.value), notes:document.getElementById('eNotes').value, lineup: lineup }; 
-            saveToCloud().then(()=>{document.getElementById('editModal').classList.add('hidden'); ui.renderMainView();}); 
+            saveToCloud().then(()=>{document.getElementById('editModal').classList.add('hidden'); ui.renderMainView(); showToast("Updated");}); 
         },
 
         renderScorers: (p) => { 
@@ -928,7 +1035,7 @@
             data.forEach((m) => {
                 const day = fmtDate(m.date);
                 if(day !== currentDay) {
-                    if(currentDay !== null) html += '</div>'; // Close prev group
+                    if(currentDay !== null) html += '</div>'; 
                     currentDay = day;
                     html += `<div class="history-group"><div class="group-header"><div class="gh-top"><span class="gh-date">📅 ${day}</span><button class="btn-sm protected-area" onclick="window.app.openDaySummary('${m.date}')">Edit Awards</button></div>`;
                     
@@ -942,31 +1049,46 @@
                         legacyAwards.forEach(mx => mx.awards.forEach(a => { awardsHtml += `<span class="aw-tag">🏅 ${a.name}: ${a.player}</span>`; })); 
                     }
                     if(awardsHtml) { html += `<div class="gh-awards">${awardsHtml}</div>`; }
-                    html += `</div>`; // Close Header
+                    html += `</div>`; 
                 }
 
-                const coachHtml = m.coach ? `<div class="dt-label">Manager</div><div class="dt-val">${m.coach}</div>` : '';
-                const scorers = m.scorers || [];
-                const goalsHtml = scorers.length ? `<div class="dt-label">Goals</div><div class="dt-val">${scorers.join(', ')}</div>` : '';
-                const notes = m.notes ? '🗒️ ' : '';
-                const resClass = m.our > m.their ? 'res-w' : (m.our < m.their ? 'res-l' : 'res-d');
-
-                html += `
-                <div class="match-row">
-                    <div class="match-info">
-                        ${notes}<strong>vs ${m.opp}</strong> <span style="font-size:0.8em">${m.tourn}</span>
-                        <div class="detail-grid">${coachHtml}${goalsHtml}</div>
-                    </div>
-                    <div class="match-actions">
-                        <div class="result-badge ${resClass}">${m.our}-${m.their}</div>
-                        <div class="protected-area flex-row" style="gap:5px; margin-top:5px;">
-                            <button class="btn-edit" onclick="ui.openEditModal('${m.id}')">✎</button>
-                            <button class="btn-del" onclick="app.deleteMatch('${m.id}')">🗑</button>
+                if (m.type === 'neutral') {
+                    // NEUTRAL MATCH RENDER
+                    html += `
+                    <div class="match-row" style="background:var(--primary-tint); opacity:0.9;">
+                        <div class="match-info">
+                            <strong>${m.teamA} vs ${m.teamB}</strong> <span style="font-size:0.8em">${m.tourn}</span>
                         </div>
-                    </div>
-                </div>`;
+                        <div class="match-actions">
+                            <div class="result-badge res-d" style="background:rgba(0,0,0,0.1); color:var(--text);">${m.scoreA}-${m.scoreB}</div>
+                            <button class="btn-del protected-area" onclick="app.deleteMatch('${m.id}')" style="margin-top:5px;">🗑</button>
+                        </div>
+                    </div>`;
+                } else {
+                    // REGULAR MATCH RENDER
+                    const coachHtml = m.coach ? `<div class="dt-label">Manager</div><div class="dt-val">${m.coach}</div>` : '';
+                    const scorers = m.scorers || [];
+                    const goalsHtml = scorers.length ? `<div class="dt-label">Goals</div><div class="dt-val">${scorers.join(', ')}</div>` : '';
+                    const notes = m.notes ? '🗒️ ' : '';
+                    const resClass = m.our > m.their ? 'res-w' : (m.our < m.their ? 'res-l' : 'res-d');
+
+                    html += `
+                    <div class="match-row">
+                        <div class="match-info">
+                            ${notes}<strong>vs ${m.opp}</strong> <span style="font-size:0.8em">${m.tourn}</span>
+                            <div class="detail-grid">${coachHtml}${goalsHtml}</div>
+                        </div>
+                        <div class="match-actions">
+                            <div class="result-badge ${resClass}">${m.our}-${m.their}</div>
+                            <div class="protected-area flex-row" style="gap:5px; margin-top:5px;">
+                                <button class="btn-edit" onclick="ui.openEditModal('${m.id}')">✎</button>
+                                <button class="btn-del" onclick="app.deleteMatch('${m.id}')">🗑</button>
+                            </div>
+                        </div>
+                    </div>`;
+                }
             });
-            html += '</div>'; // Close final group
+            html += '</div>'; 
             list.innerHTML = html;
             
             if(!ALLOWED_UIDS.includes(currentUser?.uid) || isGuest) {
@@ -975,7 +1097,7 @@
         },
 
         renderTopScorers: () => { 
-            const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); 
+            const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason && (!m.type || m.type === 'regular')); 
             const counts = {}; 
             matches.forEach(m => (m.scorers || []).forEach(p => counts[p] = (counts[p] || 0) + 1)); 
             const sorted = Object.entries(counts).filter(([name, count]) => name !== 'O.G.').sort((a,b) => b[1] - a[1]); 
@@ -983,7 +1105,18 @@
             tbl.innerHTML = sorted.length ? sorted.map(s => `<tr><td>${s[0]}</td><td class="num-col">${s[1]}</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center">No goals yet</td></tr>'; 
         },
 
-        renderLeagueTable: () => { const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); let my = { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; matches.forEach(m => { my.p++; my.gf += m.our; my.ga += m.their; if(m.our > m.their) { my.w++; my.pts+=3; } else if(m.our < m.their) { my.l++; my.pts+=0; } else { my.d++; my.pts+=1; } }); let opp = { p: my.p, w: my.l, d: my.d, l: my.w, gf: my.ga, ga: my.gf, pts: (my.l * 3) + (my.d * 1) }; let data = [{ name: activeContext, ...my, isMe: true }, { name: "Opponents", ...opp, isMe: false }]; data.sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga))); document.querySelector('#teamLeagueTable tbody').innerHTML = data.map((d, i) => `<tr class="${d.isMe?'is-me':''}"><td class="t-left">${i+1}. ${d.name}</td><td>${d.p}</td><td>${d.w}</td><td>${d.d}</td><td>${d.l}</td><td>${d.gf-d.ga}</td><td><b>${d.pts}</b></td></tr>`).join(''); },
+        renderLeagueTable: () => { 
+            const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason && (!m.type || m.type === 'regular')); 
+            let my = { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; 
+            matches.forEach(m => { 
+                my.p++; my.gf += m.our; my.ga += m.their; 
+                if(m.our > m.their) { my.w++; my.pts+=3; } else if(m.our < m.their) { my.l++; my.pts+=0; } else { my.d++; my.pts+=1; } 
+            }); 
+            let opp = { p: my.p, w: my.l, d: my.d, l: my.w, gf: my.ga, ga: my.gf, pts: (my.l * 3) + (my.d * 1) }; 
+            let data = [{ name: activeContext, ...my, isMe: true }, { name: "Opponents", ...opp, isMe: false }]; 
+            data.sort((a, b) => (b.pts - a.pts) || ((b.gf - b.ga) - (a.gf - a.ga))); 
+            document.querySelector('#teamLeagueTable tbody').innerHTML = data.map((d, i) => `<tr class="${d.isMe?'is-me':''}"><td class="t-left">${i+1}. ${d.name}</td><td>${d.p}</td><td>${d.w}</td><td>${d.d}</td><td>${d.l}</td><td>${d.gf-d.ga}</td><td><b>${d.pts}</b></td></tr>`).join(''); 
+        },
         
         renderTeamStats: () => { 
             const profile = localProfileName;
@@ -991,7 +1124,7 @@
             if (!t.players.includes(profile)) {
                 document.getElementById('st-p').innerText = 0; document.getElementById('st-w').innerText = 0; document.getElementById('st-g').innerText = 0; document.getElementById('st-a').innerText = "N/A"; return;
             }
-            const h = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason); 
+            const h = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason && (!m.type || m.type === 'regular')); 
             const playerMatches = h.filter(m => { if (m.lineup) return m.lineup.includes(profile); return true; });
             const uniqueDates = [...new Set(playerMatches.map(m => m.date))]; 
             const maxAwards = uniqueDates.length; 
@@ -1020,7 +1153,7 @@
             let totalAwardWins = 0, totalAwardOpps = 0;
             Object.keys(globalData.teams).forEach(teamName => {
                 if (!globalData.teams[teamName].players.includes(profile)) return;
-                let teamHistory = globalData.history.filter(m => m.team === teamName);
+                let teamHistory = globalData.history.filter(m => m.team === teamName && (!m.type || m.type === 'regular'));
                 if(f !== 'All Time') teamHistory = teamHistory.filter(m => m.season === f);
                 const playerMatches = teamHistory.filter(m => { if (m.lineup) return m.lineup.includes(profile); return true; });
                 totalGames += playerMatches.length;
@@ -1043,7 +1176,8 @@
             document.getElementById('c-w').innerText = totalWins;
             document.getElementById('c-g').innerText = totalGoals;
             document.getElementById('c-a').innerText = totalAwardWins === 0 ? "N/A" : `${totalAwardWins} / ${totalAwardOpps}`;
-            let h = globalData.history; 
+            
+            let h = globalData.history.filter(m => (!m.type || m.type === 'regular')); 
             if(f !== 'All Time') h = h.filter(m => m.season === f); 
             let stats={}; 
             h.forEach(m=>{
@@ -1061,6 +1195,17 @@
             }).join(''); 
         },
         
+        toggleTournInput: () => {
+             const type = document.querySelector('input[name="tmType"]:checked').value;
+             if (type === 'us') {
+                 document.getElementById('tmUsInput').classList.remove('hidden');
+                 document.getElementById('tmOtherInput').classList.add('hidden');
+             } else {
+                 document.getElementById('tmUsInput').classList.add('hidden');
+                 document.getElementById('tmOtherInput').classList.remove('hidden');
+             }
+        },
+
         renderTournamentView: () => { 
             const tName = activeContext; 
             const sel = document.getElementById('tournSelector'); 
@@ -1068,38 +1213,112 @@
             
             document.getElementById('tournStatsArea').classList.remove('hidden'); 
             const h = globalData.history.filter(m => m.tourn === sel.value && m.team === tName && m.season === globalData.settings.currentSeason); 
+            const ourMatches = h.filter(m => !m.type || m.type === 'regular');
+            
             const profile = localProfileName; 
             
-            document.getElementById('tr-p').innerText = h.length; 
-            document.getElementById('tr-w').innerText = h.filter(m => m.our > m.their).length; 
-            document.getElementById('tr-g').innerText = h.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
-            document.getElementById('tr-a').innerText = h.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); 
+            document.getElementById('tr-p').innerText = ourMatches.length; 
+            document.getElementById('tr-w').innerText = ourMatches.filter(m => m.our > m.their).length; 
+            document.getElementById('tr-g').innerText = ourMatches.reduce((a,m)=>(a+(m.scorers||[]).filter(s=>s===profile).length),0); 
+            document.getElementById('tr-a').innerText = ourMatches.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); 
             
             const tournData = globalData.teams[tName].tournaments.find(t=>t.name===sel.value);
             document.getElementById('tournWinnerInput').value = tournData ? tournData.winner : "";
 
             ui.renderHistory(h, 'tournHistoryList'); 
 
-            // RENDER TOURNAMENT LEAGUE TABLE
+            // --- BUILD MATCH INPUT DROPDOWNS & CHECKBOXES FOR THIS TOURNAMENT ---
+            const oppList = tournData && tournData.teams && tournData.teams.length > 0 ? tournData.teams : (globalData.teams[tName].opps || []);
+            const sqList = tournData && tournData.squad && tournData.squad.length > 0 ? tournData.squad : (globalData.teams[tName].players || []);
+            const cList = globalData.teams[tName].coaches || [];
+
+            const fill = (id, arr) => {const el=document.getElementById(id); el.innerHTML=""; arr.forEach(x=>el.add(new Option(x,x)))}; 
+            fill('tmOpp', oppList); fill('tmCoach', cList); 
+            fill('tmTeamA', oppList); fill('tmTeamB', oppList);
+            
+            // Rebuild Lineup Checkboxes
+            const luArea = document.getElementById('tmLineupArea');
+            luArea.innerHTML = '';
+            sqList.forEach(p => {
+                const div = document.createElement('div'); div.className='lineup-item';
+                div.innerHTML = `<input type="checkbox" class="tm-lineup-chk" value="${p}" checked onchange="app.renderScorers('tm')"> ${p}`;
+                luArea.appendChild(div);
+            });
+            app.renderScorers('tm');
+
+            // --- RENDER TOURNAMENT LEAGUE TABLE ---
             let tableData = {};
             tableData[tName] = { name: tName, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, isMe: true };
             
+            if(tournData && tournData.teams) {
+                tournData.teams.forEach(t => {
+                    if(!tableData[t]) tableData[t] = { name: t, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, isMe: false };
+                });
+            }
+            
             h.forEach(m => {
-                if(!tableData[m.opp]) tableData[m.opp] = { name: m.opp, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, isMe: false };
-                let me = tableData[tName];
-                let op = tableData[m.opp];
-                
-                me.p++; op.p++;
-                me.gf += m.our; me.ga += m.their;
-                op.gf += m.their; op.ga += m.our;
-                
-                if(m.our > m.their) { me.w++; me.pts+=3; op.l++; }
-                else if(m.our < m.their) { me.l++; op.w++; op.pts+=3; }
-                else { me.d++; op.d++; me.pts+=1; op.pts+=1; }
+                if (m.type === 'neutral') {
+                    let tA = tableData[m.teamA]; let tB = tableData[m.teamB];
+                    if(!tA) { tA = { name: m.teamA, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, isMe: false }; tableData[m.teamA] = tA; }
+                    if(!tB) { tB = { name: m.teamB, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, isMe: false }; tableData[m.teamB] = tB; }
+                    
+                    tA.p++; tB.p++;
+                    tA.gf += m.scoreA; tA.ga += m.scoreB;
+                    tB.gf += m.scoreB; tB.ga += m.scoreA;
+                    
+                    if(m.scoreA > m.scoreB) { tA.w++; tA.pts+=3; tB.l++; }
+                    else if(m.scoreA < m.scoreB) { tB.w++; tB.pts+=3; tA.l++; }
+                    else { tA.d++; tB.d++; tA.pts+=1; tB.pts+=1; }
+                } else {
+                    let me = tableData[tName]; let op = tableData[m.opp];
+                    if(!op) { op = { name: m.opp, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, isMe: false }; tableData[m.opp] = op; }
+                    
+                    me.p++; op.p++;
+                    me.gf += m.our; me.ga += m.their;
+                    op.gf += m.their; op.ga += m.our;
+                    
+                    if(m.our > m.their) { me.w++; me.pts+=3; op.l++; }
+                    else if(m.our < m.their) { me.l++; op.w++; op.pts+=3; }
+                    else { me.d++; op.d++; me.pts+=1; op.pts+=1; }
+                }
             });
             
             let rows = Object.values(tableData).sort((a,b) => (b.pts - a.pts) || ((b.gf-b.ga) - (a.gf-a.ga)));
             document.querySelector('#tournLeagueTable tbody').innerHTML = rows.map((d, i) => `<tr class="${d.isMe?'is-me':''}"><td class="t-left">${i+1}. ${d.name}</td><td>${d.p}</td><td>${d.w}</td><td>${d.d}</td><td>${d.l}</td><td>${d.gf-d.ga}</td><td><b>${d.pts}</b></td></tr>`).join('');
+        },
+        
+        openEditModal: (id) => { 
+            const m = globalData.history.find(x => x.id == id); 
+            if(m.type === 'neutral') { alert("Neutral matches cannot be edited yet. Please delete and re-enter if a mistake was made."); return; }
+            
+            document.getElementById('editId').value = id; 
+            document.getElementById('eDate').value = m.date; 
+            document.getElementById('eOur').value = m.our; 
+            document.getElementById('eTheir').value = m.their; 
+            document.getElementById('eNotes').value = m.notes || ""; 
+            const t = globalData.teams[m.team]; 
+            const fill = (eid, arr, val) => { const el = document.getElementById(eid); el.innerHTML = ""; arr.forEach(x => el.add(new Option(x,x))); el.value = val || ""; }; 
+            fill('eOpp', t.opps, m.opp); fill('eCoach', t.coaches || [], m.coach); 
+            const te = document.getElementById('eTourn'); te.innerHTML='<option value="League">League</option>'; 
+            if(t.tournaments) t.tournaments.forEach(tr => te.add(new Option("🏆 "+tr.name, tr.name))); te.value = m.tourn; 
+            
+            const luArea = document.getElementById('eLineupArea');
+            luArea.innerHTML = '';
+            (t.players || []).forEach(p => {
+                const div = document.createElement('div'); div.className='lineup-item';
+                const isChecked = m.lineup ? m.lineup.includes(p) : true;
+                div.innerHTML = `<input type="checkbox" class="e-lineup-chk" value="${p}" ${isChecked?'checked':''} onchange="app.renderScorers('e')"> ${p}`;
+                luArea.appendChild(div);
+            });
+
+            app.renderScorers('e'); 
+            
+            if (m.scorers) {
+                 const selects = document.querySelectorAll('.e-sc-input');
+                 m.scorers.forEach((s, idx) => { if (selects[idx]) selects[idx].value = s; });
+            }
+
+            document.getElementById('editModal').classList.remove('hidden'); 
         },
         
         renderAdminDetails: () => { 
@@ -1116,7 +1335,10 @@
             document.getElementById('admPlayerList').innerHTML=(t.players||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditPlayer(${i})">✎</button> <button class="btn-del" onclick="app.admDel('players',${i})">🗑</button></div></li>`).join('');
             document.getElementById('admCoachList').innerHTML=(t.coaches||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditCoach(${i})">✎</button> <button class="btn-del" onclick="app.admDel('coaches',${i})">🗑</button></div></li>`).join('');
             document.getElementById('admOppList').innerHTML=(t.opps||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditOpp(${i})">✎</button> <button class="btn-del" onclick="app.admDel('opps',${i})">🗑</button></div></li>`).join('');
-            document.getElementById('admTournList').innerHTML=(t.tournaments||[]).map((tr,i)=>`<li>${tr.name} <div><button class="btn-edit" onclick="app.admEditTourn(${i})">✎</button> <button class="btn-del" onclick="app.admDel('tournaments',${i})">🗑</button></div></li>`).join('');
+            
+            // TOURNAMENTS LIST
+            document.getElementById('admTournList').innerHTML = (t.tournaments||[]).map((tr,i)=>`<li>${tr.name} <div><button class="btn-edit" onclick="app.openTournConfigModal(${i})">✎</button> <button class="btn-del" onclick="app.admDelTourn(${i})">🗑</button></div></li>`).join('');
+            
             document.getElementById('admAwardList').innerHTML = (t.awards||[]).map((a,i)=>`<li>${a.name} (Max: ${a.max}) <div><button class="btn-edit" onclick="app.admEditAward(${i})">✎</button> <button class="btn-del" onclick="app.admDelAw(${i})">🗑</button></div></li>`).join('');
             
             const profSel = document.getElementById('adminProfileName'); 
