@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V135</title>
+    <title>Football Tracker V136</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -118,7 +118,6 @@
         .dt-label { font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; font-weight: bold; margin-top: 4px; }
         .dt-val { font-weight: 500; }
         
-        /* GOLD AWARD TAGS */
         .gh-awards { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
         .aw-tag { background: linear-gradient(135deg, #FFD700, #DAA520); color: #000; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-flex; align-items: center; gap: 4px; border: 1px solid #B8860B; }
         
@@ -227,7 +226,6 @@
             <details>
                 <summary class="card-header">🏆 Tournament Hub</summary>
                 <div class="card-body">
-                    <button type="button" class="btn-outline protected-area" style="width:auto; padding:5px 12px; font-size:0.8rem; float:right;" onclick="app.openTournConfigModal(-1)">+ New Tournament</button>
                     <div class="form-group" style="clear:both; padding-top:10px;"><label>Select Tournament:</label><select id="tournSelector" onchange="ui.renderTournamentView()"></select></div>
                     
                     <div id="tournStatsArea" class="hidden">
@@ -240,7 +238,7 @@
                         </div>
                         
                         <div class="protected-area flex-row" style="justify-content: flex-end; margin-bottom: 20px;">
-                            <button type="button" class="btn-edit" style="width:auto; border:1px solid var(--border);" onclick="app.openEditActiveTourn()">⚙️ Manage Configuration</button>
+                            <button type="button" class="btn-edit" style="width:auto; border:1px solid var(--border);" onclick="app.openEditActiveTourn()">⚙️ Manage in Admin</button>
                         </div>
                         
                         <div class="card protected-area" style="border: 2px solid var(--accent); box-shadow: none;">
@@ -389,7 +387,7 @@
         </div>
         <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V135</div>
+    <div class="version-tag">V136</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -486,7 +484,8 @@
     let lastActiveTeam = "Llanelli Town"; 
     let localProfileName = localStorage.getItem('userProfileName') || "Joey";
     
-    let editingPlayerIdx = -1, editingOppIdx = -1, editingCoachIdx = -1, editingAwardIdx = -1, editingClubName = null;
+    // Edit States
+    let editingPlayerIdx = -1, editingOppIdx = -1, editingCoachIdx = -1, editingAwardIdx = -1, editingTournIdx = -1, editingClubName = null;
 
     try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
     catch (e) { document.getElementById('loadingOverlay').innerHTML = "<h2>⚠️ Error</h2><p>Firebase Config Failed</p>"; }
@@ -658,6 +657,11 @@
                  document.getElementById('newAwardName').value = ""; document.getElementById('newAwardMax').value = "";
                  const btn = document.getElementById('btnAddUpdateAward'); btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-save');
                  document.getElementById('btnCancelAward').classList.add('hidden');
+             } else if (type === 'tourn') {
+                 editingTournIdx = -1;
+                 document.getElementById('admNewTourn').value = "";
+                 const btn = document.getElementById('btnAddUpdateTourn'); btn.innerText = "Add"; btn.classList.remove('btn-update'); btn.classList.add('btn-add');
+                 document.getElementById('btnCancelTourn').classList.add('hidden');
              } else if (type === 'club') {
                  editingClubName = null;
                  document.getElementById('newTeamName').value = ""; document.getElementById('newTeamColor').value = "#333333";
@@ -774,17 +778,15 @@
                 document.getElementById('newTeamName').value = ""; saveToCloud().then(() => { ui.renderNav(); ui.renderAdminDetails(); });
             }
         },
-
-        startNewSeason: () => { const n = document.getElementById('newSeasonNameInput').value; if(n) { globalData.settings.seasons.push(n); globalData.settings.currentSeason = n; saveToCloud().then(()=>{document.getElementById('newSeasonModal').classList.add('hidden')}); } },
-        switchActiveSeason: () => { globalData.settings.currentSeason = document.getElementById('admActiveSeason').value; saveToCloud().then(()=>{ui.renderNav(); ui.renderMainView();}); },
         
-        // --- NEW TOURNAMENT CONFIG LOGIC V135 ---
+        // --- NEW TOURNAMENT CONFIG LOGIC V136 ---
         openTournConfigModal: (idx) => {
-            const tName = activeContext;
+            const tName = activeContext === 'Admin' ? document.getElementById('admTeamSelect').value : activeContext;
+            if (!tName || !globalData.teams[tName]) return;
+            
             document.getElementById('tcIndex').value = idx;
             document.getElementById('tcDate').value = new Date().toISOString().split('T')[0];
             
-            // Build Checkboxes
             const luArea = document.getElementById('tcSquadArea');
             luArea.innerHTML = '';
             (globalData.teams[tName].players || []).forEach(p => {
@@ -800,7 +802,6 @@
                 if(tourn.date) document.getElementById('tcDate').value = tourn.date;
                 if(tourn.teams) document.getElementById('tcTeams').value = tourn.teams.join(', ');
                 
-                // Set checked state based on saved squad
                 if(tourn.squad) {
                     document.querySelectorAll('.tc-lineup-chk').forEach(c => {
                         c.checked = tourn.squad.includes(c.value);
@@ -819,7 +820,9 @@
         },
         
         saveTournConfig: () => {
-            const tName = activeContext;
+            const tName = activeContext === 'Admin' ? document.getElementById('admTeamSelect').value : activeContext;
+            if (!tName || !globalData.teams[tName]) return;
+            
             const idx = parseInt(document.getElementById('tcIndex').value);
             const n = document.getElementById('tcName').value.trim();
             const d = document.getElementById('tcDate').value;
@@ -827,10 +830,8 @@
             
             if(!n) return alert("Please enter a tournament name.");
             
-            // Parse comma separated teams, clean spaces, remove empty
             let parsedTeams = teamsRaw.split(',').map(s=>s.trim()).filter(s=>s!=="");
             
-            // Get checked squad
             const squad = [];
             document.querySelectorAll('.tc-lineup-chk:checked').forEach(c => squad.push(c.value));
             
@@ -849,7 +850,6 @@
             
             saveToCloud().then(() => {
                 document.getElementById('tournConfigModal').classList.add('hidden');
-                // Re-render wherever they came from
                 if(activeContext === 'Admin') ui.renderAdminDetails();
                 else ui.renderMainView();
                 showToast("Tournament Saved");
@@ -866,10 +866,11 @@
 
         saveTournWinner: () => { const tName = activeContext, trName = document.getElementById('tournSelector').value, win = document.getElementById('tournWinnerInput').value, idx = globalData.teams[tName].tournaments.findIndex(t=>t.name===trName); if(idx !== -1) { globalData.teams[tName].tournaments[idx].winner = win; saveToCloud().then(()=>showToast("Saved")); } },
         openEditActiveTourn: () => { 
-            const tName = activeContext;
-            const trName = document.getElementById('tournSelector').value;
-            const idx = globalData.teams[tName].tournaments.findIndex(t=>t.name===trName);
-            if(idx !== -1) app.openTournConfigModal(idx);
+            ui.switchContext('Admin'); 
+            setTimeout(() => {
+                window.scrollTo(0, document.body.scrollHeight / 1.5);
+                showToast("Scroll to Tournaments to edit.");
+            }, 300);
         },
         
         saveTournMatch: () => {
@@ -1025,6 +1026,17 @@
             app.renderScorers('m'); 
         },
 
+        toggleTournInput: () => {
+             const type = document.querySelector('input[name="tmType"]:checked').value;
+             if (type === 'us') {
+                 document.getElementById('tmUsInput').classList.remove('hidden');
+                 document.getElementById('tmOtherInput').classList.add('hidden');
+             } else {
+                 document.getElementById('tmUsInput').classList.add('hidden');
+                 document.getElementById('tmOtherInput').classList.remove('hidden');
+             }
+        },
+
         renderHistory: (data, targetId) => { 
             const list = document.getElementById(targetId || 'teamHistoryList'); 
             if(!data || !data.length) { list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">No matches yet</div>'; return; }
@@ -1053,7 +1065,6 @@
                 }
 
                 if (m.type === 'neutral') {
-                    // NEUTRAL MATCH RENDER
                     html += `
                     <div class="match-row" style="background:var(--primary-tint); opacity:0.9;">
                         <div class="match-info">
@@ -1065,7 +1076,6 @@
                         </div>
                     </div>`;
                 } else {
-                    // REGULAR MATCH RENDER
                     const coachHtml = m.coach ? `<div class="dt-label">Manager</div><div class="dt-val">${m.coach}</div>` : '';
                     const scorers = m.scorers || [];
                     const goalsHtml = scorers.length ? `<div class="dt-label">Goals</div><div class="dt-val">${scorers.join(', ')}</div>` : '';
@@ -1195,17 +1205,6 @@
             }).join(''); 
         },
         
-        toggleTournInput: () => {
-             const type = document.querySelector('input[name="tmType"]:checked').value;
-             if (type === 'us') {
-                 document.getElementById('tmUsInput').classList.remove('hidden');
-                 document.getElementById('tmOtherInput').classList.add('hidden');
-             } else {
-                 document.getElementById('tmUsInput').classList.add('hidden');
-                 document.getElementById('tmOtherInput').classList.remove('hidden');
-             }
-        },
-
         renderTournamentView: () => { 
             const tName = activeContext; 
             const sel = document.getElementById('tournSelector'); 
@@ -1223,11 +1222,11 @@
             document.getElementById('tr-a').innerText = ourMatches.reduce((a,m)=>(a+(m.awards||[]).filter(x=>x.player===profile).length),0); 
             
             const tournData = globalData.teams[tName].tournaments.find(t=>t.name===sel.value);
-            document.getElementById('tournWinnerInput').value = tournData ? tournData.winner : "";
+            document.getElementById('tournWinnerInput').value = tournData && tournData.winner ? tournData.winner : "";
 
             ui.renderHistory(h, 'tournHistoryList'); 
 
-            // --- BUILD MATCH INPUT DROPDOWNS & CHECKBOXES FOR THIS TOURNAMENT ---
+            // BUILD MATCH INPUT DROPDOWNS & CHECKBOXES FOR THIS TOURNAMENT
             const oppList = tournData && tournData.teams && tournData.teams.length > 0 ? tournData.teams : (globalData.teams[tName].opps || []);
             const sqList = tournData && tournData.squad && tournData.squad.length > 0 ? tournData.squad : (globalData.teams[tName].players || []);
             const cList = globalData.teams[tName].coaches || [];
@@ -1236,7 +1235,6 @@
             fill('tmOpp', oppList); fill('tmCoach', cList); 
             fill('tmTeamA', oppList); fill('tmTeamB', oppList);
             
-            // Rebuild Lineup Checkboxes
             const luArea = document.getElementById('tmLineupArea');
             luArea.innerHTML = '';
             sqList.forEach(p => {
@@ -1246,7 +1244,7 @@
             });
             app.renderScorers('tm');
 
-            // --- RENDER TOURNAMENT LEAGUE TABLE ---
+            // RENDER TOURNAMENT LEAGUE TABLE
             let tableData = {};
             tableData[tName] = { name: tName, p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0, isMe: true };
             
