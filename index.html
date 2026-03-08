@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V134</title>
+    <title>Football Tracker V140</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -64,7 +64,8 @@
         .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
         .admin-list li:last-child { border-bottom: none; }
         
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; margin-top:5px; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; margin-top:5px; transition: opacity 0.2s; }
+        .btn:active { opacity: 0.7; }
         .btn-add { background: var(--primary); color: var(--text-on-primary); }
         .btn-save { background: var(--success); color: white; }
         .btn-update { background: #3b82f6; color: white; }
@@ -432,18 +433,34 @@
             <ul id="admAwardList" class="admin-list"></ul>
         </div></div>
 
-        <div class="card neutral-card"><div class="card-header">🌍 Global Settings</div><div class="card-body"><p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">Note: Profile selection is now personal to each device (see footer). The setting below only sets a default for new visitors.</p><label style="display:block; margin-bottom:5px;">Default Profile Name:</label><div class="flex-row" style="margin-bottom:20px;"><select id="adminProfileName" class="flex-grow"></select><button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button></div>
-        
-        <label style="display:block; margin-bottom:5px;">Manage/Add Club:</label>
-        <div class="flex-row" style="margin-bottom:15px;">
-            <input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow">
-            <input type="color" id="newTeamColor" value="#333333" class="color-picker">
-            <button type="button" id="btnAddUpdateClub" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.adminAddClub()">Create</button>
-            <button type="button" id="btnCancelClub" class="btn btn-cancel hidden" style="width:auto; margin-top:0;" onclick="app.cancelEdit('club')">✕</button>
+        <div class="card neutral-card">
+            <div class="card-header">🌍 Global Settings</div>
+            <div class="card-body">
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:15px;">Note: Profile selection is now personal to each device (see footer).</p>
+                
+                <label style="display:block; margin-bottom:5px;">Default Profile Name:</label>
+                <div class="flex-row" style="margin-bottom:20px;">
+                    <select id="adminProfileName" class="flex-grow"></select>
+                    <button type="button" class="btn btn-save" style="width:auto; margin-top:0;" onclick="app.saveProfileName()">Save</button>
+                </div>
+                
+                <label style="display:flex; align-items:center; gap:10px; margin-bottom:20px; cursor:pointer; font-weight:bold; font-size:0.9rem;">
+                    <input type="checkbox" id="admIncludeTournToggle" onchange="app.toggleIncludeTournaments()" style="width:20px; height:20px; flex-shrink:0;">
+                    <span>Include Tournament matches in Overall League Tables</span>
+                </label>
+                
+                <label style="display:block; margin-bottom:5px;">Manage/Add Club:</label>
+                <div class="flex-row" style="margin-bottom:15px;">
+                    <input type="text" id="newTeamName" placeholder="Club Name" class="flex-grow">
+                    <input type="color" id="newTeamColor" value="#333333" class="color-picker">
+                    <button type="button" id="btnAddUpdateClub" class="btn btn-add" style="width:auto; margin-top:0; background:#333;" onclick="app.adminAddClub()">Create</button>
+                    <button type="button" id="btnCancelClub" class="btn btn-cancel hidden" style="width:auto; margin-top:0;" onclick="app.cancelEdit('club')">✕</button>
+                </div>
+                <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul>
+            </div>
         </div>
-        <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V134</div>
+    <div class="version-tag">V140</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -559,7 +576,6 @@
     let lastActiveTeam = "Llanelli Town"; 
     let localProfileName = localStorage.getItem('userProfileName') || "Joey";
     
-    // Edit States
     let editingPlayerIdx = -1, editingOppIdx = -1, editingCoachIdx = -1, editingAwardIdx = -1, editingTournIdx = -1, editingClubName = null;
 
     try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
@@ -586,7 +602,7 @@
         onValue(dataRef, (snapshot) => {
             document.getElementById('loadingOverlay').classList.add('hidden'); document.getElementById('mainNav').classList.remove('hidden'); document.getElementById('mainApp').classList.remove('hidden'); document.getElementById('appFooter').classList.remove('hidden');
             const val = snapshot.val();
-            if (val) { globalData = val; initUI(); } else { globalData = { teams: { "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: [], coaches: [], awards: [], tournaments: [], active: true } }, history: [], daySummaries: {}, settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"], profileName: "Joey" } }; if(!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) set(dataRef, globalData); initUI(); }
+            if (val) { globalData = val; initUI(); } else { globalData = { teams: { "Llanelli Town": { color: "#d32f2f", players: ["Joey"], opps: [], coaches: [], awards: [], tournaments: [], active: true } }, history: [], daySummaries: {}, settings: { theme: 'light', currentSeason: "2025/26", seasons: ["2025/26"], profileName: "Joey", includeTournamentsInLeague: false } }; if(!isGuest && ALLOWED_UIDS.includes(currentUser?.uid)) set(dataRef, globalData); initUI(); }
         });
     }
 
@@ -629,6 +645,13 @@
     // --- APP LOGIC ---
     Object.assign(window.app, {
         
+        toggleIncludeTournaments: () => {
+            globalData.settings.includeTournamentsInLeague = document.getElementById('admIncludeTournToggle').checked;
+            saveToCloud().then(() => {
+                showToast("League rules updated");
+            });
+        },
+
         adjustScore: (id, amount, prefix) => {
             const el = document.getElementById(id);
             if(!el) return;
@@ -1263,7 +1286,15 @@
         },
 
         renderLeagueTable: () => { 
-            const matches = globalData.history.filter(m => m.team === activeContext && m.season === globalData.settings.currentSeason && (!m.type || m.type === 'regular')); 
+            const includeTourn = globalData.settings.includeTournamentsInLeague || false;
+            const matches = globalData.history.filter(m => {
+                if (m.team !== activeContext || m.season !== globalData.settings.currentSeason) return false;
+                if (m.type === 'neutral') return false;
+                const tName = m.tourn || 'League';
+                if (!includeTourn && tName !== 'League') return false;
+                return true;
+            });
+            
             let my = { p:0, w:0, d:0, l:0, gf:0, ga:0, pts:0 }; 
             matches.forEach(m => { 
                 my.p++; my.gf += m.our; my.ga += m.their; 
@@ -1334,7 +1365,14 @@
             document.getElementById('c-g').innerText = totalGoals;
             document.getElementById('c-a').innerText = totalAwardWins === 0 ? "N/A" : `${totalAwardWins} / ${totalAwardOpps}`;
             
-            let h = globalData.history.filter(m => (!m.type || m.type === 'regular')); 
+            const includeTourn = globalData.settings.includeTournamentsInLeague || false;
+            let h = globalData.history.filter(m => {
+                if (m.type === 'neutral') return false;
+                const tName = m.tourn || 'League';
+                if (!includeTourn && tName !== 'League') return false;
+                return true;
+            });
+            
             if(f !== 'All Time') h = h.filter(m => m.season === f); 
             let stats={}; 
             h.forEach(m=>{
@@ -1477,6 +1515,9 @@
             const t=globalData.teams[selectEl.value]; 
             if(!t) return; 
             
+            const tournToggle = document.getElementById('admIncludeTournToggle');
+            if (tournToggle) tournToggle.checked = globalData.settings.includeTournamentsInLeague || false;
+
             document.getElementById('admPlayerList').innerHTML=(t.players||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditPlayer(${i})">✎</button> <button class="btn-del" onclick="app.admDel('players',${i})">🗑</button></div></li>`).join('');
             document.getElementById('admCoachList').innerHTML=(t.coaches||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditCoach(${i})">✎</button> <button class="btn-del" onclick="app.admDel('coaches',${i})">🗑</button></div></li>`).join('');
             document.getElementById('admOppList').innerHTML=(t.opps||[]).map((x,i)=>`<li>${x} <div><button class="btn-edit" onclick="app.admEditOpp(${i})">✎</button> <button class="btn-del" onclick="app.admDel('opps',${i})">🗑</button></div></li>`).join('');
