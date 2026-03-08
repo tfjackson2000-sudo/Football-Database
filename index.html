@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V138</title>
+    <title>Football Tracker V139</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -64,7 +64,8 @@
         .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
         .admin-list li:last-child { border-bottom: none; }
         
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; margin-top:5px; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; margin-top:5px; transition: opacity 0.2s; }
+        .btn:active { opacity: 0.7; }
         .btn-add { background: var(--primary); color: var(--text-on-primary); }
         .btn-save { background: var(--success); color: white; }
         .btn-update { background: #3b82f6; color: white; }
@@ -212,9 +213,13 @@
                         <div id="mLineupArea" class="lineup-grid"></div>
                     </div>
 
-                    <div class="form-row"><div><label>Us:</label><input type="number" id="mOur" value="0" oninput="app.renderScorers('m')"></div><div><label>Them:</label><input type="number" id="mTheir" value="0"></div></div>
+                    <div class="form-row">
+                        <div><label>Us:</label><input type="number" id="mOur" value="0" oninput="app.renderScorers('m')" onchange="app.renderScorers('m')"></div>
+                        <div><label>Them:</label><input type="number" id="mTheir" value="0"></div>
+                    </div>
                     <div id="mScorerList" class="form-group"></div>
                     <div class="form-group"><label>Notes:</label><textarea id="mNotes" rows="2"></textarea></div>
+                    
                     <button type="button" class="btn btn-add" onclick="app.addToQueue()">+ Add Game to Queue</button>
                     <div id="matchQueue" style="margin-top:15px; padding-top:15px; border-top:1px solid var(--border);"></div>
                     <button type="button" id="btnFinalize" class="btn btn-save hidden" onclick="app.saveSession()">💾 Save Session</button>
@@ -260,7 +265,7 @@
                                         <div id="tmLineupArea" class="lineup-grid"></div>
                                     </div>
                                     <div class="form-row">
-                                        <div><label>Us:</label><input type="number" id="tmOur" value="0" oninput="app.renderScorers('tm')"></div>
+                                        <div><label>Us:</label><input type="number" id="tmOur" value="0" oninput="app.renderScorers('tm')" onchange="app.renderScorers('tm')"></div>
                                         <div><label>Them:</label><input type="number" id="tmTheir" value="0"></div>
                                     </div>
                                     <div id="tmScorerList" class="form-group"></div>
@@ -387,7 +392,7 @@
         </div>
         <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V138</div>
+    <div class="version-tag">V139</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -466,7 +471,7 @@
             <div id="eLineupArea" class="lineup-grid"></div>
         </div>
 
-        <div class="form-row"><div><label>Us</label><input type="number" id="eOur" oninput="app.renderScorers('e')"></div><div><label>Them</label><input type="number" id="eTheir"></div></div>
+        <div class="form-row"><div><label>Us</label><input type="number" id="eOur" oninput="app.renderScorers('e')" onchange="app.renderScorers('e')"></div><div><label>Them</label><input type="number" id="eTheir"></div></div>
         <div id="eScorerList"></div>
         <div class="form-group"><label>Notes</label><textarea id="eNotes"></textarea></div>
         <button class="btn btn-save" onclick="app.saveEditedMatch()">Save</button>
@@ -487,7 +492,6 @@
     let lastActiveTeam = "Llanelli Town"; 
     let localProfileName = localStorage.getItem('userProfileName') || "Joey";
     
-    // Edit States
     let editingPlayerIdx = -1, editingOppIdx = -1, editingCoachIdx = -1, editingAwardIdx = -1, editingTournIdx = -1, editingClubName = null;
 
     try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
@@ -554,7 +558,6 @@
     const fmtDate = (ds) => { if(!ds) return ""; const d = new Date(ds); const day = d.getDate(); const m = d.toLocaleString('en-GB', { month: 'short' }); const y = d.getFullYear(); const s = ["th", "st", "nd", "rd"]; const v = day % 100; const suffix = s[(v - 20) % 10] || s[v] || s[0]; return `${day}${suffix} ${m} ${y}`; };
     function hexToRgb(hex) { let r = 0, g = 0, b = 0; if(hex.startsWith('#')) hex = hex.slice(1); if (hex.length === 3) { r = parseInt(hex[0]+hex[0], 16); g = parseInt(hex[1]+hex[1], 16); b = parseInt(hex[2]+hex[2], 16); } else if (hex.length === 6) { r = parseInt(hex.substring(0,2), 16); g = parseInt(hex.substring(2,4), 16); b = parseInt(hex.substring(4,6), 16); } return `rgba(${r},${g},${b}, 0.08)`; }
 
-    // --- APP LOGIC ---
     Object.assign(window.app, {
         openProfileModal: () => {
             const sel = document.getElementById('profileSelect'); sel.innerHTML = '';
@@ -600,29 +603,53 @@
         },
         
         addToQueue: () => {
-            const opp = document.getElementById('mOpp').value; if(!opp) return alert("Select Opponent");
-            let dVal = document.getElementById('mDate').value || new Date().toISOString().split('T')[0];
-            
-            const lineup = [];
-            document.querySelectorAll('.m-lineup-chk:checked').forEach(c => lineup.push(c.value));
-            
-            sessionQueue.push({ 
-                id: Date.now()+Math.random(), 
-                date: dVal, 
-                team: activeContext, 
-                opp: opp, 
-                tourn: document.getElementById('mTourn').value, 
-                our: parseInt(document.getElementById('mOur').value)||0, 
-                their: parseInt(document.getElementById('mTheir').value)||0, 
-                coach: document.getElementById('mCoach').value, 
-                scorers: Array.from(document.querySelectorAll('.m-sc-input')).map(s=>s.value), 
-                notes: document.getElementById('mNotes').value, 
-                season: globalData.settings.currentSeason,
-                lineup: lineup,
-                type: 'regular'
-            });
-            ui.renderQueue(); 
-            document.getElementById('mOur').value=0; document.getElementById('mTheir').value=0; document.getElementById('mNotes').value=""; app.renderScorers('m');
+            try {
+                const oppVal = document.getElementById('mOpp').value;
+                const opp = oppVal ? oppVal : "Unknown Opponent";
+                
+                let dVal = document.getElementById('mDate').value || new Date().toISOString().split('T')[0];
+                
+                const lineup = [];
+                document.querySelectorAll('.m-lineup-chk:checked').forEach(c => lineup.push(c.value));
+                
+                let tVal = "League";
+                const tEl = document.getElementById('mTourn');
+                if (tEl && tEl.value) tVal = tEl.value;
+
+                let cVal = "";
+                const cEl = document.getElementById('mCoach');
+                if (cEl && cEl.value) cVal = cEl.value;
+                
+                sessionQueue.push({ 
+                    id: Date.now()+Math.random(), 
+                    date: dVal, 
+                    team: activeContext, 
+                    opp: opp, 
+                    tourn: tVal, 
+                    our: parseInt(document.getElementById('mOur').value)||0, 
+                    their: parseInt(document.getElementById('mTheir').value)||0, 
+                    coach: cVal, 
+                    scorers: Array.from(document.querySelectorAll('.m-sc-input')).map(s=>s.value), 
+                    notes: document.getElementById('mNotes').value || "", 
+                    season: globalData.settings.currentSeason,
+                    lineup: lineup,
+                    type: 'regular'
+                });
+                
+                ui.renderQueue(); 
+                document.getElementById('mOur').value = 0; 
+                document.getElementById('mTheir').value = 0; 
+                document.getElementById('mNotes').value = ""; 
+                app.renderScorers('m');
+            } catch(e) {
+                console.error("Queue error:", e);
+                alert("Error adding to queue.");
+            }
+        },
+        
+        removeFromQueue: (index) => {
+            sessionQueue.splice(index, 1);
+            ui.renderQueue();
         },
         
         saveProfileName: () => { const newName = document.getElementById('adminProfileName').value; if(newName) { globalData.settings.profileName = newName; saveToCloud().then(() => { showToast("Global Default updated to " + newName); ui.renderMainView(); }); } },
@@ -887,58 +914,67 @@
         },
         
         saveTournMatch: () => {
-            const tName = activeContext;
-            const tournName = document.getElementById('tournSelector').value;
-            if(!tournName) return;
-            const type = document.querySelector('input[name="tmType"]:checked').value;
-            const tournData = globalData.teams[tName].tournaments.find(t=>t.name === tournName);
-            const tDate = tournData && tournData.date ? tournData.date : new Date().toISOString().split('T')[0];
+            try {
+                const tName = activeContext;
+                const tournName = document.getElementById('tournSelector').value;
+                if(!tournName) return;
+                const type = document.querySelector('input[name="tmType"]:checked').value;
+                const tournData = globalData.teams[tName].tournaments.find(t=>t.name === tournName);
+                const tDate = tournData && tournData.date ? tournData.date : new Date().toISOString().split('T')[0];
 
-            let matchObj = { id: Date.now()+Math.random(), tourn: tournName, season: globalData.settings.currentSeason };
+                let matchObj = { id: Date.now()+Math.random(), tourn: tournName, season: globalData.settings.currentSeason };
 
-            if(type === 'us') {
-                const opp = document.getElementById('tmOpp').value;
-                if(!opp) return alert("Select Opponent");
-                const lineup = [];
-                document.querySelectorAll('.tm-lineup-chk:checked').forEach(c => lineup.push(c.value));
+                if(type === 'us') {
+                    const oppVal = document.getElementById('tmOpp').value;
+                    const opp = oppVal ? oppVal : "Unknown Opponent";
+
+                    const lineup = [];
+                    document.querySelectorAll('.tm-lineup-chk:checked').forEach(c => lineup.push(c.value));
+                    
+                    let cVal = "";
+                    const cEl = document.getElementById('tmCoach');
+                    if (cEl && cEl.value) cVal = cEl.value;
+                    
+                    matchObj = {
+                        ...matchObj,
+                        team: tName,
+                        opp: opp,
+                        date: tDate,
+                        our: parseInt(document.getElementById('tmOur').value)||0,
+                        their: parseInt(document.getElementById('tmTheir').value)||0,
+                        coach: cVal,
+                        scorers: Array.from(document.querySelectorAll('.tm-sc-input')).map(s=>s.value),
+                        lineup: lineup,
+                        type: 'regular'
+                    };
+                } else {
+                    const tA = document.getElementById('tmTeamA').value || "Team A";
+                    const tB = document.getElementById('tmTeamB').value || "Team B";
+                    
+                    matchObj = {
+                        ...matchObj,
+                        team: tName, 
+                        date: tDate,
+                        teamA: tA,
+                        teamB: tB,
+                        scoreA: parseInt(document.getElementById('tmScoreA').value)||0,
+                        scoreB: parseInt(document.getElementById('tmScoreB').value)||0,
+                        type: 'neutral'
+                    };
+                }
                 
-                matchObj = {
-                    ...matchObj,
-                    team: tName,
-                    opp: opp,
-                    date: tDate,
-                    our: parseInt(document.getElementById('tmOur').value)||0,
-                    their: parseInt(document.getElementById('tmTheir').value)||0,
-                    coach: document.getElementById('tmCoach').value,
-                    scorers: Array.from(document.querySelectorAll('.tm-sc-input')).map(s=>s.value),
-                    lineup: lineup,
-                    type: 'regular'
-                };
-            } else {
-                const tA = document.getElementById('tmTeamA').value;
-                const tB = document.getElementById('tmTeamB').value;
-                if(!tA || !tB || tA === tB) return alert("Select two different valid teams.");
-                
-                matchObj = {
-                    ...matchObj,
-                    team: tName, 
-                    date: tDate,
-                    teamA: tA,
-                    teamB: tB,
-                    scoreA: parseInt(document.getElementById('tmScoreA').value)||0,
-                    scoreB: parseInt(document.getElementById('tmScoreB').value)||0,
-                    type: 'neutral'
-                };
+                globalData.history.push(matchObj);
+                saveToCloud().then(() => {
+                    ui.renderTournamentView();
+                    document.getElementById('tmOur').value = 0; document.getElementById('tmTheir').value = 0;
+                    document.getElementById('tmScoreA').value = 0; document.getElementById('tmScoreB').value = 0;
+                    app.renderScorers('tm');
+                    showToast("Tournament Match Saved");
+                });
+            } catch(e) {
+                console.error("Tournament Save Error:", e);
+                alert("Error saving tournament match.");
             }
-            
-            globalData.history.push(matchObj);
-            saveToCloud().then(() => {
-                ui.renderTournamentView();
-                document.getElementById('tmOur').value = 0; document.getElementById('tmTheir').value = 0;
-                document.getElementById('tmScoreA').value = 0; document.getElementById('tmScoreB').value = 0;
-                app.renderScorers('tm');
-                showToast("Tournament Match Saved");
-            });
         },
 
         saveEditedMatch: () => { 
@@ -950,20 +986,24 @@
         },
 
         renderScorers: (p) => { 
-            const c = parseInt(document.getElementById(p + 'Our').value) || 0; 
-            const d = document.getElementById(p + 'ScorerList'); 
-            d.innerHTML = c > 0 ? '<label>Goal Scorers:</label>' : ''; 
-            const checkedBoxes = document.querySelectorAll(`.${p}-lineup-chk:checked`);
-            const availablePlayers = Array.from(checkedBoxes).map(cb => cb.value);
+            try {
+                const c = parseInt(document.getElementById(p + 'Our').value) || 0; 
+                const d = document.getElementById(p + 'ScorerList'); 
+                d.innerHTML = c > 0 ? '<label>Goal Scorers:</label>' : ''; 
+                const checkedBoxes = document.querySelectorAll(`.${p}-lineup-chk:checked`);
+                const availablePlayers = Array.from(checkedBoxes).map(cb => cb.value);
 
-            for(let i=0; i<c; i++) { 
-                const s = document.createElement('select'); 
-                s.className = p + '-sc-input'; s.style.marginBottom='5px'; 
-                availablePlayers.forEach(x => s.add(new Option(x,x))); 
-                s.add(new Option("---", ""));
-                s.add(new Option("O.G. (Own Goal)", "O.G."));
-                d.appendChild(s); 
-            } 
+                for(let i=0; i<c; i++) { 
+                    const s = document.createElement('select'); 
+                    s.className = p + '-sc-input'; s.style.marginBottom='5px'; 
+                    availablePlayers.forEach(x => s.add(new Option(x,x))); 
+                    s.add(new Option("---", ""));
+                    s.add(new Option("O.G. (Own Goal)", "O.G."));
+                    d.appendChild(s); 
+                } 
+            } catch(e) {
+                console.error("renderScorers Error:", e);
+            }
         }
     });
 
@@ -1049,11 +1089,19 @@
                  document.getElementById('tmOtherInput').classList.remove('hidden');
              }
         },
-        
+
         renderQueue: () => { 
-            const q = document.getElementById('matchQueue'); 
-            q.innerHTML = sessionQueue.map((g,i) => `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px;"><div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div><button class="btn-del" style="margin:0; padding:0 10px;" onclick="sessionQueue.splice(${i},1); ui.renderQueue()">✕</button></div>`).join(''); 
-            document.getElementById('btnFinalize').classList.toggle('hidden', sessionQueue.length === 0); 
+            try {
+                const q = document.getElementById('matchQueue'); 
+                q.innerHTML = sessionQueue.map((g,i) => `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px;">
+                    <div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div>
+                    <button class="btn-del" style="margin:0; padding:0 10px;" onclick="app.removeFromQueue(${i})">✕</button>
+                </div>`).join(''); 
+                document.getElementById('btnFinalize').classList.toggle('hidden', sessionQueue.length === 0); 
+            } catch(e) {
+                console.error("Queue Render Error:", e);
+            }
         },
 
         renderHistory: (data, targetId) => { 
