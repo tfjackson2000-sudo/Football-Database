@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V139</title>
+    <title>Football Tracker V134</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -64,8 +64,7 @@
         .admin-list li { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: center; }
         .admin-list li:last-child { border-bottom: none; }
         
-        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; margin-top:5px; transition: opacity 0.2s; }
-        .btn:active { opacity: 0.7; }
+        .btn { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: 800; cursor: pointer; font-size: 0.95rem; margin-top:5px; }
         .btn-add { background: var(--primary); color: var(--text-on-primary); }
         .btn-save { background: var(--success); color: white; }
         .btn-update { background: #3b82f6; color: white; }
@@ -132,6 +131,14 @@
         .toggle-group input { display: none; }
         .toggle-group input:checked + span { color: var(--text-highlight); }
         .toggle-group label:has(input:checked) { background: var(--primary-tint); border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
+
+        /* SCORE INPUT GROUP WITH +/- */
+        .score-input-group { display: flex; align-items: stretch; height: 45px; }
+        .score-input-group button { background: var(--primary-tint); border: 1px solid var(--border); color: var(--text-highlight); font-size: 1.2rem; font-weight: bold; width: 45px; cursor: pointer; border-radius: 10px; display: flex; justify-content: center; align-items: center; transition: background 0.2s; }
+        .score-input-group button:active { background: var(--border); }
+        .score-input-group input { text-align: center; font-size: 1.2rem; font-weight: bold; flex: 1; border: 1px solid var(--border); margin: 0 8px; border-radius: 10px; padding: 0; box-sizing: border-box; }
+        .score-input-group input::-webkit-outer-spin-button, .score-input-group input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .score-input-group input[type=number] { -moz-appearance: textfield; }
     </style>
 </head>
 <body>
@@ -195,8 +202,7 @@
         
         <div class="card"><details open><summary class="card-header">🏆 League Table</summary><div class="card-body" style="padding:0;"><table id="teamLeagueTable"><thead><tr><th>Team</th><th class="num-col">P</th><th class="num-col">W</th><th class="num-col">D</th><th class="num-col">L</th><th class="num-col">GD</th><th class="num-col">Pts</th></tr></thead><tbody></tbody></table></div></details></div>
         <div class="card"><details><summary class="card-header">👟 Top Scorers</summary><div class="card-body" style="padding:0;"><table id="topScorerTable"><thead><tr><th>Player</th><th class="num-col">Goals</th></tr></thead><tbody></tbody></table></div></details></div>
-        <div class="card" style="background:transparent; box-shadow:none; border:none;"><details open><summary class="card-header" style="border-radius:16px;">🕒 Match History</summary><div id="teamHistoryList" style="padding-top:15px;"></div></details></div>
-
+        
         <div class="card protected-area">
             <details>
                 <summary class="card-header">⚽ Standard Match Input</summary>
@@ -214,16 +220,37 @@
                     </div>
 
                     <div class="form-row">
-                        <div><label>Us:</label><input type="number" id="mOur" value="0" oninput="app.renderScorers('m')" onchange="app.renderScorers('m')"></div>
-                        <div><label>Them:</label><input type="number" id="mTheir" value="0"></div>
+                        <div>
+                            <label>Us:</label>
+                            <div class="score-input-group">
+                                <button type="button" onclick="app.adjustScore('mOur', -1, 'm')">-</button>
+                                <input type="number" id="mOur" value="0" oninput="app.renderScorers('m')" onchange="app.renderScorers('m')">
+                                <button type="button" onclick="app.adjustScore('mOur', 1, 'm')">+</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label>Them:</label>
+                            <div class="score-input-group">
+                                <button type="button" onclick="app.adjustScore('mTheir', -1)">-</button>
+                                <input type="number" id="mTheir" value="0">
+                                <button type="button" onclick="app.adjustScore('mTheir', 1)">+</button>
+                            </div>
+                        </div>
                     </div>
+                    
                     <div id="mScorerList" class="form-group"></div>
                     <div class="form-group"><label>Notes:</label><textarea id="mNotes" rows="2"></textarea></div>
-                    
                     <button type="button" class="btn btn-add" onclick="app.addToQueue()">+ Add Game to Queue</button>
                     <div id="matchQueue" style="margin-top:15px; padding-top:15px; border-top:1px solid var(--border);"></div>
                     <button type="button" id="btnFinalize" class="btn btn-save hidden" onclick="app.saveSession()">💾 Save Session</button>
                 </div>
+            </details>
+        </div>
+
+        <div class="card" style="background:transparent; box-shadow:none; border:none;">
+            <details>
+                <summary class="card-header" style="border-radius:16px;">🕒 Match History</summary>
+                <div id="teamHistoryList" style="padding-top:15px;"></div>
             </details>
         </div>
 
@@ -265,8 +292,20 @@
                                         <div id="tmLineupArea" class="lineup-grid"></div>
                                     </div>
                                     <div class="form-row">
-                                        <div><label>Us:</label><input type="number" id="tmOur" value="0" oninput="app.renderScorers('tm')" onchange="app.renderScorers('tm')"></div>
-                                        <div><label>Them:</label><input type="number" id="tmTheir" value="0"></div>
+                                        <div><label>Us:</label>
+                                            <div class="score-input-group">
+                                                <button type="button" onclick="app.adjustScore('tmOur', -1, 'tm')">-</button>
+                                                <input type="number" id="tmOur" value="0" oninput="app.renderScorers('tm')" onchange="app.renderScorers('tm')">
+                                                <button type="button" onclick="app.adjustScore('tmOur', 1, 'tm')">+</button>
+                                            </div>
+                                        </div>
+                                        <div><label>Them:</label>
+                                            <div class="score-input-group">
+                                                <button type="button" onclick="app.adjustScore('tmTheir', -1)">-</button>
+                                                <input type="number" id="tmTheir" value="0">
+                                                <button type="button" onclick="app.adjustScore('tmTheir', 1)">+</button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div id="tmScorerList" class="form-group"></div>
                                 </div>
@@ -275,11 +314,23 @@
                                     <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">Log games between other teams to update the tournament league table.</p>
                                     <div class="form-row">
                                         <div><label>Team 1:</label><select id="tmTeamA"></select></div>
-                                        <div><label>Score:</label><input type="number" id="tmScoreA" value="0"></div>
+                                        <div><label>Score:</label>
+                                            <div class="score-input-group">
+                                                <button type="button" onclick="app.adjustScore('tmScoreA', -1)">-</button>
+                                                <input type="number" id="tmScoreA" value="0">
+                                                <button type="button" onclick="app.adjustScore('tmScoreA', 1)">+</button>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="form-row">
                                         <div><label>Team 2:</label><select id="tmTeamB"></select></div>
-                                        <div><label>Score:</label><input type="number" id="tmScoreB" value="0"></div>
+                                        <div><label>Score:</label>
+                                            <div class="score-input-group">
+                                                <button type="button" onclick="app.adjustScore('tmScoreB', -1)">-</button>
+                                                <input type="number" id="tmScoreB" value="0">
+                                                <button type="button" onclick="app.adjustScore('tmScoreB', 1)">+</button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -392,7 +443,7 @@
         </div>
         <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V139</div>
+    <div class="version-tag">V134</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -471,7 +522,23 @@
             <div id="eLineupArea" class="lineup-grid"></div>
         </div>
 
-        <div class="form-row"><div><label>Us</label><input type="number" id="eOur" oninput="app.renderScorers('e')" onchange="app.renderScorers('e')"></div><div><label>Them</label><input type="number" id="eTheir"></div></div>
+        <div class="form-row">
+            <div><label>Us</label>
+                <div class="score-input-group">
+                    <button type="button" onclick="app.adjustScore('eOur', -1, 'e')">-</button>
+                    <input type="number" id="eOur" oninput="app.renderScorers('e')" onchange="app.renderScorers('e')">
+                    <button type="button" onclick="app.adjustScore('eOur', 1, 'e')">+</button>
+                </div>
+            </div>
+            <div><label>Them</label>
+                <div class="score-input-group">
+                    <button type="button" onclick="app.adjustScore('eTheir', -1)">-</button>
+                    <input type="number" id="eTheir">
+                    <button type="button" onclick="app.adjustScore('eTheir', 1)">+</button>
+                </div>
+            </div>
+        </div>
+        
         <div id="eScorerList"></div>
         <div class="form-group"><label>Notes</label><textarea id="eNotes"></textarea></div>
         <button class="btn btn-save" onclick="app.saveEditedMatch()">Save</button>
@@ -492,6 +559,7 @@
     let lastActiveTeam = "Llanelli Town"; 
     let localProfileName = localStorage.getItem('userProfileName') || "Joey";
     
+    // Edit States
     let editingPlayerIdx = -1, editingOppIdx = -1, editingCoachIdx = -1, editingAwardIdx = -1, editingTournIdx = -1, editingClubName = null;
 
     try { fbApp = initializeApp(firebaseConfig); rtdb = getDatabase(fbApp); auth = getAuth(fbApp); } 
@@ -558,7 +626,19 @@
     const fmtDate = (ds) => { if(!ds) return ""; const d = new Date(ds); const day = d.getDate(); const m = d.toLocaleString('en-GB', { month: 'short' }); const y = d.getFullYear(); const s = ["th", "st", "nd", "rd"]; const v = day % 100; const suffix = s[(v - 20) % 10] || s[v] || s[0]; return `${day}${suffix} ${m} ${y}`; };
     function hexToRgb(hex) { let r = 0, g = 0, b = 0; if(hex.startsWith('#')) hex = hex.slice(1); if (hex.length === 3) { r = parseInt(hex[0]+hex[0], 16); g = parseInt(hex[1]+hex[1], 16); b = parseInt(hex[2]+hex[2], 16); } else if (hex.length === 6) { r = parseInt(hex.substring(0,2), 16); g = parseInt(hex.substring(2,4), 16); b = parseInt(hex.substring(4,6), 16); } return `rgba(${r},${g},${b}, 0.08)`; }
 
+    // --- APP LOGIC ---
     Object.assign(window.app, {
+        
+        adjustScore: (id, amount, prefix) => {
+            const el = document.getElementById(id);
+            if(!el) return;
+            let val = parseInt(el.value) || 0;
+            val += amount;
+            if (val < 0) val = 0;
+            el.value = val;
+            if (prefix) app.renderScorers(prefix);
+        },
+        
         openProfileModal: () => {
             const sel = document.getElementById('profileSelect'); sel.innerHTML = '';
             let playerMap = {};
