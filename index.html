@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Football Tracker V137</title>
+    <title>Football Tracker V138</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -387,7 +387,7 @@
         </div>
         <ul id="admClubList" class="admin-list" style="margin-bottom:0;"></ul></div></div>
     </div>
-    <div class="version-tag">V137</div>
+    <div class="version-tag">V138</div>
 </div>
 
 <footer class="app-footer" id="appFooter">
@@ -1048,6 +1048,12 @@
                  document.getElementById('tmUsInput').classList.add('hidden');
                  document.getElementById('tmOtherInput').classList.remove('hidden');
              }
+        },
+        
+        renderQueue: () => { 
+            const q = document.getElementById('matchQueue'); 
+            q.innerHTML = sessionQueue.map((g,i) => `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); border:1px solid var(--border); padding:10px; border-radius:8px; margin-bottom:8px;"><div><strong>vs ${g.opp}</strong> (${g.our}-${g.their})</div><button class="btn-del" style="margin:0; padding:0 10px;" onclick="sessionQueue.splice(${i},1); ui.renderQueue()">✕</button></div>`).join(''); 
+            document.getElementById('btnFinalize').classList.toggle('hidden', sessionQueue.length === 0); 
         },
 
         renderHistory: (data, targetId) => { 
